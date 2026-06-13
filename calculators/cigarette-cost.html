@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="하루 흡연량과 담배 가격을 입력해 한 달, 1년, 5년 동안 담배에 쓰는 금액을 계산해 보세요.">
+    <title>담배 연간 비용 계산기 - 한눈계산</title>
+    <link rel="stylesheet" href="../assets/css/base.css">
+    <link rel="stylesheet" href="../assets/css/layout.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+  </head>
+  <body>
+    <header class="site-header"><a class="brand" href="../index.html"><span class="brand-mark">한</span><span><strong>한눈계산</strong><small>실용 계산 도구</small></span></a><nav class="site-nav" aria-label="주요 메뉴"><a href="../index.html#calculators" data-tool-drawer>다른 계산기</a><a href="../index.html#how-to">사용 방법</a><a href="../index.html#faq">질문</a><a href="../about.html">소개</a><a href="../contact.html">문의</a></nav></header>
+    <main>
+      <section class="hero-band"><div class="container"><div class="section-intro"><p class="eyebrow">소비 습관</p><h1>담배 연간 비용 계산기</h1><p class="lead">하루에 몇 개비를 피우는지 입력하면 한 달과 1년에 담배값으로 얼마를 쓰는지 계산합니다.</p></div></div></section>
+      <section class="content-band compact"><div class="container calculator-section"><section class="tool-panel" aria-label="담배 연간 비용 계산기">
+        <form id="cigarette-cost-form" class="input-panel">
+          <div class="field-row"><div class="field"><label for="cigarettes-per-day">하루 흡연량</label><div class="input-suffix"><input id="cigarettes-per-day" name="cigarettesPerDay" type="number" min="0" step="1" value="10" inputmode="numeric"><span>개비</span></div></div><div class="field"><label for="pack-price">한 갑 가격</label><div class="input-suffix"><input id="pack-price" name="packPrice" type="number" min="0" step="100" value="4500" inputmode="numeric"><span>원</span></div></div></div>
+          <div class="field"><label for="cigarettes-per-pack">한 갑 개비 수</label><div class="input-suffix"><input id="cigarettes-per-pack" name="cigarettesPerPack" type="number" min="1" step="1" value="20" inputmode="numeric"><span>개비</span></div></div>
+          <button class="primary-button" type="submit">담배 비용 계산하기</button>
+        </form>
+        <aside class="result-panel"><div class="report-summary"><span class="report-kicker">연간 담배 비용</span><strong id="cigarette-annual-cost" class="result-number">-</strong><span id="cigarette-detail">조건을 입력하면 연간 비용을 계산합니다.</span></div><div class="metric-grid savings-metrics"><div><span>월 평균 비용</span><strong id="cigarette-monthly-cost">-</strong></div><div><span>연간 소비 갑수</span><strong id="cigarette-annual-packs">-</strong></div><div><span>5년 환산 비용</span><strong id="cigarette-five-year-cost">-</strong></div></div></aside>
+      </section></div></section>
+      <section class="content-band muted"><div class="container two-column"><section class="info-block"><p class="eyebrow">사용 방법</p><h2>평균 흡연량으로 계산하세요.</h2><ol class="step-list"><li><strong>하루 개비 수 입력</strong><span>평일과 주말 평균을 생각해 넣습니다.</span></li><li><strong>한 갑 가격 입력</strong><span>주로 사는 담배 가격을 입력합니다.</span></li><li><strong>기간별 비용 확인</strong><span>월, 연, 5년 비용을 비교합니다.</span></li></ol></section><section class="info-block"><p class="eyebrow">계산할 때 알아둘 점</p><h2>직접 지출만 계산합니다.</h2><ul class="plain-list"><li>병원비, 보험료, 기회비용 같은 간접 비용은 포함하지 않았습니다.</li><li>흡연량이 계절이나 스트레스에 따라 달라지면 결과도 달라집니다.</li><li>금연 계획을 세울 때 절약액 목표로 활용할 수 있습니다.</li></ul></section></div></section>
+      <section class="content-band"><div class="container faq-wrap"><p class="eyebrow">자주 묻는 질문</p><h2>담배 비용 계산기 자주 묻는 질문</h2><div class="faq-grid"><details open><summary>전자담배도 계산할 수 있나요?</summary><p>하루 평균 소비량을 개비처럼 환산하거나 월 지출을 따로 비교하면 참고할 수 있습니다.</p></details><details><summary>담배 가격이 다르면 어떻게 하나요?</summary><p>한 갑 가격을 직접 바꿔 입력하세요.</p></details><details><summary>금연 절약액으로 봐도 되나요?</summary><p>네. 같은 흡연량을 유지했을 때 쓰게 될 돈을 아끼는 기준으로 볼 수 있습니다.</p></details><details><summary>건강 비용도 포함되나요?</summary><p>아닙니다. 담배 구매 비용만 계산합니다.</p></details></div></div></section>
+    </main>
+    <footer class="site-footer"><div class="container footer-grid"><div><strong>한눈계산</strong><p>복잡한 계산을 쉽게 확인하는 실용 계산 도구입니다.</p></div><nav aria-label="정책 메뉴"><a href="../about.html">사이트 소개</a><a href="../privacy.html">개인정보 처리방침</a><a href="../contact.html">문의</a><a href="../disclaimer.html">이용 안내</a></nav></div></footer>
+    <script type="module" src="../assets/js/app.js"></script>
+  </body>
+</html>

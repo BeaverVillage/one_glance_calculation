@@ -1,8 +1,50 @@
 import { calculateReport } from "./calculator.js";
+import { initCaffeineSleepCalculator } from "./caffeine-sleep.js";
+import { initCigaretteCostCalculator } from "./cigarette-cost.js";
+import { initApplianceElectricityCalculator } from "./appliance-electricity.js";
+import { initNetSalaryCalculator } from "./net-salary.js";
+import { initPercentileCalculator } from "./percentile.js";
 import { renderPriceChart } from "./chart.js";
+import { initEvCostCalculator } from "./ev-cost.js";
 import { initMilitarySavingsCalculator } from "./military-savings.js";
 import { initScientificCalculator } from "./scientific.js";
+import { initTextCounter } from "./text-counter.js";
 import { formatWon, getCheckedValue, getFormNumber } from "./utils.js";
+import { initWeeklyHolidayPayCalculator } from "./weekly-holiday-pay.js";
+
+const TOOL_GROUPS = [
+  {
+    label: "공학·학업",
+    tools: [
+      ["공학용 계산기", "calculators/scientific.html"],
+      ["글자수·바이트 계산기", "calculators/text-counter.html"],
+      ["시험 상위 백분율 계산기", "calculators/percentile.html"]
+    ]
+  },
+  {
+    label: "돈·세금",
+    tools: [
+      ["월 실수령액 계산기", "calculators/net-salary.html"],
+      ["주휴수당 계산기", "calculators/weekly-holiday-pay.html"],
+      ["군적금 계산기", "calculators/military-savings.html"],
+      ["담배 연간 비용 계산기", "calculators/cigarette-cost.html"]
+    ]
+  },
+  {
+    label: "생활·차량",
+    tools: [
+      ["전기차 충전비 vs 주유비", "calculators/ev-vs-gas.html"],
+      ["가전제품 월 전기요금", "calculators/appliance-electricity.html"],
+      ["중고 전자제품 가격 계산기", "calculators/used-device-price.html"]
+    ]
+  },
+  {
+    label: "건강·습관",
+    tools: [
+      ["카페인 수면 영향 계산기", "calculators/caffeine-sleep.html"]
+    ]
+  }
+];
 
 const state = {
   dataset: null,
@@ -12,8 +54,18 @@ const state = {
 const els = {};
 
 document.addEventListener("DOMContentLoaded", async () => {
+  initToolDrawer();
+  initAffiliateAds();
   initScientificCalculator();
   initMilitarySavingsCalculator();
+  initEvCostCalculator();
+  initApplianceElectricityCalculator();
+  initNetSalaryCalculator();
+  initWeeklyHolidayPayCalculator();
+  initTextCounter();
+  initCaffeineSleepCalculator();
+  initPercentileCalculator();
+  initCigaretteCostCalculator();
   bindElements();
 
   if (!els.form) return;
@@ -27,6 +79,106 @@ document.addEventListener("DOMContentLoaded", async () => {
     showLoadError(error);
   }
 });
+
+function initAffiliateAds() {
+  if (document.querySelector(".affiliate-ad")) return;
+
+  const compactSection = document.querySelector(".content-band.compact");
+  if (compactSection) {
+    const desktopAdBand = document.createElement("section");
+    desktopAdBand.className = "affiliate-ad-band desktop-affiliate-ad";
+    desktopAdBand.setAttribute("aria-label", "광고");
+    desktopAdBand.innerHTML = `
+      <div class="container">
+        <div class="affiliate-ad-note">이 페이지는 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</div>
+        <a class="affiliate-ad affiliate-ad-desktop" href="https://link.coupang.com/a/eyk42kbyOy" target="_blank" rel="nofollow sponsored noopener" referrerpolicy="unsafe-url">
+          <img src="https://ads-partners.coupang.com/banners/996888?subId=&traceId=V0-301-879dd1202e5c73b2-I996888&w=728&h=90" width="728" height="90" alt="쿠팡 파트너스 광고">
+        </a>
+      </div>
+    `;
+    compactSection.after(desktopAdBand);
+  }
+
+  const mobileAd = document.createElement("aside");
+  mobileAd.className = "mobile-affiliate-ad";
+  mobileAd.setAttribute("aria-label", "하단 광고");
+  mobileAd.innerHTML = `
+    <div class="mobile-affiliate-label">이 페이지는 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</div>
+    <a class="affiliate-ad affiliate-ad-mobile" href="https://link.coupang.com/a/eylcCXiLPU" target="_blank" rel="nofollow sponsored noopener" referrerpolicy="unsafe-url">
+      <img src="https://ads-partners.coupang.com/banners/996895?subId=&traceId=V0-301-879dd1202e5c73b2-I996895&w=320&h=50" width="320" height="50" alt="쿠팡 파트너스 광고">
+    </a>
+  `;
+  document.body.append(mobileAd);
+}
+
+function initToolDrawer() {
+  if (document.querySelector(".tool-drawer")) return;
+
+  const prefix = location.pathname.includes("/calculators/") ? "../" : "";
+  const drawer = document.createElement("aside");
+  drawer.className = "tool-drawer";
+  drawer.setAttribute("aria-label", "계산기 바로가기");
+  drawer.setAttribute("aria-hidden", "true");
+  drawer.innerHTML = `
+    <div class="tool-drawer-head">
+      <strong>다른 계산기</strong>
+      <button type="button" class="tool-drawer-close" aria-label="계산기 바로가기 닫기">×</button>
+    </div>
+    <div class="tool-search-row">
+      <span aria-hidden="true">⌕</span>
+      <input type="search" id="tool-search" placeholder="계산기 검색..." autocomplete="off">
+    </div>
+    <nav class="tool-drawer-list" aria-label="계산기 분류">
+      ${TOOL_GROUPS.map((group) => `
+        <section class="tool-group">
+          <h2>${group.label}</h2>
+          ${group.tools.map(([name, href]) => `
+            <a href="${prefix}${href}" data-tool-name="${name.toLowerCase()}">${name}</a>
+          `).join("")}
+        </section>
+      `).join("")}
+    </nav>
+  `;
+
+  const backdrop = document.createElement("button");
+  backdrop.className = "drawer-backdrop";
+  backdrop.type = "button";
+  backdrop.setAttribute("aria-label", "계산기 바로가기 닫기");
+
+  document.body.append(drawer, backdrop);
+
+  const openDrawer = () => {
+    drawer.setAttribute("aria-hidden", "false");
+    document.body.classList.add("drawer-open");
+    drawer.querySelector("#tool-search")?.focus();
+  };
+
+  const closeDrawer = () => {
+    drawer.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("drawer-open");
+  };
+
+  document.querySelectorAll("[data-tool-drawer]").forEach((trigger) => {
+    trigger.addEventListener("click", (event) => {
+      event.preventDefault();
+      openDrawer();
+    });
+  });
+
+  drawer.querySelector(".tool-drawer-close")?.addEventListener("click", closeDrawer);
+  backdrop.addEventListener("click", closeDrawer);
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeDrawer();
+  });
+
+  drawer.querySelector("#tool-search")?.addEventListener("input", (event) => {
+    const query = event.target.value.trim().toLowerCase();
+    drawer.querySelectorAll("[data-tool-name]").forEach((link) => {
+      const visible = !query || link.dataset.toolName.includes(query);
+      link.hidden = !visible;
+    });
+  });
+}
 
 function bindElements() {
   els.form = document.querySelector("#calculator-form");
@@ -126,7 +278,7 @@ function renderSummary(report) {
   els.timingScore.textContent = `${report.timingScore}점`;
   els.priceMonth.textContent = `시세 업데이트: ${report.model.current.month}`;
   els.bunjangLink.href = report.model.current.searchUrls.bunjang;
-  els.daangnLink.href = report.model.current.searchUrls.daangn;
+  els.daangnLink.href = buildDaangnSearchUrl(report.model.name);
 }
 
 function renderInspection(report, values) {
@@ -150,23 +302,26 @@ function renderListing(report, values) {
   const repairLabel = report.factors.repair.label;
   const accessoryText = report.factors.accessories.label;
   const suggestedPrice = formatWon(report.range.high);
-  const floorPrice = formatWon(report.range.low);
   const title = `${report.model.name} 배터리 ${values.battery}% ${conditionLabel} 판매합니다`;
   const body = [
     title,
     "",
     `희망가: ${suggestedPrice}`,
-    `빠른 거래 가능 가격: ${floorPrice} 전후`,
     `배터리 성능: ${values.battery}%`,
     `외관 상태: ${conditionLabel}`,
     `수리 이력: ${repairLabel}`,
     `구성품: ${accessoryText}`,
     "",
-    "사진으로 전면, 후면, 모서리, 카메라 부분 확인 가능하게 올릴 예정입니다.",
-    "거래 전 초기화 및 계정 로그아웃 완료 후 전달합니다."
+    "전면, 후면, 모서리, 카메라 부분 사진을 함께 올려 두었습니다.",
+    "거래 전 초기화와 계정 로그아웃을 완료한 뒤 전달하겠습니다."
   ].join("\n");
 
   els.listingText.value = body;
+}
+
+function buildDaangnSearchUrl(modelName) {
+  const query = `site:daangn.com ${modelName} 중고`;
+  return `https://search.naver.com/search.naver?query=${encodeURIComponent(query)}`;
 }
 
 function showLoadError(error) {

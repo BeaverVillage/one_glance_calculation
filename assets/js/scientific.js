@@ -15,8 +15,20 @@ export function initScientificCalculator(root = document) {
   const result = root.querySelector("#scientific-result");
   const detail = root.querySelector("#scientific-detail");
   const historyList = root.querySelector("#scientific-history");
+  const prettyExpression = root.querySelector("#pretty-expression");
+  const angleBadge = root.querySelector("#scientific-angle-badge");
   const history = [];
   let answer = 0;
+
+  input.addEventListener("input", () => {
+    updatePrettyExpression(input, prettyExpression);
+  });
+
+  form.querySelectorAll('input[name="angleMode"]').forEach((radio) => {
+    radio.addEventListener("change", () => {
+      updateAngleBadge(form, angleBadge);
+    });
+  });
 
   form.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -30,9 +42,11 @@ export function initScientificCalculator(root = document) {
       detail.textContent = `${angleMode === "deg" ? "도" : "라디안"} 모드로 계산했습니다.`;
       history.unshift({ expression: input.value, result: formatted });
       renderHistory(historyList, history.slice(0, 5));
+      updatePrettyExpression(input, prettyExpression);
     } catch (error) {
       result.textContent = "계산 오류";
       detail.textContent = error?.message || "계산식을 다시 확인해 주세요.";
+      updatePrettyExpression(input, prettyExpression);
     }
   });
 
@@ -40,6 +54,9 @@ export function initScientificCalculator(root = document) {
     button.addEventListener("click", () => {
       if (button.dataset.action === "clear") {
         input.value = "";
+        result.textContent = "-";
+        detail.textContent = "새 계산식을 입력해 주세요.";
+        updatePrettyExpression(input, prettyExpression);
         input.focus();
         return;
       }
@@ -52,14 +69,23 @@ export function initScientificCalculator(root = document) {
         } else if (start > 0) {
           input.setRangeText("", start - 1, start, "end");
         }
+        updatePrettyExpression(input, prettyExpression);
         input.focus();
         return;
       }
 
+      if (button.dataset.action === "evaluate") {
+        form.requestSubmit();
+        return;
+      }
+
       insertAtCursor(input, button.dataset.insert || "");
+      updatePrettyExpression(input, prettyExpression);
     });
   });
 
+  updateAngleBadge(form, angleBadge);
+  updatePrettyExpression(input, prettyExpression);
   form.dispatchEvent(new Event("submit", { cancelable: true }));
 }
 
@@ -223,6 +249,7 @@ function tokenize(expression) {
     .replaceAll("×", "*")
     .replaceAll("÷", "/")
     .replaceAll("−", "-")
+    .replaceAll("√", "sqrt")
     .trim();
   const tokens = [];
   let index = 0;
@@ -287,6 +314,78 @@ function insertAtCursor(input, text) {
   const end = input.selectionEnd ?? input.value.length;
   input.setRangeText(text, start, end, "end");
   input.focus();
+}
+
+function updatePrettyExpression(input, target) {
+  if (!target) return;
+  target.innerHTML = formatExpressionForScreen(input.value);
+}
+
+function updateAngleBadge(form, target) {
+  if (!target) return;
+  const angleMode = getCheckedValue(form, "angleMode", "deg");
+  target.textContent = angleMode === "deg" ? "DEG" : "RAD";
+}
+
+function formatExpressionForScreen(expression) {
+  const source = expression.trim();
+  if (!source) return "계산식을 입력하세요";
+
+  const divisionIndex = findTopLevelOperator(source, "/");
+  if (divisionIndex > -1) {
+    const numerator = trimOuterParens(source.slice(0, divisionIndex));
+    const denominator = trimOuterParens(source.slice(divisionIndex + 1));
+    return `
+      <span class="math-fraction">
+        <span class="math-numerator">${formatMathPart(numerator)}</span>
+        <span class="math-denominator">${formatMathPart(denominator)}</span>
+      </span>
+    `;
+  }
+
+  return formatMathPart(source);
+}
+
+function formatMathPart(value) {
+  return escapeHtml(value)
+    .replaceAll("*", "×")
+    .replaceAll("/", "÷")
+    .replaceAll("-", "−")
+    .replaceAll("×", " · ")
+    .replace(/\bsqrt\s*\(/gi, "√(")
+    .replace(/\bpi\b/gi, "π")
+    .replace(/\^2\b/g, "²")
+    .replace(/\^3\b/g, "³");
+}
+
+function findTopLevelOperator(source, operator) {
+  let depth = 0;
+  for (let index = 0; index < source.length; index += 1) {
+    const char = source[index];
+    if (char === "(") depth += 1;
+    if (char === ")") depth -= 1;
+    if (char === operator && depth === 0) return index;
+  }
+  return -1;
+}
+
+function trimOuterParens(value) {
+  let text = value.trim();
+  while (text.startsWith("(") && text.endsWith(")") && wrapsWholeExpression(text)) {
+    text = text.slice(1, -1).trim();
+  }
+  return text;
+}
+
+function wrapsWholeExpression(value) {
+  let depth = 0;
+  for (let index = 0; index < value.length; index += 1) {
+    const char = value[index];
+    if (char === "(") depth += 1;
+    if (char === ")") depth -= 1;
+    if (depth === 0 && index < value.length - 1) return false;
+  }
+  return depth === 0;
 }
 
 function renderHistory(list, items) {

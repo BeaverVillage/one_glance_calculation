@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="카페인 섭취량과 마신 시간, 취침 시간을 입력해 잠들 때 남아 있을 카페인 양을 추정해 보세요.">
+    <title>카페인 수면 영향 계산기 - 한눈계산</title>
+    <link rel="stylesheet" href="../assets/css/base.css">
+    <link rel="stylesheet" href="../assets/css/layout.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+  </head>
+  <body>
+    <header class="site-header"><a class="brand" href="../index.html"><span class="brand-mark">한</span><span><strong>한눈계산</strong><small>실용 계산 도구</small></span></a><nav class="site-nav" aria-label="주요 메뉴"><a href="../index.html#calculators" data-tool-drawer>다른 계산기</a><a href="../index.html#how-to">사용 방법</a><a href="../index.html#faq">질문</a><a href="../about.html">소개</a><a href="../contact.html">문의</a></nav></header>
+    <main>
+      <section class="hero-band"><div class="container"><div class="section-intro"><p class="eyebrow">수면 습관</p><h1>카페인 수면 영향 계산기</h1><p class="lead">커피를 마신 시간과 취침 시간을 넣으면 잘 때쯤 몸에 남아 있을 카페인 양을 대략 볼 수 있습니다.</p></div></div></section>
+      <section class="content-band compact"><div class="container calculator-section"><section class="tool-panel" aria-label="카페인 수면 영향 계산기">
+        <form id="caffeine-sleep-form" class="input-panel">
+          <div class="field-row"><div class="field"><label for="caffeine-mg">카페인 섭취량</label><div class="input-suffix"><input id="caffeine-mg" name="caffeineMg" type="number" min="0" step="10" value="120" inputmode="numeric"><span>mg</span></div></div><div class="field"><label for="half-life-hours">반감기</label><div class="input-suffix"><input id="half-life-hours" name="halfLifeHours" type="number" min="1" step="0.5" value="5" inputmode="decimal"><span>시간</span></div></div></div>
+          <div class="field-row"><div class="field"><label for="consumed-at">마신 시간</label><input id="consumed-at" name="consumedAt" type="time" value="15:00"></div><div class="field"><label for="bedtime">취침 시간</label><input id="bedtime" name="bedtime" type="time" value="23:30"></div></div>
+          <button class="primary-button" type="submit">수면 영향 계산하기</button>
+        </form>
+        <aside class="result-panel"><div class="report-summary"><span class="report-kicker">취침 시 남은 카페인</span><strong id="caffeine-remaining" class="result-number">-</strong><span id="caffeine-detail">조건을 입력하면 남은 카페인을 계산합니다.</span></div><div class="metric-grid savings-metrics"><div><span>남은 비율</span><strong id="caffeine-percent">-</strong></div><div><span>수면 영향</span><strong id="caffeine-risk">-</strong></div><div><span>취침까지 시간</span><strong id="caffeine-time">-</strong></div></div></aside>
+      </section></div></section>
+      <section class="content-band muted"><div class="container two-column"><section class="info-block"><p class="eyebrow">사용 방법</p><h2>마신 시간과 잘 시간을 넣으세요.</h2><ol class="step-list"><li><strong>카페인 양 입력</strong><span>아메리카노 한 잔은 대략 80~150mg 정도로 볼 수 있습니다.</span></li><li><strong>시간 입력</strong><span>마신 시간과 잠들 예정 시간을 입력합니다.</span></li><li><strong>반감기 조정</strong><span>카페인에 민감하면 반감기를 길게 잡아 보세요.</span></li></ol></section><section class="info-block"><p class="eyebrow">주의할 점</p><h2>의학적 판단용은 아닙니다.</h2><ul class="plain-list"><li>카페인 반감기는 사람마다 크게 다릅니다.</li><li>수면 부족, 스트레스, 약물, 음주 여부도 영향을 줍니다.</li><li>심장 두근거림이나 불면이 심하면 전문가와 상담하세요.</li></ul></section></div></section>
+      <section class="content-band"><div class="container faq-wrap"><p class="eyebrow">자주 묻는 질문</p><h2>카페인 계산기 자주 묻는 질문</h2><div class="faq-grid"><details open><summary>반감기 5시간은 무슨 뜻인가요?</summary><p>5시간마다 몸에 남은 카페인이 절반 정도로 줄어든다고 보는 가정입니다.</p></details><details><summary>디카페인도 넣어야 하나요?</summary><p>디카페인에도 소량의 카페인이 있을 수 있어 민감하다면 넣어 보는 편이 좋습니다.</p></details><details><summary>몇 mg부터 위험한가요?</summary><p>개인차가 큽니다. 이 계산기는 남은 양을 보여주는 참고 도구입니다.</p></details><details><summary>자정이 넘어도 계산되나요?</summary><p>취침 시간이 마신 시간보다 빠르면 다음 날 취침으로 보고 계산합니다.</p></details></div></div></section>
+    </main>
+    <footer class="site-footer"><div class="container footer-grid"><div><strong>한눈계산</strong><p>복잡한 계산을 쉽게 확인하는 실용 계산 도구입니다.</p></div><nav aria-label="정책 메뉴"><a href="../about.html">사이트 소개</a><a href="../privacy.html">개인정보 처리방침</a><a href="../contact.html">문의</a><a href="../disclaimer.html">이용 안내</a></nav></div></footer>
+    <script type="module" src="../assets/js/app.js"></script>
+  </body>
+</html>

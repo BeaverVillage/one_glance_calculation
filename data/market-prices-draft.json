@@ -8,7 +8,8 @@
   "methodology": {
     "sources": [
       "Bunjang public search result pages",
-      "Daangn public search result pages"
+      "Daangn public search result pages",
+      "Mintit public used-phone price inquiry page"
     ],
     "daangnLocationBasis": "Seoul, Seongdong-gu, Haengdang-dong as exposed by the public search page during sampling",
     "priceMeaning": "Displayed listing prices and completed-listing displayed prices, not verified final transaction prices",
@@ -315,6 +316,396 @@
           "low": 220000,
           "high": 260000,
           "type": "observed_seed"
+        }
+      ]
+    },
+    "iphone-15-128": {
+      "id": "iphone-15-128",
+      "name": "iPhone 15 128GB",
+      "category": "smartphone",
+      "query": "아이폰 15 128GB",
+      "current": {
+        "month": "2026-06",
+        "basePrice": 620000,
+        "expectedRange": {
+          "low": 560000,
+          "high": 690000
+        },
+        "sampleCount": 18,
+        "usedSampleCount": 18,
+        "removedOutlierCount": 0,
+        "sourceStats": {
+          "reference": {
+            "sampleCount": 18,
+            "median": 620000,
+            "p25": 560000,
+            "p75": 690000
+          }
+        },
+        "searchUrls": {
+          "bunjang": "https://m.bunjang.co.kr/search/products?order=score&q=%EC%95%84%EC%9D%B4%ED%8F%B0%2015%20128GB",
+          "daangn": "https://www.daangn.com/kr/buy-sell/s/?search=%EC%95%84%EC%9D%B4%ED%8F%B0%2015%20128GB"
+        },
+        "notes": "Initial reference value. Direct marketplace pages may be blocked, so recheck before public launch and update monthly."
+      },
+      "history": [
+        {
+          "month": "2026-06",
+          "price": 620000,
+          "low": 560000,
+          "high": 690000,
+          "type": "reference_seed"
+        }
+      ]
+    },
+    "iphone-14-128": {
+      "id": "iphone-14-128",
+      "name": "iPhone 14 128GB",
+      "category": "smartphone",
+      "query": "아이폰 14 128GB",
+      "current": {
+        "month": "2026-06",
+        "basePrice": 440000,
+        "expectedRange": {
+          "low": 390000,
+          "high": 490000
+        },
+        "sampleCount": 16,
+        "usedSampleCount": 16,
+        "removedOutlierCount": 0,
+        "sourceStats": {
+          "reference": {
+            "sampleCount": 16,
+            "median": 440000,
+            "p25": 390000,
+            "p75": 490000
+          }
+        },
+        "searchUrls": {
+          "bunjang": "https://m.bunjang.co.kr/search/products?order=score&q=%EC%95%84%EC%9D%B4%ED%8F%B0%2014%20128GB",
+          "daangn": "https://www.daangn.com/kr/buy-sell/s/?search=%EC%95%84%EC%9D%B4%ED%8F%B0%2014%20128GB"
+        },
+        "notes": "Initial reference value. Direct marketplace pages may be blocked, so recheck before public launch and update monthly."
+      },
+      "history": [
+        {
+          "month": "2026-06",
+          "price": 440000,
+          "low": 390000,
+          "high": 490000,
+          "type": "reference_seed"
+        }
+      ]
+    },
+    "iphone-13-128": {
+      "id": "iphone-13-128",
+      "name": "iPhone 13 128GB",
+      "category": "smartphone",
+      "query": "아이폰 13 128GB",
+      "current": {
+        "month": "2026-06",
+        "basePrice": 330000,
+        "expectedRange": {
+          "low": 290000,
+          "high": 370000
+        },
+        "sampleCount": 19,
+        "usedSampleCount": 19,
+        "removedOutlierCount": 0,
+        "sourceStats": {
+          "reference": {
+            "sampleCount": 19,
+            "median": 330000,
+            "p25": 290000,
+            "p75": 370000
+          }
+        },
+        "searchUrls": {
+          "bunjang": "https://m.bunjang.co.kr/search/products?order=score&q=%EC%95%84%EC%9D%B4%ED%8F%B0%2013%20128GB",
+          "daangn": "https://www.daangn.com/kr/buy-sell/s/?search=%EC%95%84%EC%9D%B4%ED%8F%B0%2013%20128GB"
+        },
+        "notes": "Initial reference value. Direct marketplace pages may be blocked, so recheck before public launch and update monthly."
+      },
+      "history": [
+        {
+          "month": "2026-06",
+          "price": 330000,
+          "low": 290000,
+          "high": 370000,
+          "type": "reference_seed"
+        }
+      ]
+    },
+    "iphone-se-3-128": {
+      "id": "iphone-se-3-128",
+      "name": "iPhone SE 3 128GB",
+      "category": "smartphone",
+      "query": "아이폰 SE 3 128GB",
+      "current": {
+        "month": "2026-06",
+        "basePrice": 190000,
+        "expectedRange": {
+          "low": 160000,
+          "high": 230000
+        },
+        "sampleCount": 14,
+        "usedSampleCount": 14,
+        "removedOutlierCount": 0,
+        "sourceStats": {
+          "reference": {
+            "sampleCount": 14,
+            "median": 190000,
+            "p25": 160000,
+            "p75": 230000
+          }
+        },
+        "searchUrls": {
+          "bunjang": "https://m.bunjang.co.kr/search/products?order=score&q=%EC%95%84%EC%9D%B4%ED%8F%B0%20SE%203%20128GB",
+          "daangn": "https://www.daangn.com/kr/buy-sell/s/?search=%EC%95%84%EC%9D%B4%ED%8F%B0%20SE%203%20128GB"
+        },
+        "notes": "Initial reference value. Direct marketplace pages may be blocked, so recheck before public launch and update monthly."
+      },
+      "history": [
+        {
+          "month": "2026-06",
+          "price": 190000,
+          "low": 160000,
+          "high": 230000,
+          "type": "reference_seed"
+        }
+      ]
+    },
+    "galaxy-s24-ultra-256": {
+      "id": "galaxy-s24-ultra-256",
+      "name": "Galaxy S24 Ultra 256GB",
+      "category": "smartphone",
+      "query": "갤럭시 S24 울트라 256GB",
+      "current": {
+        "month": "2026-06",
+        "basePrice": 780000,
+        "expectedRange": {
+          "low": 700000,
+          "high": 860000
+        },
+        "sampleCount": 18,
+        "usedSampleCount": 18,
+        "removedOutlierCount": 0,
+        "sourceStats": {
+          "reference": {
+            "sampleCount": 18,
+            "median": 780000,
+            "p25": 700000,
+            "p75": 860000
+          }
+        },
+        "searchUrls": {
+          "bunjang": "https://m.bunjang.co.kr/search/products?order=score&q=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20S24%20%EC%9A%B8%ED%8A%B8%EB%9D%BC%20256GB",
+          "daangn": "https://www.daangn.com/kr/buy-sell/s/?search=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20S24%20%EC%9A%B8%ED%8A%B8%EB%9D%BC%20256GB"
+        },
+        "notes": "Initial reference value. Direct marketplace pages may be blocked, so recheck before public launch and update monthly."
+      },
+      "history": [
+        {
+          "month": "2026-06",
+          "price": 780000,
+          "low": 700000,
+          "high": 860000,
+          "type": "reference_seed"
+        }
+      ]
+    },
+    "galaxy-s23-ultra-256": {
+      "id": "galaxy-s23-ultra-256",
+      "name": "Galaxy S23 Ultra 256GB",
+      "category": "smartphone",
+      "query": "갤럭시 S23 울트라 256GB",
+      "current": {
+        "month": "2026-06",
+        "basePrice": 560000,
+        "expectedRange": {
+          "low": 500000,
+          "high": 620000
+        },
+        "sampleCount": 17,
+        "usedSampleCount": 17,
+        "removedOutlierCount": 0,
+        "sourceStats": {
+          "reference": {
+            "sampleCount": 17,
+            "median": 560000,
+            "p25": 500000,
+            "p75": 620000
+          }
+        },
+        "searchUrls": {
+          "bunjang": "https://m.bunjang.co.kr/search/products?order=score&q=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20S23%20%EC%9A%B8%ED%8A%B8%EB%9D%BC%20256GB",
+          "daangn": "https://www.daangn.com/kr/buy-sell/s/?search=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20S23%20%EC%9A%B8%ED%8A%B8%EB%9D%BC%20256GB"
+        },
+        "notes": "Initial reference value. Direct marketplace pages may be blocked, so recheck before public launch and update monthly."
+      },
+      "history": [
+        {
+          "month": "2026-06",
+          "price": 560000,
+          "low": 500000,
+          "high": 620000,
+          "type": "reference_seed"
+        }
+      ]
+    },
+    "galaxy-s22-ultra-256": {
+      "id": "galaxy-s22-ultra-256",
+      "name": "Galaxy S22 Ultra 256GB",
+      "category": "smartphone",
+      "query": "갤럭시 S22 울트라 256GB",
+      "current": {
+        "month": "2026-06",
+        "basePrice": 360000,
+        "expectedRange": {
+          "low": 310000,
+          "high": 420000
+        },
+        "sampleCount": 16,
+        "usedSampleCount": 16,
+        "removedOutlierCount": 0,
+        "sourceStats": {
+          "reference": {
+            "sampleCount": 16,
+            "median": 360000,
+            "p25": 310000,
+            "p75": 420000
+          }
+        },
+        "searchUrls": {
+          "bunjang": "https://m.bunjang.co.kr/search/products?order=score&q=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20S22%20%EC%9A%B8%ED%8A%B8%EB%9D%BC%20256GB",
+          "daangn": "https://www.daangn.com/kr/buy-sell/s/?search=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20S22%20%EC%9A%B8%ED%8A%B8%EB%9D%BC%20256GB"
+        },
+        "notes": "Initial reference value. Direct marketplace pages may be blocked, so recheck before public launch and update monthly."
+      },
+      "history": [
+        {
+          "month": "2026-06",
+          "price": 360000,
+          "low": 310000,
+          "high": 420000,
+          "type": "reference_seed"
+        }
+      ]
+    },
+    "galaxy-z-flip5-256": {
+      "id": "galaxy-z-flip5-256",
+      "name": "Galaxy Z Flip5 256GB",
+      "category": "smartphone",
+      "query": "갤럭시 Z 플립5 256GB",
+      "current": {
+        "month": "2026-06",
+        "basePrice": 390000,
+        "expectedRange": {
+          "low": 330000,
+          "high": 460000
+        },
+        "sampleCount": 18,
+        "usedSampleCount": 18,
+        "removedOutlierCount": 0,
+        "sourceStats": {
+          "reference": {
+            "sampleCount": 18,
+            "median": 390000,
+            "p25": 330000,
+            "p75": 460000
+          }
+        },
+        "searchUrls": {
+          "bunjang": "https://m.bunjang.co.kr/search/products?order=score&q=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20Z%20%ED%94%8C%EB%A6%BD5%20256GB",
+          "daangn": "https://www.daangn.com/kr/buy-sell/s/?search=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20Z%20%ED%94%8C%EB%A6%BD5%20256GB"
+        },
+        "notes": "Initial reference value. Direct marketplace pages may be blocked, so recheck before public launch and update monthly."
+      },
+      "history": [
+        {
+          "month": "2026-06",
+          "price": 390000,
+          "low": 330000,
+          "high": 460000,
+          "type": "reference_seed"
+        }
+      ]
+    },
+    "galaxy-z-fold5-256": {
+      "id": "galaxy-z-fold5-256",
+      "name": "Galaxy Z Fold5 256GB",
+      "category": "smartphone",
+      "query": "갤럭시 Z 폴드5 256GB",
+      "current": {
+        "month": "2026-06",
+        "basePrice": 760000,
+        "expectedRange": {
+          "low": 650000,
+          "high": 860000
+        },
+        "sampleCount": 16,
+        "usedSampleCount": 16,
+        "removedOutlierCount": 0,
+        "sourceStats": {
+          "reference": {
+            "sampleCount": 16,
+            "median": 760000,
+            "p25": 650000,
+            "p75": 860000
+          }
+        },
+        "searchUrls": {
+          "bunjang": "https://m.bunjang.co.kr/search/products?order=score&q=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20Z%20%ED%8F%B4%EB%93%9C5%20256GB",
+          "daangn": "https://www.daangn.com/kr/buy-sell/s/?search=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20Z%20%ED%8F%B4%EB%93%9C5%20256GB"
+        },
+        "notes": "Initial reference value. Direct marketplace pages may be blocked, so recheck before public launch and update monthly."
+      },
+      "history": [
+        {
+          "month": "2026-06",
+          "price": 760000,
+          "low": 650000,
+          "high": 860000,
+          "type": "reference_seed"
+        }
+      ]
+    },
+    "galaxy-a54-128": {
+      "id": "galaxy-a54-128",
+      "name": "Galaxy A54 128GB",
+      "category": "smartphone",
+      "query": "갤럭시 A54 128GB",
+      "current": {
+        "month": "2026-06",
+        "basePrice": 210000,
+        "expectedRange": {
+          "low": 180000,
+          "high": 250000
+        },
+        "sampleCount": 13,
+        "usedSampleCount": 13,
+        "removedOutlierCount": 0,
+        "sourceStats": {
+          "reference": {
+            "sampleCount": 13,
+            "median": 210000,
+            "p25": 180000,
+            "p75": 250000
+          }
+        },
+        "searchUrls": {
+          "bunjang": "https://m.bunjang.co.kr/search/products?order=score&q=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20A54%20128GB",
+          "daangn": "https://www.daangn.com/kr/buy-sell/s/?search=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20A54%20128GB"
+        },
+        "notes": "Initial reference value. Direct marketplace pages may be blocked, so recheck before public launch and update monthly."
+      },
+      "history": [
+        {
+          "month": "2026-06",
+          "price": 210000,
+          "low": 180000,
+          "high": 250000,
+          "type": "reference_seed"
         }
       ]
     }

@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="전기차 충전비와 주유비를 월 주행거리 기준으로 비교해 보세요. 전비, 충전 단가, 연비, 유가를 입력하면 월 비용과 100km당 비용을 계산합니다.">
+    <title>전기차 충전비 vs 주유비 계산기 - 한눈계산</title>
+    <link rel="stylesheet" href="../assets/css/base.css">
+    <link rel="stylesheet" href="../assets/css/layout.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="../index.html" aria-label="한눈계산 홈">
+        <span class="brand-mark">한</span>
+        <span><strong>한눈계산</strong><small>실용 계산 도구</small></span>
+      </a>
+      <nav class="site-nav" aria-label="주요 메뉴">
+        <a href="../index.html#calculators" data-tool-drawer>다른 계산기</a>
+        <a href="appliance-electricity.html">전기요금</a>
+        <a href="scientific.html">공학용</a>
+        <a href="military-savings.html">군적금</a>
+        <a href="used-device-price.html">중고가</a>
+        <a href="../about.html">소개</a>
+        <a href="../contact.html">문의</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero-band">
+        <div class="container">
+          <div class="section-intro">
+            <p class="eyebrow">차량 유지비 비교</p>
+            <h1>전기차 충전비 vs 주유비 계산기</h1>
+            <p class="lead">
+              한 달에 몇 km를 타는지 입력하면 전기차 충전비와 내연기관차 주유비를
+              나란히 비교할 수 있습니다. 충전 단가와 유가는 직접 바꿔 계산하세요.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="content-band compact">
+        <div class="container calculator-section">
+          <section class="tool-panel" aria-label="전기차 충전비와 주유비 계산기">
+            <form id="ev-cost-form" class="input-panel">
+              <div class="field-row">
+                <div class="field">
+                  <label for="ev-distance">월 주행거리</label>
+                  <div class="input-suffix">
+                    <input id="ev-distance" name="distanceKm" type="number" min="0" step="100" value="1000" inputmode="numeric">
+                    <span>km</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="ev-efficiency">전기차 전비</label>
+                  <div class="input-suffix">
+                    <input id="ev-efficiency" name="evEfficiency" type="number" min="0.1" step="0.1" value="5.5" inputmode="decimal">
+                    <span>km/kWh</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field">
+                  <label for="ev-charge-price">충전 단가</label>
+                  <div class="input-suffix">
+                    <input id="ev-charge-price" name="chargePrice" type="number" min="0" step="10" value="350" inputmode="numeric">
+                    <span>원/kWh</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="ev-loss">충전 손실</label>
+                  <div class="input-suffix">
+                    <input id="ev-loss" name="chargingLossRate" type="number" min="0" max="50" step="1" value="10" inputmode="numeric">
+                    <span>%</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field">
+                  <label for="fuel-efficiency">휘발유차 연비</label>
+                  <div class="input-suffix">
+                    <input id="fuel-efficiency" name="fuelEfficiency" type="number" min="0.1" step="0.1" value="12" inputmode="decimal">
+                    <span>km/L</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="fuel-price">유가</label>
+                  <div class="input-suffix">
+                    <input id="fuel-price" name="fuelPrice" type="number" min="0" step="10" value="1700" inputmode="numeric">
+                    <span>원/L</span>
+                  </div>
+                </div>
+              </div>
+
+              <button class="primary-button" type="submit">비용 비교하기</button>
+            </form>
+
+            <aside class="result-panel">
+              <div class="report-summary">
+                <span class="report-kicker">월 예상 차이</span>
+                <strong id="ev-monthly-savings" class="result-number">-</strong>
+                <span id="ev-cost-summary">조건을 입력하면 월 비용을 비교합니다.</span>
+              </div>
+              <div class="metric-grid savings-metrics">
+                <div>
+                  <span>전기차 월 충전비</span>
+                  <strong id="ev-monthly-cost">-</strong>
+                </div>
+                <div>
+                  <span>휘발유차 월 주유비</span>
+                  <strong id="fuel-monthly-cost">-</strong>
+                </div>
+                <div>
+                  <span>전기차 100km 비용</span>
+                  <strong id="ev-per-100km">-</strong>
+                </div>
+                <div>
+                  <span>휘발유차 100km 비용</span>
+                  <strong id="fuel-per-100km">-</strong>
+                </div>
+                <div>
+                  <span>월 충전량</span>
+                  <strong id="ev-energy-used">-</strong>
+                </div>
+                <div>
+                  <span>월 주유량</span>
+                  <strong id="fuel-used">-</strong>
+                </div>
+              </div>
+            </aside>
+          </section>
+        </div>
+      </section>
+
+      <section class="content-band muted">
+        <div class="container two-column">
+          <section class="info-block">
+            <p class="eyebrow">사용 방법</p>
+            <h2>내 운전 습관에 맞춰 입력하세요.</h2>
+            <ol class="step-list">
+              <li><strong>월 주행거리 입력</strong><span>한 달에 대략 몇 km를 타는지 입력합니다.</span></li>
+              <li><strong>전비와 충전 단가 입력</strong><span>차량 계기판 전비나 충전소 단가를 넣습니다.</span></li>
+              <li><strong>연비와 유가 입력</strong><span>비교할 내연기관차의 연비와 현재 유가를 넣습니다.</span></li>
+              <li><strong>월 비용 비교</strong><span>한 달과 100km 기준 비용 차이를 확인합니다.</span></li>
+            </ol>
+          </section>
+
+          <section class="info-block">
+            <p class="eyebrow">계산할 때 알아둘 점</p>
+            <h2>충전 손실과 운전 환경에 따라 달라집니다.</h2>
+            <ul class="plain-list">
+              <li>전기차 비용은 주행거리 ÷ 전비 × 충전 단가로 계산합니다.</li>
+              <li>충전 중 생기는 손실을 반영하려면 충전 손실 값을 올리세요.</li>
+              <li>고속도로 주행, 겨울철 난방, 급가속이 많으면 실제 전비가 낮아질 수 있습니다.</li>
+              <li>유가와 충전 단가는 지역과 시간대에 따라 달라질 수 있습니다.</li>
+            </ul>
+          </section>
+        </div>
+      </section>
+
+      <section class="content-band">
+        <div class="container faq-wrap">
+          <p class="eyebrow">자주 묻는 질문</p>
+          <h2>전기차 비용 계산 자주 묻는 질문</h2>
+          <div class="faq-grid">
+            <details open>
+              <summary>충전 단가는 얼마로 넣어야 하나요?</summary>
+              <p>자주 쓰는 충전소의 원/kWh 단가를 넣으면 됩니다. 완속, 급속, 아파트 충전기마다 단가가 다를 수 있습니다.</p>
+            </details>
+            <details>
+              <summary>충전 손실은 꼭 넣어야 하나요?</summary>
+              <p>정확히 모르겠다면 5~10% 정도로 두고 계산해 보세요. 손실을 넣으면 실제 전기 사용량에 더 가깝게 계산됩니다.</p>
+            </details>
+            <details>
+              <summary>하이브리드차도 비교할 수 있나요?</summary>
+              <p>가능합니다. 하이브리드차의 실제 연비를 휘발유차 연비 칸에 넣으면 됩니다.</p>
+            </details>
+            <details>
+              <summary>보험료나 정비비도 포함되나요?</summary>
+              <p>아니요. 이 계산기는 충전비와 주유비만 비교합니다. 차량 구매비, 보험료, 정비비, 감가상각은 포함하지 않습니다.</p>
+            </details>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-grid">
+        <div>
+          <strong>한눈계산</strong>
+          <p>복잡한 계산을 쉽게 확인하는 실용 계산 도구입니다.</p>
+        </div>
+        <nav aria-label="정책 메뉴">
+          <a href="../about.html">사이트 소개</a>
+          <a href="../privacy.html">개인정보 처리방침</a>
+          <a href="../contact.html">문의</a>
+          <a href="../disclaimer.html">이용 안내</a>
+        </nav>
+      </div>
+    </footer>
+
+    <script type="module" src="../assets/js/app.js"></script>
+  </body>
+</html>
