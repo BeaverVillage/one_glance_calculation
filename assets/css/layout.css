@@ -215,20 +215,47 @@
 
 @media (max-width: 720px) {
   body {
-    padding-bottom: 98px;
+    padding-bottom: 60px;
   }
 
   .site-header {
     position: sticky;
-    align-items: flex-start;
-    flex-direction: column;
-    max-height: 45vh;
-    overflow-y: auto;
+    align-items: center;
+    flex-direction: row;
+    gap: 8px;
+    padding: 8px 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .brand {
+    gap: 7px;
+  }
+
+  .brand-mark {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+  }
+
+  .brand small {
+    display: none;
   }
 
   .site-nav {
-    width: 100%;
-    gap: 10px 14px;
+    width: auto;
+    margin-left: auto;
+    flex-wrap: nowrap;
+    gap: 6px;
+    font-size: 0.84rem;
+    white-space: nowrap;
+  }
+
+  .site-nav a,
+  .site-nav button {
+    min-height: 30px;
+    padding: 5px 9px;
   }
 
   .hero-band {

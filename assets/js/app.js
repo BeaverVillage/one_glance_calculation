@@ -54,6 +54,7 @@ const state = {
 const els = {};
 
 document.addEventListener("DOMContentLoaded", async () => {
+  initResponsiveNav();
   initToolDrawer();
   initAffiliateAds();
   initScientificCalculator();
@@ -79,6 +80,41 @@ document.addEventListener("DOMContentLoaded", async () => {
     showLoadError(error);
   }
 });
+
+function initResponsiveNav() {
+  const navs = document.querySelectorAll(".site-nav");
+  if (!navs.length) return;
+
+  const mobileQuery = window.matchMedia("(max-width: 720px)");
+  const prefix = location.pathname.includes("/calculators/") ? "../" : "";
+  const mobileNav = `
+    <a href="${prefix}index.html#calculators" data-tool-drawer>다른 계산기</a>
+    <a href="${prefix}about.html">소개</a>
+    <a href="${prefix}contact.html">문의</a>
+  `;
+
+  const applyNav = () => {
+    navs.forEach((nav) => {
+      if (!nav.dataset.desktopHtml) {
+        nav.dataset.desktopHtml = nav.innerHTML;
+      }
+
+      if (mobileQuery.matches) {
+        nav.innerHTML = mobileNav;
+        nav.dataset.mobileNav = "true";
+        return;
+      }
+
+      if (nav.dataset.mobileNav === "true") {
+        nav.innerHTML = nav.dataset.desktopHtml;
+        nav.dataset.mobileNav = "false";
+      }
+    });
+  };
+
+  applyNav();
+  mobileQuery.addEventListener("change", applyNav);
+}
 
 function initAffiliateAds() {
   if (document.querySelector(".affiliate-ad")) return;
@@ -158,11 +194,12 @@ function initToolDrawer() {
     document.body.classList.remove("drawer-open");
   };
 
-  document.querySelectorAll("[data-tool-drawer]").forEach((trigger) => {
-    trigger.addEventListener("click", (event) => {
-      event.preventDefault();
-      openDrawer();
-    });
+  document.addEventListener("click", (event) => {
+    if (!(event.target instanceof Element)) return;
+    const trigger = event.target.closest("[data-tool-drawer]");
+    if (!trigger) return;
+    event.preventDefault();
+    openDrawer();
   });
 
   drawer.querySelector(".tool-drawer-close")?.addEventListener("click", closeDrawer);

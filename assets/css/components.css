@@ -217,20 +217,22 @@
   z-index: 60;
   display: none;
   justify-items: center;
-  padding: 4px 8px max(6px, env(safe-area-inset-bottom));
+  padding: 0 4px env(safe-area-inset-bottom, 0);
   background: rgba(255, 255, 255, 0.96);
   border-top: 1px solid var(--line);
   box-shadow: 0 -6px 18px rgba(17, 24, 39, 0.12);
 }
 
 .mobile-affiliate-label {
-  max-width: 340px;
-  margin-bottom: 2px;
+  width: calc(100vw - 8px);
+  margin-bottom: 0;
+  overflow: hidden;
   color: var(--muted);
-  font-size: 0.68rem;
+  font-size: clamp(0.45rem, 1.85vw, 0.53rem);
   font-weight: 800;
-  line-height: 1.25;
+  line-height: 1.05;
   text-align: center;
+  white-space: nowrap;
 }
 
 @media (max-width: 720px) {
