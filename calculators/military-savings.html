@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="군적금 계산기에서 월 납입액, 납입 개월, 금리, 정부 지원율을 입력해 만기 때 받을 수 있는 금액을 예상해 보세요.">
+    <title>군적금 계산기 - 한눈계산</title>
+    <link rel="stylesheet" href="../assets/css/base.css">
+    <link rel="stylesheet" href="../assets/css/layout.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="../index.html" aria-label="한눈계산 홈">
+        <span class="brand-mark">한</span>
+        <span>
+          <strong>한눈계산</strong>
+          <small>생활 계산기 모음</small>
+        </span>
+      </a>
+      <nav class="site-nav" aria-label="주요 메뉴">
+        <a href="../index.html#calculators">계산기 목록</a>
+        <a href="scientific.html">공학용</a>
+        <a href="used-device-price.html">중고가</a>
+        <a href="../about.html">소개</a>
+        <a href="../contact.html">문의</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero-band">
+        <div class="container">
+          <div class="section-intro">
+            <p class="eyebrow">군적금 만기 예상</p>
+            <h1>군적금 계산기</h1>
+            <p class="lead">
+              매달 얼마를 넣으면 전역할 때 얼마쯤 모일지 미리 계산해 보세요.
+              납입액, 기간, 금리, 지원율을 바꿔가며 현실적인 저축 계획을 세울 수 있습니다.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="content-band compact">
+        <div class="container calculator-section">
+          <section class="tool-panel savings-tool" aria-label="군적금 계산기">
+            <form id="military-savings-form" class="input-panel">
+              <div class="field-row">
+                <div class="field">
+                  <label for="savings-monthly">월 납입액</label>
+                  <div class="input-suffix">
+                    <input id="savings-monthly" name="monthlyDeposit" type="number" min="0" step="10000" value="400000" inputmode="numeric">
+                    <span>원</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="savings-months">납입 개월</label>
+                  <div class="input-suffix">
+                    <input id="savings-months" name="months" type="number" min="1" max="36" value="18" inputmode="numeric">
+                    <span>개월</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field">
+                  <label for="savings-rate">은행 연 금리</label>
+                  <div class="input-suffix">
+                    <input id="savings-rate" name="annualRate" type="number" min="0" max="20" step="0.1" value="5.0" inputmode="decimal">
+                    <span>%</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="savings-match">정부 매칭 지원율</label>
+                  <div class="input-suffix">
+                    <input id="savings-match" name="matchRate" type="number" min="0" max="200" step="1" value="100" inputmode="numeric">
+                    <span>%</span>
+                  </div>
+                </div>
+              </div>
+
+              <fieldset class="check-field">
+                <legend>세금 설정</legend>
+                <label><input type="checkbox" name="taxFree" checked> 이자 비과세로 계산</label>
+              </fieldset>
+
+              <button class="primary-button" type="submit">만기 예상액 계산</button>
+            </form>
+
+            <aside class="result-panel">
+              <div class="report-summary">
+                <span class="report-kicker">만기 예상 수령액</span>
+                <strong id="savings-total" class="result-number">-</strong>
+                <span id="savings-summary">조건을 입력하면 예상액을 계산합니다.</span>
+              </div>
+              <div class="metric-grid savings-metrics">
+                <div>
+                  <span>원금 합계</span>
+                  <strong id="savings-principal">-</strong>
+                </div>
+                <div>
+                  <span>은행 이자</span>
+                  <strong id="savings-interest">-</strong>
+                </div>
+                <div>
+                  <span>정부 지원 예상액</span>
+                  <strong id="savings-support">-</strong>
+                </div>
+                <div>
+                  <span>월평균 환산</span>
+                  <strong id="savings-average">-</strong>
+                </div>
+              </div>
+              <p class="fine-print">
+                은행마다 금리와 우대 조건이 다를 수 있습니다. 실제 가입 전에는 이용할 은행의 안내를 꼭 확인하세요.
+              </p>
+            </aside>
+          </section>
+        </div>
+      </section>
+
+      <section class="content-band muted">
+        <div class="container two-column">
+          <section class="info-block">
+            <p class="eyebrow">사용 방법</p>
+            <h2>내가 매달 넣을 수 있는 금액부터 정해 보세요.</h2>
+            <ol class="step-list">
+              <li><strong>월 납입액 입력</strong><span>매달 무리 없이 넣을 수 있는 금액을 입력합니다.</span></li>
+              <li><strong>납입 기간 입력</strong><span>몇 개월 동안 넣을지 입력합니다.</span></li>
+              <li><strong>금리와 지원율 입력</strong><span>은행이나 안내문에서 본 숫자를 그대로 넣습니다.</span></li>
+              <li><strong>세금 선택</strong><span>비과세 상품이면 체크한 상태로 계산합니다.</span></li>
+            </ol>
+          </section>
+
+          <section class="info-block">
+            <p class="eyebrow">계산할 때 알아둘 점</p>
+            <h2>매달 같은 금액을 넣는다고 보고 계산합니다.</h2>
+            <ul class="plain-list">
+              <li>원금은 월 납입액에 납입 개월 수를 곱해 계산합니다.</li>
+              <li>이자는 매달 넣은 돈이 만기까지 남아 있는 기간을 고려해 예상합니다.</li>
+              <li>정부 지원 예상액은 원금에 입력한 지원율을 곱해 계산합니다.</li>
+              <li>비과세를 해제하면 이자에서 세금 15.4%를 뺀 금액으로 보여줍니다.</li>
+            </ul>
+          </section>
+        </div>
+      </section>
+
+      <section class="content-band">
+        <div class="container two-column">
+          <section class="info-block">
+            <p class="eyebrow">관련 팁</p>
+            <h2>복무 중 저축 계획을 세울 때</h2>
+            <ul class="tip-list">
+              <li><strong>무리한 금액은 피하기</strong><span>휴가비, 통신비, 교통비를 남겨두고 유지 가능한 금액을 정하세요.</span></li>
+              <li><strong>은행별 조건 비교하기</strong><span>우대금리 조건이 다를 수 있으니 가입 전에 비교해 보세요.</span></li>
+              <li><strong>지원율은 최신 숫자로 입력하기</strong><span>지원 기준은 바뀔 수 있으니 최근 안내에서 본 숫자를 넣어 계산하세요.</span></li>
+            </ul>
+          </section>
+
+          <section class="info-block">
+            <p class="eyebrow">관련 계산기</p>
+            <h2>다른 계산도 이어서 확인하세요.</h2>
+            <div class="mini-command-list">
+              <a href="scientific.html">
+                <span>01</span>
+                <strong>공학용 계산기</strong>
+                <em>수식 계산</em>
+              </a>
+              <a href="used-device-price.html">
+                <span>03</span>
+                <strong>중고 전자제품 가격 계산기</strong>
+                <em>상태별 판매가 점검</em>
+              </a>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="content-band muted">
+        <div class="container faq-wrap">
+          <p class="eyebrow">자주 묻는 질문</p>
+          <h2>군적금 계산기 자주 묻는 질문</h2>
+          <div class="faq-grid">
+            <details open>
+              <summary>계산 결과가 실제 만기액과 같나요?</summary>
+              <p>완전히 같다고 보기는 어렵습니다. 실제 금액은 가입 은행, 납입일, 우대금리 조건, 지원 기준에 따라 달라질 수 있습니다.</p>
+            </details>
+            <details>
+              <summary>정부 지원율은 왜 직접 입력하나요?</summary>
+              <p>지원율은 시점에 따라 바뀔 수 있습니다. 그래서 최신 안내에서 확인한 숫자를 직접 넣어 계산하는 방식으로 만들었습니다.</p>
+            </details>
+            <details>
+              <summary>월 납입액은 마음대로 넣어도 되나요?</summary>
+              <p>계산은 여러 경우를 비교할 수 있게 넓게 열어두었습니다. 실제로 가입할 수 있는 월 납입 한도는 은행 안내를 확인하세요.</p>
+            </details>
+            <details>
+              <summary>비과세 체크는 무엇인가요?</summary>
+              <p>체크하면 이자에서 세금을 빼지 않고 계산합니다. 체크를 해제하면 이자에서 15.4%를 뺀 금액으로 계산합니다.</p>
+            </details>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-grid">
+        <div>
+          <strong>한눈계산</strong>
+          <p>공학 계산, 저축 계산, 중고가 확인을 쉽게 돕는 생활 계산기 모음입니다.</p>
+        </div>
+        <nav aria-label="정책 메뉴">
+          <a href="../about.html">사이트 소개</a>
+          <a href="../privacy.html">개인정보 처리방침</a>
+          <a href="../contact.html">문의</a>
+          <a href="../disclaimer.html">이용 안내</a>
+        </nav>
+      </div>
+    </footer>
+
+    <script type="module" src="../assets/js/app.js"></script>
+  </body>
+</html>

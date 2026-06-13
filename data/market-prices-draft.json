@@ -1,0 +1,322 @@
+{
+  "schemaVersion": "0.1.0",
+  "generatedAt": "2026-06-13T18:25:00+09:00",
+  "observedMonth": "2026-06",
+  "currency": "KRW",
+  "market": "Korea used smartphone public listing sample",
+  "intendedUse": "Initial seed data for a static used-phone resale timing calculator. Use as rough reference, not as guaranteed transaction price.",
+  "methodology": {
+    "sources": [
+      "Bunjang public search result pages",
+      "Daangn public search result pages"
+    ],
+    "daangnLocationBasis": "Seoul, Seongdong-gu, Haengdang-dong as exposed by the public search page during sampling",
+    "priceMeaning": "Displayed listing prices and completed-listing displayed prices, not verified final transaction prices",
+    "aggregation": "Filter obvious irrelevant listings, then use the combined median rounded to the nearest 10,000 KRW as basePrice. Display range is the 25th to 75th percentile rounded to the nearest 10,000 KRW. IQR outlier removal is applied only to the combined sample when sample count is at least 12.",
+    "excludedExamples": [
+      "ads",
+      "buying or purchase posts",
+      "dealer purchase posts",
+      "exchange posts",
+      "unopened/new-item posts",
+      "broken/parts-only posts",
+      "wrong model variants such as Pro Max, Ultra, Plus, FE"
+    ]
+  },
+  "models": {
+    "iphone-15-pro-256": {
+      "id": "iphone-15-pro-256",
+      "name": "iPhone 15 Pro 256GB",
+      "category": "smartphone",
+      "query": "아이폰 15 Pro 256GB",
+      "current": {
+        "month": "2026-06",
+        "basePrice": 850000,
+        "expectedRange": {
+          "low": 760000,
+          "high": 910000
+        },
+        "sampleCount": 38,
+        "usedSampleCount": 38,
+        "removedOutlierCount": 0,
+        "sourceStats": {
+          "bunjang": {
+            "sampleCount": 30,
+            "median": 890000,
+            "p25": 760000,
+            "p75": 930000,
+            "min": 600000,
+            "max": 1026000
+          },
+          "daangn": {
+            "sampleCount": 8,
+            "median": 800000,
+            "p25": 790000,
+            "p75": 800000,
+            "min": 700000,
+            "max": 880000
+          }
+        },
+        "searchUrls": {
+          "bunjang": "https://m.bunjang.co.kr/search/products?order=score&q=%EC%95%84%EC%9D%B4%ED%8F%B0%2015%20Pro%20256GB",
+          "daangn": "https://www.daangn.com/kr/buy-sell/s/?search=%EC%95%84%EC%9D%B4%ED%8F%B0%2015%20Pro%20256GB"
+        },
+        "notes": "Initial reference value. Recheck before public launch and update monthly."
+      },
+      "history": [
+        {
+          "month": "2026-06",
+          "price": 850000,
+          "low": 760000,
+          "high": 910000,
+          "type": "observed_seed"
+        }
+      ]
+    },
+    "iphone-14-pro-256": {
+      "id": "iphone-14-pro-256",
+      "name": "iPhone 14 Pro 256GB",
+      "category": "smartphone",
+      "query": "아이폰 14 Pro 256GB",
+      "current": {
+        "month": "2026-06",
+        "basePrice": 630000,
+        "expectedRange": {
+          "low": 560000,
+          "high": 680000
+        },
+        "sampleCount": 43,
+        "usedSampleCount": 43,
+        "removedOutlierCount": 0,
+        "sourceStats": {
+          "bunjang": {
+            "sampleCount": 37,
+            "median": 630000,
+            "p25": 500000,
+            "p75": 680000,
+            "min": 380000,
+            "max": 840000
+          },
+          "daangn": {
+            "sampleCount": 6,
+            "median": 610000,
+            "p25": 590000,
+            "p75": 630000,
+            "min": 570000,
+            "max": 720001
+          }
+        },
+        "searchUrls": {
+          "bunjang": "https://m.bunjang.co.kr/search/products?order=score&q=%EC%95%84%EC%9D%B4%ED%8F%B0%2014%20Pro%20256GB",
+          "daangn": "https://www.daangn.com/kr/buy-sell/s/?search=%EC%95%84%EC%9D%B4%ED%8F%B0%2014%20Pro%20256GB"
+        },
+        "notes": "Initial reference value. Recheck before public launch and update monthly."
+      },
+      "history": [
+        {
+          "month": "2026-06",
+          "price": 630000,
+          "low": 560000,
+          "high": 680000,
+          "type": "observed_seed"
+        }
+      ]
+    },
+    "iphone-13-pro-256": {
+      "id": "iphone-13-pro-256",
+      "name": "iPhone 13 Pro 256GB",
+      "category": "smartphone",
+      "query": "아이폰 13 Pro 256GB",
+      "current": {
+        "month": "2026-06",
+        "basePrice": 480000,
+        "expectedRange": {
+          "low": 430000,
+          "high": 500000
+        },
+        "sampleCount": 37,
+        "usedSampleCount": 33,
+        "removedOutlierCount": 4,
+        "sourceStats": {
+          "bunjang": {
+            "sampleCount": 34,
+            "median": 480000,
+            "p25": 430000,
+            "p75": 520000,
+            "min": 252000,
+            "max": 680000
+          },
+          "daangn": {
+            "sampleCount": 3,
+            "median": 470000,
+            "p25": 460000,
+            "p75": 490000,
+            "min": 450000,
+            "max": 500000
+          }
+        },
+        "searchUrls": {
+          "bunjang": "https://m.bunjang.co.kr/search/products?order=score&q=%EC%95%84%EC%9D%B4%ED%8F%B0%2013%20Pro%20256GB",
+          "daangn": "https://www.daangn.com/kr/buy-sell/s/?search=%EC%95%84%EC%9D%B4%ED%8F%B0%2013%20Pro%20256GB"
+        },
+        "notes": "Initial reference value. Recheck before public launch and update monthly."
+      },
+      "history": [
+        {
+          "month": "2026-06",
+          "price": 480000,
+          "low": 430000,
+          "high": 500000,
+          "type": "observed_seed"
+        }
+      ]
+    },
+    "galaxy-s24-256": {
+      "id": "galaxy-s24-256",
+      "name": "Galaxy S24 256GB",
+      "category": "smartphone",
+      "query": "갤럭시 S24 256GB",
+      "current": {
+        "month": "2026-06",
+        "basePrice": 480000,
+        "expectedRange": {
+          "low": 440000,
+          "high": 510000
+        },
+        "sampleCount": 9,
+        "usedSampleCount": 9,
+        "removedOutlierCount": 0,
+        "sourceStats": {
+          "bunjang": {
+            "sampleCount": 8,
+            "median": 490000,
+            "p25": 450000,
+            "p75": 520000,
+            "min": 440000,
+            "max": 567000
+          },
+          "daangn": {
+            "sampleCount": 1,
+            "median": 430000,
+            "p25": 430000,
+            "p75": 430000,
+            "min": 430000,
+            "max": 430000
+          }
+        },
+        "searchUrls": {
+          "bunjang": "https://m.bunjang.co.kr/search/products?order=score&q=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20S24%20256GB",
+          "daangn": "https://www.daangn.com/kr/buy-sell/s/?search=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20S24%20256GB"
+        },
+        "notes": "Initial reference value. Recheck before public launch and update monthly."
+      },
+      "history": [
+        {
+          "month": "2026-06",
+          "price": 480000,
+          "low": 440000,
+          "high": 510000,
+          "type": "observed_seed"
+        }
+      ]
+    },
+    "galaxy-s23-256": {
+      "id": "galaxy-s23-256",
+      "name": "Galaxy S23 256GB",
+      "category": "smartphone",
+      "query": "갤럭시 S23 256GB",
+      "current": {
+        "month": "2026-06",
+        "basePrice": 370000,
+        "expectedRange": {
+          "low": 360000,
+          "high": 400000
+        },
+        "sampleCount": 17,
+        "usedSampleCount": 16,
+        "removedOutlierCount": 1,
+        "sourceStats": {
+          "bunjang": {
+            "sampleCount": 13,
+            "median": 390000,
+            "p25": 360000,
+            "p75": 400000,
+            "min": 350000,
+            "max": 648000
+          },
+          "daangn": {
+            "sampleCount": 4,
+            "median": 330000,
+            "p25": 330000,
+            "p75": 350000,
+            "min": 320000,
+            "max": 400000
+          }
+        },
+        "searchUrls": {
+          "bunjang": "https://m.bunjang.co.kr/search/products?order=score&q=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20S23%20256GB",
+          "daangn": "https://www.daangn.com/kr/buy-sell/s/?search=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20S23%20256GB"
+        },
+        "notes": "Initial reference value. Recheck before public launch and update monthly."
+      },
+      "history": [
+        {
+          "month": "2026-06",
+          "price": 370000,
+          "low": 360000,
+          "high": 400000,
+          "type": "observed_seed"
+        }
+      ]
+    },
+    "galaxy-s22-256": {
+      "id": "galaxy-s22-256",
+      "name": "Galaxy S22 256GB",
+      "category": "smartphone",
+      "query": "갤럭시 S22 256GB",
+      "current": {
+        "month": "2026-06",
+        "basePrice": 240000,
+        "expectedRange": {
+          "low": 220000,
+          "high": 260000
+        },
+        "sampleCount": 29,
+        "usedSampleCount": 29,
+        "removedOutlierCount": 0,
+        "sourceStats": {
+          "bunjang": {
+            "sampleCount": 19,
+            "median": 240000,
+            "p25": 230000,
+            "p75": 270000,
+            "min": 170000,
+            "max": 310000
+          },
+          "daangn": {
+            "sampleCount": 10,
+            "median": 250000,
+            "p25": 210000,
+            "p75": 260000,
+            "min": 200000,
+            "max": 270000
+          }
+        },
+        "searchUrls": {
+          "bunjang": "https://m.bunjang.co.kr/search/products?order=score&q=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20S22%20256GB",
+          "daangn": "https://www.daangn.com/kr/buy-sell/s/?search=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20S22%20256GB"
+        },
+        "notes": "Initial reference value. Recheck before public launch and update monthly."
+      },
+      "history": [
+        {
+          "month": "2026-06",
+          "price": 240000,
+          "low": 220000,
+          "high": 260000,
+          "type": "observed_seed"
+        }
+      ]
+    }
+  }
+}
