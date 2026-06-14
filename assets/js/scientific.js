@@ -19,10 +19,28 @@ export function initScientificCalculator(root = document) {
   const angleBadge = root.querySelector("#scientific-angle-badge");
   const history = [];
   let answer = 0;
+  let cursorRange = { start: input.value.length, end: input.value.length };
+
+  const rememberCursor = () => {
+    cursorRange = {
+      start: input.selectionStart ?? input.value.length,
+      end: input.selectionEnd ?? input.value.length
+    };
+  };
+
+  const avoidMobileKeyboard = () => window.matchMedia("(max-width: 720px)").matches;
+
+  const blurAfterButton = () => {
+    if (avoidMobileKeyboard()) input.blur();
+  };
 
   input.addEventListener("input", () => {
+    rememberCursor();
     updatePrettyExpression(input, prettyExpression);
   });
+  input.addEventListener("click", rememberCursor);
+  input.addEventListener("keyup", rememberCursor);
+  input.addEventListener("select", rememberCursor);
 
   form.querySelectorAll('input[name="angleMode"]').forEach((radio) => {
     radio.addEventListener("change", () => {
@@ -54,33 +72,40 @@ export function initScientificCalculator(root = document) {
     button.addEventListener("click", () => {
       if (button.dataset.action === "clear") {
         input.value = "";
+        cursorRange = { start: 0, end: 0 };
         result.textContent = "-";
         detail.textContent = "새 계산식을 입력해 주세요.";
         updatePrettyExpression(input, prettyExpression);
-        input.focus();
+        blurAfterButton();
         return;
       }
 
       if (button.dataset.action === "backspace") {
-        const start = input.selectionStart ?? input.value.length;
-        const end = input.selectionEnd ?? input.value.length;
+        const start = cursorRange.start ?? input.value.length;
+        const end = cursorRange.end ?? input.value.length;
         if (start !== end) {
           input.setRangeText("", start, end, "end");
+          cursorRange = { start, end: start };
         } else if (start > 0) {
           input.setRangeText("", start - 1, start, "end");
+          cursorRange = { start: start - 1, end: start - 1 };
         }
         updatePrettyExpression(input, prettyExpression);
-        input.focus();
+        blurAfterButton();
         return;
       }
 
       if (button.dataset.action === "evaluate") {
         form.requestSubmit();
+        blurAfterButton();
         return;
       }
 
-      insertAtCursor(input, button.dataset.insert || "");
+      cursorRange = insertAtCursor(input, button.dataset.insert || "", cursorRange, {
+        focus: !avoidMobileKeyboard()
+      });
       updatePrettyExpression(input, prettyExpression);
+      blurAfterButton();
     });
   });
 
@@ -309,11 +334,14 @@ function tokenize(expression) {
   return tokens;
 }
 
-function insertAtCursor(input, text) {
-  const start = input.selectionStart ?? input.value.length;
-  const end = input.selectionEnd ?? input.value.length;
+function insertAtCursor(input, text, cursorRange, options = {}) {
+  const start = cursorRange.start ?? input.selectionStart ?? input.value.length;
+  const end = cursorRange.end ?? input.selectionEnd ?? input.value.length;
   input.setRangeText(text, start, end, "end");
-  input.focus();
+  const next = start + text.length;
+  input.setSelectionRange(next, next);
+  if (options.focus) input.focus();
+  return { start: next, end: next };
 }
 
 function updatePrettyExpression(input, target) {

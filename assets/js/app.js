@@ -46,6 +46,45 @@ const TOOL_GROUPS = [
   }
 ];
 
+const USED_DEVICE_MODEL_GROUPS = [
+  {
+    label: "iPhone",
+    ids: [
+      "iphone-15-pro-256",
+      "iphone-15-128",
+      "iphone-14-pro-256",
+      "iphone-14-128",
+      "iphone-13-pro-256",
+      "iphone-13-128",
+      "iphone-se-3-128"
+    ]
+  },
+  {
+    label: "Galaxy S",
+    ids: [
+      "galaxy-s24-ultra-256",
+      "galaxy-s24-256",
+      "galaxy-s23-ultra-256",
+      "galaxy-s23-256",
+      "galaxy-s22-ultra-256",
+      "galaxy-s22-256"
+    ]
+  },
+  {
+    label: "Galaxy Z",
+    ids: [
+      "galaxy-z-flip5-256",
+      "galaxy-z-fold5-256"
+    ]
+  },
+  {
+    label: "Galaxy A",
+    ids: [
+      "galaxy-a54-128"
+    ]
+  }
+];
+
 const state = {
   dataset: null,
   currentReport: null
@@ -255,10 +294,34 @@ async function loadDataset() {
 }
 
 function populateModels() {
-  const models = Object.values(state.dataset.models);
-  els.modelSelect.innerHTML = models.map((model) => (
-    `<option value="${model.id}">${model.name}</option>`
-  )).join("");
+  const models = state.dataset.models;
+  const groupedIds = new Set(USED_DEVICE_MODEL_GROUPS.flatMap((group) => group.ids));
+  const groups = USED_DEVICE_MODEL_GROUPS.map((group) => {
+    const options = group.ids
+      .map((id) => models[id])
+      .filter(Boolean)
+      .map(modelOption)
+      .join("");
+    return options ? `<optgroup label="${group.label}">${options}</optgroup>` : "";
+  });
+  const remaining = Object.values(models)
+    .filter((model) => !groupedIds.has(model.id))
+    .map(modelOption)
+    .join("");
+
+  els.modelSelect.innerHTML = `${groups.join("")}${remaining ? `<optgroup label="기타">${remaining}</optgroup>` : ""}`;
+}
+
+function modelOption(model) {
+  return `<option value="${escapeHtml(model.id)}">${escapeHtml(model.name)}</option>`;
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
 }
 
 function bindEvents() {
@@ -269,14 +332,6 @@ function bindEvents() {
 
   els.form.addEventListener("change", updateReport);
   els.batteryInput.addEventListener("input", updateReport);
-
-  document.querySelectorAll("[data-quick-model]").forEach((button) => {
-    button.addEventListener("click", () => {
-      els.modelSelect.value = button.dataset.quickModel;
-      updateReport();
-      els.form.scrollIntoView({ behavior: "smooth", block: "center" });
-    });
-  });
 
   els.copyListing.addEventListener("click", async () => {
     if (!state.currentReport) return;

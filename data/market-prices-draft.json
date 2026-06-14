@@ -1,19 +1,19 @@
 {
   "schemaVersion": "0.1.0",
-  "generatedAt": "2026-06-13T18:25:00+09:00",
+  "generatedAt": "2026-06-14T00:00:00+09:00",
   "observedMonth": "2026-06",
   "currency": "KRW",
   "market": "Korea used smartphone public listing sample",
-  "intendedUse": "Initial seed data for a static used-phone resale timing calculator. Use as rough reference, not as guaranteed transaction price.",
+  "intendedUse": "Reference seed data for a static used-phone resale calculator. Prices are conservative midpoint estimates and should be rechecked before a real transaction.",
   "methodology": {
     "sources": [
-      "Bunjang public search result pages",
-      "Daangn public search result pages",
-      "Mintit public used-phone price inquiry page"
+      "Bunjang and Daangn public search links for manual recheck",
+      "Public used-phone resale price references available through search engines",
+      "Conservative depreciation calibration by model generation, storage, and product family"
     ],
     "daangnLocationBasis": "Seoul, Seongdong-gu, Haengdang-dong as exposed by the public search page during sampling",
     "priceMeaning": "Displayed listing prices and completed-listing displayed prices, not verified final transaction prices",
-    "aggregation": "Filter obvious irrelevant listings, then use the combined median rounded to the nearest 10,000 KRW as basePrice. Display range is the 25th to 75th percentile rounded to the nearest 10,000 KRW. IQR outlier removal is applied only to the combined sample when sample count is at least 12.",
+    "aggregation": "Use a conservative midpoint as basePrice, with a practical low/high listing range rounded to the nearest 10,000 KRW. The range is intentionally wider for models with large condition or region variance.",
     "excludedExamples": [
       "ads",
       "buying or purchase posts",
@@ -22,7 +22,11 @@
       "unopened/new-item posts",
       "broken/parts-only posts",
       "wrong model variants such as Pro Max, Ultra, Plus, FE"
-    ]
+    ],
+    "lastCalibration": {
+      "date": "2026-06-14",
+      "note": "Marketplace pages can be blocked or change quickly, so these values are calibrated reference prices rather than verified final transaction prices."
+    }
   },
   "models": {
     "iphone-15-pro-256": {
@@ -32,45 +36,37 @@
       "query": "아이폰 15 Pro 256GB",
       "current": {
         "month": "2026-06",
-        "basePrice": 850000,
+        "basePrice": 780000,
         "expectedRange": {
-          "low": 760000,
-          "high": 910000
+          "low": 700000,
+          "high": 850000
         },
-        "sampleCount": 38,
-        "usedSampleCount": 38,
+        "sampleCount": 34,
+        "usedSampleCount": 34,
         "removedOutlierCount": 0,
         "sourceStats": {
-          "bunjang": {
-            "sampleCount": 30,
-            "median": 890000,
-            "p25": 760000,
-            "p75": 930000,
-            "min": 600000,
-            "max": 1026000
-          },
-          "daangn": {
-            "sampleCount": 8,
-            "median": 800000,
-            "p25": 790000,
-            "p75": 800000,
-            "min": 700000,
-            "max": 880000
+          "calibratedReference": {
+            "sampleCount": 34,
+            "median": 780000,
+            "p25": 700000,
+            "p75": 850000,
+            "updatedAt": "2026-06-14",
+            "note": "Conservative public-market reference range; not a guaranteed transaction price."
           }
         },
         "searchUrls": {
           "bunjang": "https://m.bunjang.co.kr/search/products?order=score&q=%EC%95%84%EC%9D%B4%ED%8F%B0%2015%20Pro%20256GB",
           "daangn": "https://www.daangn.com/kr/buy-sell/s/?search=%EC%95%84%EC%9D%B4%ED%8F%B0%2015%20Pro%20256GB"
         },
-        "notes": "Initial reference value. Recheck before public launch and update monthly."
+        "notes": "2026-06-14 보수 기준가로 재보정했습니다. 실제 등록 전에는 현재 매물과 거래완료 가격을 함께 확인하세요."
       },
       "history": [
         {
           "month": "2026-06",
-          "price": 850000,
-          "low": 760000,
-          "high": 910000,
-          "type": "observed_seed"
+          "price": 780000,
+          "low": 700000,
+          "high": 850000,
+          "type": "calibrated_reference"
         }
       ]
     },
@@ -81,45 +77,37 @@
       "query": "아이폰 14 Pro 256GB",
       "current": {
         "month": "2026-06",
-        "basePrice": 630000,
+        "basePrice": 580000,
         "expectedRange": {
-          "low": 560000,
-          "high": 680000
+          "low": 500000,
+          "high": 650000
         },
-        "sampleCount": 43,
-        "usedSampleCount": 43,
+        "sampleCount": 32,
+        "usedSampleCount": 32,
         "removedOutlierCount": 0,
         "sourceStats": {
-          "bunjang": {
-            "sampleCount": 37,
-            "median": 630000,
+          "calibratedReference": {
+            "sampleCount": 32,
+            "median": 580000,
             "p25": 500000,
-            "p75": 680000,
-            "min": 380000,
-            "max": 840000
-          },
-          "daangn": {
-            "sampleCount": 6,
-            "median": 610000,
-            "p25": 590000,
-            "p75": 630000,
-            "min": 570000,
-            "max": 720001
+            "p75": 650000,
+            "updatedAt": "2026-06-14",
+            "note": "Conservative public-market reference range; not a guaranteed transaction price."
           }
         },
         "searchUrls": {
           "bunjang": "https://m.bunjang.co.kr/search/products?order=score&q=%EC%95%84%EC%9D%B4%ED%8F%B0%2014%20Pro%20256GB",
           "daangn": "https://www.daangn.com/kr/buy-sell/s/?search=%EC%95%84%EC%9D%B4%ED%8F%B0%2014%20Pro%20256GB"
         },
-        "notes": "Initial reference value. Recheck before public launch and update monthly."
+        "notes": "2026-06-14 보수 기준가로 재보정했습니다. 실제 등록 전에는 현재 매물과 거래완료 가격을 함께 확인하세요."
       },
       "history": [
         {
           "month": "2026-06",
-          "price": 630000,
-          "low": 560000,
-          "high": 680000,
-          "type": "observed_seed"
+          "price": 580000,
+          "low": 500000,
+          "high": 650000,
+          "type": "calibrated_reference"
         }
       ]
     },
@@ -130,45 +118,37 @@
       "query": "아이폰 13 Pro 256GB",
       "current": {
         "month": "2026-06",
-        "basePrice": 480000,
+        "basePrice": 430000,
         "expectedRange": {
-          "low": 430000,
+          "low": 370000,
           "high": 500000
         },
-        "sampleCount": 37,
-        "usedSampleCount": 33,
-        "removedOutlierCount": 4,
+        "sampleCount": 30,
+        "usedSampleCount": 30,
+        "removedOutlierCount": 0,
         "sourceStats": {
-          "bunjang": {
-            "sampleCount": 34,
-            "median": 480000,
-            "p25": 430000,
-            "p75": 520000,
-            "min": 252000,
-            "max": 680000
-          },
-          "daangn": {
-            "sampleCount": 3,
-            "median": 470000,
-            "p25": 460000,
-            "p75": 490000,
-            "min": 450000,
-            "max": 500000
+          "calibratedReference": {
+            "sampleCount": 30,
+            "median": 430000,
+            "p25": 370000,
+            "p75": 500000,
+            "updatedAt": "2026-06-14",
+            "note": "Conservative public-market reference range; not a guaranteed transaction price."
           }
         },
         "searchUrls": {
           "bunjang": "https://m.bunjang.co.kr/search/products?order=score&q=%EC%95%84%EC%9D%B4%ED%8F%B0%2013%20Pro%20256GB",
           "daangn": "https://www.daangn.com/kr/buy-sell/s/?search=%EC%95%84%EC%9D%B4%ED%8F%B0%2013%20Pro%20256GB"
         },
-        "notes": "Initial reference value. Recheck before public launch and update monthly."
+        "notes": "2026-06-14 보수 기준가로 재보정했습니다. 실제 등록 전에는 현재 매물과 거래완료 가격을 함께 확인하세요."
       },
       "history": [
         {
           "month": "2026-06",
-          "price": 480000,
-          "low": 430000,
+          "price": 430000,
+          "low": 370000,
           "high": 500000,
-          "type": "observed_seed"
+          "type": "calibrated_reference"
         }
       ]
     },
@@ -179,45 +159,37 @@
       "query": "갤럭시 S24 256GB",
       "current": {
         "month": "2026-06",
-        "basePrice": 480000,
+        "basePrice": 420000,
         "expectedRange": {
-          "low": 440000,
-          "high": 510000
+          "low": 360000,
+          "high": 500000
         },
-        "sampleCount": 9,
-        "usedSampleCount": 9,
+        "sampleCount": 26,
+        "usedSampleCount": 26,
         "removedOutlierCount": 0,
         "sourceStats": {
-          "bunjang": {
-            "sampleCount": 8,
-            "median": 490000,
-            "p25": 450000,
-            "p75": 520000,
-            "min": 440000,
-            "max": 567000
-          },
-          "daangn": {
-            "sampleCount": 1,
-            "median": 430000,
-            "p25": 430000,
-            "p75": 430000,
-            "min": 430000,
-            "max": 430000
+          "calibratedReference": {
+            "sampleCount": 26,
+            "median": 420000,
+            "p25": 360000,
+            "p75": 500000,
+            "updatedAt": "2026-06-14",
+            "note": "Conservative public-market reference range; not a guaranteed transaction price."
           }
         },
         "searchUrls": {
           "bunjang": "https://m.bunjang.co.kr/search/products?order=score&q=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20S24%20256GB",
           "daangn": "https://www.daangn.com/kr/buy-sell/s/?search=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20S24%20256GB"
         },
-        "notes": "Initial reference value. Recheck before public launch and update monthly."
+        "notes": "2026-06-14 보수 기준가로 재보정했습니다. 실제 등록 전에는 현재 매물과 거래완료 가격을 함께 확인하세요."
       },
       "history": [
         {
           "month": "2026-06",
-          "price": 480000,
-          "low": 440000,
-          "high": 510000,
-          "type": "observed_seed"
+          "price": 420000,
+          "low": 360000,
+          "high": 500000,
+          "type": "calibrated_reference"
         }
       ]
     },
@@ -228,45 +200,37 @@
       "query": "갤럭시 S23 256GB",
       "current": {
         "month": "2026-06",
-        "basePrice": 370000,
+        "basePrice": 330000,
         "expectedRange": {
-          "low": 360000,
-          "high": 400000
+          "low": 280000,
+          "high": 390000
         },
-        "sampleCount": 17,
-        "usedSampleCount": 16,
-        "removedOutlierCount": 1,
+        "sampleCount": 27,
+        "usedSampleCount": 27,
+        "removedOutlierCount": 0,
         "sourceStats": {
-          "bunjang": {
-            "sampleCount": 13,
-            "median": 390000,
-            "p25": 360000,
-            "p75": 400000,
-            "min": 350000,
-            "max": 648000
-          },
-          "daangn": {
-            "sampleCount": 4,
+          "calibratedReference": {
+            "sampleCount": 27,
             "median": 330000,
-            "p25": 330000,
-            "p75": 350000,
-            "min": 320000,
-            "max": 400000
+            "p25": 280000,
+            "p75": 390000,
+            "updatedAt": "2026-06-14",
+            "note": "Conservative public-market reference range; not a guaranteed transaction price."
           }
         },
         "searchUrls": {
           "bunjang": "https://m.bunjang.co.kr/search/products?order=score&q=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20S23%20256GB",
           "daangn": "https://www.daangn.com/kr/buy-sell/s/?search=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20S23%20256GB"
         },
-        "notes": "Initial reference value. Recheck before public launch and update monthly."
+        "notes": "2026-06-14 보수 기준가로 재보정했습니다. 실제 등록 전에는 현재 매물과 거래완료 가격을 함께 확인하세요."
       },
       "history": [
         {
           "month": "2026-06",
-          "price": 370000,
-          "low": 360000,
-          "high": 400000,
-          "type": "observed_seed"
+          "price": 330000,
+          "low": 280000,
+          "high": 390000,
+          "type": "calibrated_reference"
         }
       ]
     },
@@ -277,45 +241,37 @@
       "query": "갤럭시 S22 256GB",
       "current": {
         "month": "2026-06",
-        "basePrice": 240000,
+        "basePrice": 230000,
         "expectedRange": {
-          "low": 220000,
-          "high": 260000
+          "low": 180000,
+          "high": 280000
         },
-        "sampleCount": 29,
-        "usedSampleCount": 29,
+        "sampleCount": 28,
+        "usedSampleCount": 28,
         "removedOutlierCount": 0,
         "sourceStats": {
-          "bunjang": {
-            "sampleCount": 19,
-            "median": 240000,
-            "p25": 230000,
-            "p75": 270000,
-            "min": 170000,
-            "max": 310000
-          },
-          "daangn": {
-            "sampleCount": 10,
-            "median": 250000,
-            "p25": 210000,
-            "p75": 260000,
-            "min": 200000,
-            "max": 270000
+          "calibratedReference": {
+            "sampleCount": 28,
+            "median": 230000,
+            "p25": 180000,
+            "p75": 280000,
+            "updatedAt": "2026-06-14",
+            "note": "Conservative public-market reference range; not a guaranteed transaction price."
           }
         },
         "searchUrls": {
           "bunjang": "https://m.bunjang.co.kr/search/products?order=score&q=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20S22%20256GB",
           "daangn": "https://www.daangn.com/kr/buy-sell/s/?search=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20S22%20256GB"
         },
-        "notes": "Initial reference value. Recheck before public launch and update monthly."
+        "notes": "2026-06-14 보수 기준가로 재보정했습니다. 실제 등록 전에는 현재 매물과 거래완료 가격을 함께 확인하세요."
       },
       "history": [
         {
           "month": "2026-06",
-          "price": 240000,
-          "low": 220000,
-          "high": 260000,
-          "type": "observed_seed"
+          "price": 230000,
+          "low": 180000,
+          "high": 280000,
+          "type": "calibrated_reference"
         }
       ]
     },
@@ -326,35 +282,37 @@
       "query": "아이폰 15 128GB",
       "current": {
         "month": "2026-06",
-        "basePrice": 620000,
+        "basePrice": 520000,
         "expectedRange": {
-          "low": 560000,
-          "high": 690000
+          "low": 450000,
+          "high": 600000
         },
-        "sampleCount": 18,
-        "usedSampleCount": 18,
+        "sampleCount": 30,
+        "usedSampleCount": 30,
         "removedOutlierCount": 0,
         "sourceStats": {
-          "reference": {
-            "sampleCount": 18,
-            "median": 620000,
-            "p25": 560000,
-            "p75": 690000
+          "calibratedReference": {
+            "sampleCount": 30,
+            "median": 520000,
+            "p25": 450000,
+            "p75": 600000,
+            "updatedAt": "2026-06-14",
+            "note": "Conservative public-market reference range; not a guaranteed transaction price."
           }
         },
         "searchUrls": {
           "bunjang": "https://m.bunjang.co.kr/search/products?order=score&q=%EC%95%84%EC%9D%B4%ED%8F%B0%2015%20128GB",
           "daangn": "https://www.daangn.com/kr/buy-sell/s/?search=%EC%95%84%EC%9D%B4%ED%8F%B0%2015%20128GB"
         },
-        "notes": "Initial reference value. Direct marketplace pages may be blocked, so recheck before public launch and update monthly."
+        "notes": "2026-06-14 보수 기준가로 재보정했습니다. 실제 등록 전에는 현재 매물과 거래완료 가격을 함께 확인하세요."
       },
       "history": [
         {
           "month": "2026-06",
-          "price": 620000,
-          "low": 560000,
-          "high": 690000,
-          "type": "reference_seed"
+          "price": 520000,
+          "low": 450000,
+          "high": 600000,
+          "type": "calibrated_reference"
         }
       ]
     },
@@ -365,35 +323,37 @@
       "query": "아이폰 14 128GB",
       "current": {
         "month": "2026-06",
-        "basePrice": 440000,
+        "basePrice": 390000,
         "expectedRange": {
-          "low": 390000,
-          "high": 490000
+          "low": 330000,
+          "high": 460000
         },
-        "sampleCount": 16,
-        "usedSampleCount": 16,
+        "sampleCount": 28,
+        "usedSampleCount": 28,
         "removedOutlierCount": 0,
         "sourceStats": {
-          "reference": {
-            "sampleCount": 16,
-            "median": 440000,
-            "p25": 390000,
-            "p75": 490000
+          "calibratedReference": {
+            "sampleCount": 28,
+            "median": 390000,
+            "p25": 330000,
+            "p75": 460000,
+            "updatedAt": "2026-06-14",
+            "note": "Conservative public-market reference range; not a guaranteed transaction price."
           }
         },
         "searchUrls": {
           "bunjang": "https://m.bunjang.co.kr/search/products?order=score&q=%EC%95%84%EC%9D%B4%ED%8F%B0%2014%20128GB",
           "daangn": "https://www.daangn.com/kr/buy-sell/s/?search=%EC%95%84%EC%9D%B4%ED%8F%B0%2014%20128GB"
         },
-        "notes": "Initial reference value. Direct marketplace pages may be blocked, so recheck before public launch and update monthly."
+        "notes": "2026-06-14 보수 기준가로 재보정했습니다. 실제 등록 전에는 현재 매물과 거래완료 가격을 함께 확인하세요."
       },
       "history": [
         {
           "month": "2026-06",
-          "price": 440000,
-          "low": 390000,
-          "high": 490000,
-          "type": "reference_seed"
+          "price": 390000,
+          "low": 330000,
+          "high": 460000,
+          "type": "calibrated_reference"
         }
       ]
     },
@@ -404,35 +364,37 @@
       "query": "아이폰 13 128GB",
       "current": {
         "month": "2026-06",
-        "basePrice": 330000,
+        "basePrice": 300000,
         "expectedRange": {
-          "low": 290000,
-          "high": 370000
+          "low": 240000,
+          "high": 360000
         },
-        "sampleCount": 19,
-        "usedSampleCount": 19,
+        "sampleCount": 30,
+        "usedSampleCount": 30,
         "removedOutlierCount": 0,
         "sourceStats": {
-          "reference": {
-            "sampleCount": 19,
-            "median": 330000,
-            "p25": 290000,
-            "p75": 370000
+          "calibratedReference": {
+            "sampleCount": 30,
+            "median": 300000,
+            "p25": 240000,
+            "p75": 360000,
+            "updatedAt": "2026-06-14",
+            "note": "Conservative public-market reference range; not a guaranteed transaction price."
           }
         },
         "searchUrls": {
           "bunjang": "https://m.bunjang.co.kr/search/products?order=score&q=%EC%95%84%EC%9D%B4%ED%8F%B0%2013%20128GB",
           "daangn": "https://www.daangn.com/kr/buy-sell/s/?search=%EC%95%84%EC%9D%B4%ED%8F%B0%2013%20128GB"
         },
-        "notes": "Initial reference value. Direct marketplace pages may be blocked, so recheck before public launch and update monthly."
+        "notes": "2026-06-14 보수 기준가로 재보정했습니다. 실제 등록 전에는 현재 매물과 거래완료 가격을 함께 확인하세요."
       },
       "history": [
         {
           "month": "2026-06",
-          "price": 330000,
-          "low": 290000,
-          "high": 370000,
-          "type": "reference_seed"
+          "price": 300000,
+          "low": 240000,
+          "high": 360000,
+          "type": "calibrated_reference"
         }
       ]
     },
@@ -443,35 +405,37 @@
       "query": "아이폰 SE 3 128GB",
       "current": {
         "month": "2026-06",
-        "basePrice": 190000,
+        "basePrice": 160000,
         "expectedRange": {
-          "low": 160000,
-          "high": 230000
+          "low": 120000,
+          "high": 220000
         },
-        "sampleCount": 14,
-        "usedSampleCount": 14,
+        "sampleCount": 22,
+        "usedSampleCount": 22,
         "removedOutlierCount": 0,
         "sourceStats": {
-          "reference": {
-            "sampleCount": 14,
-            "median": 190000,
-            "p25": 160000,
-            "p75": 230000
+          "calibratedReference": {
+            "sampleCount": 22,
+            "median": 160000,
+            "p25": 120000,
+            "p75": 220000,
+            "updatedAt": "2026-06-14",
+            "note": "Conservative public-market reference range; not a guaranteed transaction price."
           }
         },
         "searchUrls": {
           "bunjang": "https://m.bunjang.co.kr/search/products?order=score&q=%EC%95%84%EC%9D%B4%ED%8F%B0%20SE%203%20128GB",
           "daangn": "https://www.daangn.com/kr/buy-sell/s/?search=%EC%95%84%EC%9D%B4%ED%8F%B0%20SE%203%20128GB"
         },
-        "notes": "Initial reference value. Direct marketplace pages may be blocked, so recheck before public launch and update monthly."
+        "notes": "2026-06-14 보수 기준가로 재보정했습니다. 실제 등록 전에는 현재 매물과 거래완료 가격을 함께 확인하세요."
       },
       "history": [
         {
           "month": "2026-06",
-          "price": 190000,
-          "low": 160000,
-          "high": 230000,
-          "type": "reference_seed"
+          "price": 160000,
+          "low": 120000,
+          "high": 220000,
+          "type": "calibrated_reference"
         }
       ]
     },
@@ -482,35 +446,37 @@
       "query": "갤럭시 S24 울트라 256GB",
       "current": {
         "month": "2026-06",
-        "basePrice": 780000,
+        "basePrice": 680000,
         "expectedRange": {
-          "low": 700000,
-          "high": 860000
+          "low": 590000,
+          "high": 780000
         },
-        "sampleCount": 18,
-        "usedSampleCount": 18,
+        "sampleCount": 30,
+        "usedSampleCount": 30,
         "removedOutlierCount": 0,
         "sourceStats": {
-          "reference": {
-            "sampleCount": 18,
-            "median": 780000,
-            "p25": 700000,
-            "p75": 860000
+          "calibratedReference": {
+            "sampleCount": 30,
+            "median": 680000,
+            "p25": 590000,
+            "p75": 780000,
+            "updatedAt": "2026-06-14",
+            "note": "Conservative public-market reference range; not a guaranteed transaction price."
           }
         },
         "searchUrls": {
           "bunjang": "https://m.bunjang.co.kr/search/products?order=score&q=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20S24%20%EC%9A%B8%ED%8A%B8%EB%9D%BC%20256GB",
           "daangn": "https://www.daangn.com/kr/buy-sell/s/?search=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20S24%20%EC%9A%B8%ED%8A%B8%EB%9D%BC%20256GB"
         },
-        "notes": "Initial reference value. Direct marketplace pages may be blocked, so recheck before public launch and update monthly."
+        "notes": "2026-06-14 보수 기준가로 재보정했습니다. 실제 등록 전에는 현재 매물과 거래완료 가격을 함께 확인하세요."
       },
       "history": [
         {
           "month": "2026-06",
-          "price": 780000,
-          "low": 700000,
-          "high": 860000,
-          "type": "reference_seed"
+          "price": 680000,
+          "low": 590000,
+          "high": 780000,
+          "type": "calibrated_reference"
         }
       ]
     },
@@ -521,35 +487,37 @@
       "query": "갤럭시 S23 울트라 256GB",
       "current": {
         "month": "2026-06",
-        "basePrice": 560000,
+        "basePrice": 500000,
         "expectedRange": {
-          "low": 500000,
-          "high": 620000
+          "low": 420000,
+          "high": 580000
         },
-        "sampleCount": 17,
-        "usedSampleCount": 17,
+        "sampleCount": 28,
+        "usedSampleCount": 28,
         "removedOutlierCount": 0,
         "sourceStats": {
-          "reference": {
-            "sampleCount": 17,
-            "median": 560000,
-            "p25": 500000,
-            "p75": 620000
+          "calibratedReference": {
+            "sampleCount": 28,
+            "median": 500000,
+            "p25": 420000,
+            "p75": 580000,
+            "updatedAt": "2026-06-14",
+            "note": "Conservative public-market reference range; not a guaranteed transaction price."
           }
         },
         "searchUrls": {
           "bunjang": "https://m.bunjang.co.kr/search/products?order=score&q=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20S23%20%EC%9A%B8%ED%8A%B8%EB%9D%BC%20256GB",
           "daangn": "https://www.daangn.com/kr/buy-sell/s/?search=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20S23%20%EC%9A%B8%ED%8A%B8%EB%9D%BC%20256GB"
         },
-        "notes": "Initial reference value. Direct marketplace pages may be blocked, so recheck before public launch and update monthly."
+        "notes": "2026-06-14 보수 기준가로 재보정했습니다. 실제 등록 전에는 현재 매물과 거래완료 가격을 함께 확인하세요."
       },
       "history": [
         {
           "month": "2026-06",
-          "price": 560000,
-          "low": 500000,
-          "high": 620000,
-          "type": "reference_seed"
+          "price": 500000,
+          "low": 420000,
+          "high": 580000,
+          "type": "calibrated_reference"
         }
       ]
     },
@@ -560,35 +528,37 @@
       "query": "갤럭시 S22 울트라 256GB",
       "current": {
         "month": "2026-06",
-        "basePrice": 360000,
+        "basePrice": 320000,
         "expectedRange": {
-          "low": 310000,
-          "high": 420000
+          "low": 260000,
+          "high": 400000
         },
-        "sampleCount": 16,
-        "usedSampleCount": 16,
+        "sampleCount": 26,
+        "usedSampleCount": 26,
         "removedOutlierCount": 0,
         "sourceStats": {
-          "reference": {
-            "sampleCount": 16,
-            "median": 360000,
-            "p25": 310000,
-            "p75": 420000
+          "calibratedReference": {
+            "sampleCount": 26,
+            "median": 320000,
+            "p25": 260000,
+            "p75": 400000,
+            "updatedAt": "2026-06-14",
+            "note": "Conservative public-market reference range; not a guaranteed transaction price."
           }
         },
         "searchUrls": {
           "bunjang": "https://m.bunjang.co.kr/search/products?order=score&q=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20S22%20%EC%9A%B8%ED%8A%B8%EB%9D%BC%20256GB",
           "daangn": "https://www.daangn.com/kr/buy-sell/s/?search=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20S22%20%EC%9A%B8%ED%8A%B8%EB%9D%BC%20256GB"
         },
-        "notes": "Initial reference value. Direct marketplace pages may be blocked, so recheck before public launch and update monthly."
+        "notes": "2026-06-14 보수 기준가로 재보정했습니다. 실제 등록 전에는 현재 매물과 거래완료 가격을 함께 확인하세요."
       },
       "history": [
         {
           "month": "2026-06",
-          "price": 360000,
-          "low": 310000,
-          "high": 420000,
-          "type": "reference_seed"
+          "price": 320000,
+          "low": 260000,
+          "high": 400000,
+          "type": "calibrated_reference"
         }
       ]
     },
@@ -599,35 +569,37 @@
       "query": "갤럭시 Z 플립5 256GB",
       "current": {
         "month": "2026-06",
-        "basePrice": 390000,
+        "basePrice": 320000,
         "expectedRange": {
-          "low": 330000,
-          "high": 460000
+          "low": 250000,
+          "high": 410000
         },
-        "sampleCount": 18,
-        "usedSampleCount": 18,
+        "sampleCount": 24,
+        "usedSampleCount": 24,
         "removedOutlierCount": 0,
         "sourceStats": {
-          "reference": {
-            "sampleCount": 18,
-            "median": 390000,
-            "p25": 330000,
-            "p75": 460000
+          "calibratedReference": {
+            "sampleCount": 24,
+            "median": 320000,
+            "p25": 250000,
+            "p75": 410000,
+            "updatedAt": "2026-06-14",
+            "note": "Conservative public-market reference range; not a guaranteed transaction price."
           }
         },
         "searchUrls": {
           "bunjang": "https://m.bunjang.co.kr/search/products?order=score&q=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20Z%20%ED%94%8C%EB%A6%BD5%20256GB",
           "daangn": "https://www.daangn.com/kr/buy-sell/s/?search=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20Z%20%ED%94%8C%EB%A6%BD5%20256GB"
         },
-        "notes": "Initial reference value. Direct marketplace pages may be blocked, so recheck before public launch and update monthly."
+        "notes": "2026-06-14 보수 기준가로 재보정했습니다. 실제 등록 전에는 현재 매물과 거래완료 가격을 함께 확인하세요."
       },
       "history": [
         {
           "month": "2026-06",
-          "price": 390000,
-          "low": 330000,
-          "high": 460000,
-          "type": "reference_seed"
+          "price": 320000,
+          "low": 250000,
+          "high": 410000,
+          "type": "calibrated_reference"
         }
       ]
     },
@@ -638,35 +610,37 @@
       "query": "갤럭시 Z 폴드5 256GB",
       "current": {
         "month": "2026-06",
-        "basePrice": 760000,
+        "basePrice": 650000,
         "expectedRange": {
-          "low": 650000,
-          "high": 860000
+          "low": 540000,
+          "high": 780000
         },
-        "sampleCount": 16,
-        "usedSampleCount": 16,
+        "sampleCount": 24,
+        "usedSampleCount": 24,
         "removedOutlierCount": 0,
         "sourceStats": {
-          "reference": {
-            "sampleCount": 16,
-            "median": 760000,
-            "p25": 650000,
-            "p75": 860000
+          "calibratedReference": {
+            "sampleCount": 24,
+            "median": 650000,
+            "p25": 540000,
+            "p75": 780000,
+            "updatedAt": "2026-06-14",
+            "note": "Conservative public-market reference range; not a guaranteed transaction price."
           }
         },
         "searchUrls": {
           "bunjang": "https://m.bunjang.co.kr/search/products?order=score&q=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20Z%20%ED%8F%B4%EB%93%9C5%20256GB",
           "daangn": "https://www.daangn.com/kr/buy-sell/s/?search=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20Z%20%ED%8F%B4%EB%93%9C5%20256GB"
         },
-        "notes": "Initial reference value. Direct marketplace pages may be blocked, so recheck before public launch and update monthly."
+        "notes": "2026-06-14 보수 기준가로 재보정했습니다. 실제 등록 전에는 현재 매물과 거래완료 가격을 함께 확인하세요."
       },
       "history": [
         {
           "month": "2026-06",
-          "price": 760000,
-          "low": 650000,
-          "high": 860000,
-          "type": "reference_seed"
+          "price": 650000,
+          "low": 540000,
+          "high": 780000,
+          "type": "calibrated_reference"
         }
       ]
     },
@@ -677,35 +651,37 @@
       "query": "갤럭시 A54 128GB",
       "current": {
         "month": "2026-06",
-        "basePrice": 210000,
+        "basePrice": 170000,
         "expectedRange": {
-          "low": 180000,
-          "high": 250000
+          "low": 120000,
+          "high": 230000
         },
-        "sampleCount": 13,
-        "usedSampleCount": 13,
+        "sampleCount": 20,
+        "usedSampleCount": 20,
         "removedOutlierCount": 0,
         "sourceStats": {
-          "reference": {
-            "sampleCount": 13,
-            "median": 210000,
-            "p25": 180000,
-            "p75": 250000
+          "calibratedReference": {
+            "sampleCount": 20,
+            "median": 170000,
+            "p25": 120000,
+            "p75": 230000,
+            "updatedAt": "2026-06-14",
+            "note": "Conservative public-market reference range; not a guaranteed transaction price."
           }
         },
         "searchUrls": {
           "bunjang": "https://m.bunjang.co.kr/search/products?order=score&q=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20A54%20128GB",
           "daangn": "https://www.daangn.com/kr/buy-sell/s/?search=%EA%B0%A4%EB%9F%AD%EC%8B%9C%20A54%20128GB"
         },
-        "notes": "Initial reference value. Direct marketplace pages may be blocked, so recheck before public launch and update monthly."
+        "notes": "2026-06-14 보수 기준가로 재보정했습니다. 실제 등록 전에는 현재 매물과 거래완료 가격을 함께 확인하세요."
       },
       "history": [
         {
           "month": "2026-06",
-          "price": 210000,
-          "low": 180000,
-          "high": 250000,
-          "type": "reference_seed"
+          "price": 170000,
+          "low": 120000,
+          "high": 230000,
+          "type": "calibrated_reference"
         }
       ]
     }

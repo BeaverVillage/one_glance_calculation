@@ -1156,8 +1156,8 @@ details p {
   }
 
   .casio-keypad {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 6px;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 5px;
   }
 
   .tool-panel {
@@ -1169,8 +1169,8 @@ details p {
   }
 
   .calculator-body {
-    padding: 10px;
-    border-radius: 14px;
+    padding: 8px;
+    border-radius: 12px;
   }
 
   .calculator-top {
@@ -1179,9 +1179,9 @@ details p {
   }
 
   .calculator-screen {
-    padding: 8px;
-    border-width: 5px;
-    border-radius: 8px;
+    padding: 7px;
+    border-width: 4px;
+    border-radius: 7px;
   }
 
   .screen-status {
@@ -1189,10 +1189,10 @@ details p {
   }
 
   .pretty-expression {
-    min-height: 46px;
+    min-height: 38px;
     margin: 6px 0;
-    padding: 6px;
-    font-size: 1rem;
+    padding: 5px;
+    font-size: 0.96rem;
   }
 
   .math-fraction {
@@ -1200,9 +1200,9 @@ details p {
   }
 
   .screen-input {
-    min-height: 30px;
-    padding: 5px 6px;
-    font-size: 0.78rem;
+    min-height: 28px;
+    padding: 4px 6px;
+    font-size: 0.74rem;
   }
 
   .screen-result {
@@ -1215,37 +1215,37 @@ details p {
 
   #scientific-detail {
     margin-top: 6px;
-    font-size: 0.74rem;
+    font-size: 0.72rem;
   }
 
   .angle-toggle {
-    gap: 6px;
-    margin: 10px 0;
+    gap: 5px;
+    margin: 8px 0;
   }
 
   .angle-toggle label {
-    min-height: 30px;
-    font-size: 0.76rem;
+    min-height: 28px;
+    font-size: 0.72rem;
   }
 
   .key {
-    min-height: 34px;
-    padding: 4px 3px;
-    border-radius: 8px 8px 10px 10px;
+    min-height: 30px;
+    padding: 3px 2px;
+    border-radius: 7px 7px 9px 9px;
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 2px 0 #161c2f;
-    font-size: 0.75rem;
+    font-size: 0.64rem;
   }
 
   .key.number,
   .key.operator {
-    font-size: 0.92rem;
+    font-size: 0.78rem;
   }
 
   .key.soft,
   .key.function,
   .key.danger,
   .key.execute {
-    font-size: 0.74rem;
+    font-size: 0.62rem;
   }
 
   .guide-grid {
