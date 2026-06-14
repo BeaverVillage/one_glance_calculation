@@ -80,7 +80,7 @@
 }</script>
     <link rel="stylesheet" href="../assets/css/base.css">
     <link rel="stylesheet" href="../assets/css/layout.css">
-    <link rel="stylesheet" href="../assets/css/components.css">
+    <link rel="stylesheet" href="../assets/css/components.css?v=20260614-visual-fix">
   </head>
   <body>
     <header class="site-header"><a class="brand" href="../index.html"><span class="brand-mark">한</span><span><strong>한눈계산</strong><small>실용 계산 도구</small></span></a><nav class="site-nav" aria-label="주요 메뉴"><a href="../index.html#calculators" data-tool-drawer>다른 계산기</a><a href="../index.html#how-to">사용 방법</a><a href="../index.html#faq">질문</a><a href="../about.html">소개</a><a href="../contact.html">문의</a></nav></header>
@@ -98,19 +98,19 @@
             <svg id="bmi-gauge-chart" class="bmi-gauge-chart" viewBox="0 0 420 126" role="img" aria-labelledby="bmi-gauge-title bmi-gauge-desc">
               <title id="bmi-gauge-title">BMI 구간 게이지</title>
               <desc id="bmi-gauge-desc">저체중, 정상, 과체중, 비만, 고도비만 구간과 현재 BMI 위치를 보여줍니다.</desc>
-              <rect class="bmi-segment low" x="16" y="44" width="83.1" height="18" rx="9"></rect>
-              <rect class="bmi-segment normal" x="99.1" y="44" width="83.1" height="18"></rect>
-              <rect class="bmi-segment watch" x="182.2" y="44" width="36.9" height="18"></rect>
-              <rect class="bmi-segment high" x="219.1" y="44" width="92.4" height="18"></rect>
-              <rect class="bmi-segment danger" x="311.5" y="44" width="92.5" height="18" rx="9"></rect>
-              <line id="bmi-marker-line" class="bmi-marker-line" x1="16" y1="34" x2="16" y2="76"></line>
-              <circle id="bmi-marker-dot" class="bmi-marker-dot" cx="16" cy="53" r="6"></circle>
-              <text id="bmi-marker-text" class="bmi-marker-text" x="16" y="24">BMI -</text>
-              <text class="bmi-gauge-label" x="16" y="94">저체중</text>
-              <text class="bmi-gauge-label middle" x="140.6" y="94">정상</text>
-              <text class="bmi-gauge-label middle" x="200.7" y="94">과체중</text>
-              <text class="bmi-gauge-label middle" x="265.3" y="94">비만</text>
-              <text class="bmi-gauge-label end" x="404" y="94">고도비만</text>
+              <rect class="bmi-segment low" x="16" y="44" width="83.1" height="18" rx="9" fill="#5f8fd8"></rect>
+              <rect class="bmi-segment normal" x="99.1" y="44" width="83.1" height="18" fill="#146c5f"></rect>
+              <rect class="bmi-segment watch" x="182.2" y="44" width="36.9" height="18" fill="#e9b949"></rect>
+              <rect class="bmi-segment high" x="219.1" y="44" width="92.4" height="18" fill="#df8a35"></rect>
+              <rect class="bmi-segment danger" x="311.5" y="44" width="92.5" height="18" rx="9" fill="#b42318"></rect>
+              <line id="bmi-marker-line" class="bmi-marker-line" x1="16" y1="34" x2="16" y2="76" stroke="#146c5f" stroke-width="3" stroke-linecap="round"></line>
+              <circle id="bmi-marker-dot" class="bmi-marker-dot" cx="16" cy="53" r="6" fill="#ffffff" stroke="#146c5f" stroke-width="3"></circle>
+              <text id="bmi-marker-text" class="bmi-marker-text" x="16" y="24" fill="#146c5f">BMI -</text>
+              <text class="bmi-gauge-label" x="16" y="94" fill="#5b6472">저체중</text>
+              <text class="bmi-gauge-label middle" x="140.6" y="94" fill="#5b6472">정상</text>
+              <text class="bmi-gauge-label middle" x="200.7" y="94" fill="#5b6472">과체중</text>
+              <text class="bmi-gauge-label middle" x="265.3" y="94" fill="#5b6472">비만</text>
+              <text class="bmi-gauge-label end" x="404" y="94" fill="#5b6472">고도비만</text>
             </svg>
           </div>
           <div class="bmi-mini-grid"><div><span>정상 체중 범위</span><strong id="bmi-healthy-range">-</strong></div><div><span>정상 범위와 차이</span><strong id="bmi-difference">-</strong></div></div>
@@ -122,7 +122,7 @@
       <section class="content-band"><div class="container faq-wrap"><p class="eyebrow">자주 묻는 질문</p><h2>BMI 계산기 자주 묻는 질문</h2><div class="faq-grid"><details open><summary>BMI만으로 건강 상태를 판단할 수 있나요?</summary><p>아닙니다. BMI는 키와 몸무게만 보는 간단한 지표라서 근육량, 체지방률, 허리둘레, 질환 여부를 함께 봐야 합니다.</p></details><details><summary>정상 체중 범위는 어떻게 계산하나요?</summary><p>이 계산기는 BMI 18.5 이상 23 미만을 정상 범위로 보고 키의 제곱에 해당 BMI 값을 곱해 정상 체중 범위를 계산합니다.</p></details><details><summary>운동을 많이 하는 사람도 BMI가 높게 나오나요?</summary><p>네. 근육량이 많은 경우 BMI가 높게 나와도 체지방이 높다는 뜻은 아닐 수 있습니다.</p></details><details><summary>어린이도 사용할 수 있나요?</summary><p>어린이와 청소년은 성장 단계별 기준이 달라 성인 BMI 기준으로 해석하지 않는 것이 좋습니다.</p></details></div></div></section>
     </main>
     <footer class="site-footer"><div class="container footer-grid"><div><strong>한눈계산</strong><p>복잡한 계산을 쉽게 확인하는 실용 계산 도구입니다.</p></div><nav aria-label="정책 메뉴"><a href="../about.html">사이트 소개</a><a href="../privacy.html">개인정보 처리방침</a><a href="../contact.html">문의</a><a href="../disclaimer.html">이용 안내</a></nav></div></footer>
-    <script type="module" src="../assets/js/bmi-calculator.js"></script>
-    <script type="module" src="../assets/js/app.js"></script>
+    <script type="module" src="../assets/js/bmi-calculator.js?v=20260614-visual-fix"></script>
+    <script type="module" src="../assets/js/app.js?v=20260614-visual-fix"></script>
   </body>
 </html>

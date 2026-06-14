@@ -961,9 +961,9 @@ textarea {
   display: grid;
   gap: 18px;
   padding: 22px;
-  color: #f8fafc;
-  background: #101827;
-  border: 1px solid #25324a;
+  color: var(--ink);
+  background: linear-gradient(180deg, #ffffff, #f7fbf9);
+  border: 1px solid var(--line-strong);
   border-radius: var(--radius);
 }
 
@@ -975,31 +975,37 @@ textarea {
 }
 
 .bmi-score-card span {
-  color: #b8c7dd;
+  color: var(--muted);
   font-size: 0.9rem;
   font-weight: 800;
 }
 
 .bmi-score-card strong {
-  color: #ff9f1c;
+  color: var(--green);
   font-size: clamp(2.6rem, 8vw, 4rem);
   line-height: 1;
 }
 
 .bmi-category {
-  color: #f8fafc;
+  color: var(--ink);
   font-weight: 900;
 }
 
-.bmi-category.low,
-.bmi-category.watch,
+.bmi-category.low {
+  color: var(--blue);
+}
+
+.bmi-category.watch {
+  color: var(--amber);
+}
+
 .bmi-category.high,
 .bmi-category.danger {
-  color: #ffb020;
+  color: var(--danger);
 }
 
 .bmi-category.normal {
-  color: #35c486;
+  color: var(--green);
 }
 
 .bmi-track {
@@ -1084,35 +1090,35 @@ textarea {
 }
 
 .bmi-segment.low {
-  fill: #4386f4;
+  fill: #5f8fd8;
 }
 
 .bmi-segment.normal {
-  fill: #35c486;
+  fill: var(--green);
 }
 
 .bmi-segment.watch {
-  fill: #f9c846;
+  fill: #e9b949;
 }
 
 .bmi-segment.high {
-  fill: #f97339;
+  fill: #df8a35;
 }
 
 .bmi-segment.danger {
-  fill: #d93649;
+  fill: var(--danger);
 }
 
 .bmi-marker-line {
-  stroke: #f8fafc;
+  stroke: var(--green);
   stroke-width: 3;
   stroke-linecap: round;
-  filter: drop-shadow(0 1px 2px rgba(15, 23, 42, 0.45));
+  filter: drop-shadow(0 1px 2px rgba(17, 24, 39, 0.2));
 }
 
 .bmi-marker-dot {
   fill: #ffffff;
-  stroke: #172033;
+  stroke: var(--green);
   stroke-width: 3;
 }
 
@@ -1120,12 +1126,12 @@ textarea {
 .bmi-gauge-label,
 .loan-chart-label,
 .loan-chart-caption {
-  fill: #c8d4e6;
+  fill: var(--muted);
   font-weight: 850;
 }
 
 .bmi-marker-text {
-  fill: #ffffff;
+  fill: var(--green);
   font-size: 14px;
   text-anchor: middle;
 }
@@ -1151,15 +1157,15 @@ textarea {
 .bmi-mini-grid div,
 .loan-summary-tile {
   padding: 14px;
-  background: #1c293a;
-  border: 1px solid #2c3b52;
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
   border-radius: 8px;
 }
 
 .bmi-mini-grid span,
 .loan-summary-tile span {
   display: block;
-  color: #b8c7dd;
+  color: var(--muted);
   font-size: 0.82rem;
   font-weight: 800;
 }
@@ -1168,7 +1174,7 @@ textarea {
 .loan-summary-tile strong {
   display: block;
   margin-top: 5px;
-  color: #fff;
+  color: var(--ink);
   font-size: 1.1rem;
 }
 
@@ -1177,7 +1183,7 @@ textarea {
   justify-content: space-between;
   gap: 12px;
   margin: 6px 0 2px;
-  color: #f8fafc;
+  color: var(--ink);
   font-size: 0.84rem;
   font-weight: 800;
 }
@@ -1187,9 +1193,9 @@ textarea {
   align-items: center;
   gap: 6px;
   padding: 6px 10px;
-  border: 1px solid #2c3b52;
+  border: 1px solid var(--line);
   border-radius: 999px;
-  background: #1c293a;
+  background: var(--surface-soft);
 }
 
 .loan-ratio-labels span::before {
@@ -1197,11 +1203,11 @@ textarea {
   width: 10px;
   height: 10px;
   border-radius: 999px;
-  background: #6d6bf6;
+  background: var(--green);
 }
 
 .loan-ratio-labels span:last-child::before {
-  background: #f43f72;
+  background: var(--amber);
 }
 
 .loan-ratio-heading {
@@ -1212,12 +1218,12 @@ textarea {
 }
 
 .loan-ratio-heading strong {
-  color: #f8fafc;
+  color: var(--ink);
 }
 
 .loan-ratio-heading span,
 .loan-ratio-note {
-  color: #b8c7dd;
+  color: var(--muted);
   font-size: 0.82rem;
   font-weight: 800;
 }
@@ -1227,26 +1233,26 @@ textarea {
 }
 
 .loan-chart-bg {
-  fill: #233148;
+  fill: var(--green-soft);
 }
 
 .loan-chart-principal {
-  fill: #6d6bf6;
+  fill: var(--green);
 }
 
 .loan-chart-interest {
-  fill: #f43f72;
+  fill: #d9822b;
 }
 
 .loan-chart-divider {
-  stroke: #f8fafc;
+  stroke: #ffffff;
   stroke-width: 2.5;
   stroke-linecap: round;
 }
 
 .loan-chart-pin {
   fill: #ffffff;
-  stroke: #172033;
+  stroke: var(--green);
   stroke-width: 3;
 }
 
@@ -1259,7 +1265,7 @@ textarea {
 }
 
 .loan-chart-caption {
-  fill: #9fb0c9;
+  fill: var(--muted);
   font-size: 12px;
 }
 
