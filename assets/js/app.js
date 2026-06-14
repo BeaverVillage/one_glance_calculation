@@ -1,7 +1,9 @@
 import { calculateReport } from "./calculator.js";
+import { initBmiCalculator } from "./bmi-calculator.js";
 import { initCaffeineSleepCalculator } from "./caffeine-sleep.js";
 import { initCigaretteCostCalculator } from "./cigarette-cost.js";
 import { initApplianceElectricityCalculator } from "./appliance-electricity.js";
+import { initLoanInterestCalculator } from "./loan-interest.js";
 import { initNetSalaryCalculator } from "./net-salary.js";
 import { initPercentileCalculator } from "./percentile.js";
 import { renderPriceChart } from "./chart.js";
@@ -25,6 +27,7 @@ const TOOL_GROUPS = [
     label: "돈·세금",
     tools: [
       ["월 실수령액 계산기", "calculators/net-salary.html"],
+      ["대출 이자 계산기", "calculators/loan-interest.html"],
       ["주휴수당 계산기", "calculators/weekly-holiday-pay.html"],
       ["군적금 계산기", "calculators/military-savings.html"],
       ["담배 연간 비용 계산기", "calculators/cigarette-cost.html"]
@@ -41,6 +44,7 @@ const TOOL_GROUPS = [
   {
     label: "건강·습관",
     tools: [
+      ["BMI 계산기", "calculators/bmi.html"],
       ["카페인 수면 영향 계산기", "calculators/caffeine-sleep.html"]
     ]
   }
@@ -101,8 +105,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   initEvCostCalculator();
   initApplianceElectricityCalculator();
   initNetSalaryCalculator();
+  initLoanInterestCalculator();
   initWeeklyHolidayPayCalculator();
   initTextCounter();
+  initBmiCalculator();
   initCaffeineSleepCalculator();
   initPercentileCalculator();
   initCigaretteCostCalculator();

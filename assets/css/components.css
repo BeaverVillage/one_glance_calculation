@@ -346,6 +346,7 @@ body.drawer-open .tool-drawer {
   display: grid;
   grid-template-columns: minmax(280px, 0.95fr) minmax(280px, 1.05fr);
   gap: 18px;
+  min-width: 0;
   padding: 20px;
 }
 
@@ -911,6 +912,7 @@ textarea {
 .check-report,
 .chart-panel,
 .seller-copy {
+  min-width: 0;
   padding: 16px;
 }
 
@@ -948,6 +950,207 @@ textarea {
   border: 1px solid var(--line);
   border-radius: 6px;
   background: linear-gradient(180deg, #ffffff, #f7fafc);
+}
+
+.bmi-visual,
+.loan-visual {
+  display: grid;
+  gap: 18px;
+  padding: 22px;
+  color: #f8fafc;
+  background: #101827;
+  border: 1px solid #25324a;
+  border-radius: var(--radius);
+}
+
+.bmi-score-card {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.bmi-score-card span {
+  color: #b8c7dd;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.bmi-score-card strong {
+  color: #ff9f1c;
+  font-size: clamp(2.6rem, 8vw, 4rem);
+  line-height: 1;
+}
+
+.bmi-category {
+  color: #f8fafc;
+  font-weight: 900;
+}
+
+.bmi-category.low,
+.bmi-category.watch,
+.bmi-category.high,
+.bmi-category.danger {
+  color: #ffb020;
+}
+
+.bmi-category.normal {
+  color: #35c486;
+}
+
+.bmi-track {
+  position: relative;
+  display: grid;
+  grid-template-columns: 46fr 23fr 10fr 17fr 24fr;
+  height: 16px;
+  overflow: visible;
+  border-radius: 999px;
+}
+
+.bmi-track span {
+  min-width: 0;
+}
+
+.bmi-track .low {
+  background: #4386f4;
+  border-radius: 999px 0 0 999px;
+}
+
+.bmi-track .normal {
+  background: #35c486;
+}
+
+.bmi-track .watch {
+  background: #f9c846;
+}
+
+.bmi-track .high {
+  background: #f97339;
+}
+
+.bmi-track .danger {
+  background: #d93649;
+  border-radius: 0 999px 999px 0;
+}
+
+.bmi-marker {
+  position: absolute;
+  top: -8px;
+  width: 3px;
+  height: 32px;
+  background: #f8fafc;
+  border-radius: 999px;
+  box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.25);
+  transform: translateX(-50%);
+}
+
+.bmi-track-labels {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  color: #b8c7dd;
+  font-size: 0.78rem;
+}
+
+.bmi-track-labels span:nth-child(2),
+.bmi-track-labels span:nth-child(3) {
+  text-align: center;
+}
+
+.bmi-track-labels span:last-child {
+  text-align: right;
+}
+
+.bmi-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.bmi-mini-grid div,
+.loan-summary-tile {
+  padding: 14px;
+  background: #1c293a;
+  border: 1px solid #2c3b52;
+  border-radius: 8px;
+}
+
+.bmi-mini-grid span,
+.loan-summary-tile span {
+  display: block;
+  color: #b8c7dd;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.bmi-mini-grid strong,
+.loan-summary-tile strong {
+  display: block;
+  margin-top: 5px;
+  color: #fff;
+  font-size: 1.1rem;
+}
+
+.loan-ratio-labels {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #b8c7dd;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.loan-balance-bar {
+  display: grid;
+  height: 14px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #233148;
+}
+
+.loan-balance-bar span:first-child {
+  background: #6d6bf6;
+}
+
+.loan-balance-bar span:last-child {
+  background: #f43f72;
+}
+
+.schedule-wrap {
+  width: 100%;
+  max-width: 100%;
+  max-height: 420px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+.schedule-table {
+  width: 100%;
+  min-width: 680px;
+  border-collapse: collapse;
+}
+
+.schedule-table th,
+.schedule-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.schedule-table th:first-child,
+.schedule-table td:first-child {
+  text-align: center;
+}
+
+.schedule-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  color: var(--muted);
+  background: var(--surface-soft);
+  font-size: 0.86rem;
 }
 
 .chart-axis {
@@ -1249,6 +1452,15 @@ details p {
   }
 
   .guide-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bmi-visual,
+  .loan-visual {
+    padding: 16px;
+  }
+
+  .bmi-mini-grid {
     grid-template-columns: 1fr;
   }
 }
