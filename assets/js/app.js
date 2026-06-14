@@ -89,6 +89,13 @@ const USED_DEVICE_MODEL_GROUPS = [
   }
 ];
 
+const CALCULATOR_CLICK_STORAGE_KEY = "hannuncalc.calculatorClicks.v1";
+const DEFAULT_CALCULATOR_ORDER = new Map(
+  TOOL_GROUPS
+    .flatMap((group) => group.tools.map(([, href]) => href))
+    .map((href, index) => [normalizeCalculatorHref(href), index])
+);
+
 const state = {
   dataset: null,
   currentReport: null
@@ -100,6 +107,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   initResponsiveNav();
   initToolDrawer();
   initAffiliateAds();
+  initCalculatorClickRanking();
   initScientificCalculator();
   initMilitarySavingsCalculator();
   initEvCostCalculator();
@@ -124,6 +132,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   } catch (error) {
     showLoadError(error);
   }
+});
+
+window.addEventListener("pageshow", () => {
+  sortCalculatorRankSections();
 });
 
 function initResponsiveNav() {
@@ -271,6 +283,110 @@ function initToolDrawer() {
       link.hidden = !visible;
     });
   });
+}
+
+function initCalculatorClickRanking() {
+  sortCalculatorRankSections();
+
+  document.addEventListener("click", (event) => {
+    if (!(event.target instanceof Element)) return;
+    const link = event.target.closest("a[href]");
+    const calculatorKey = getCalculatorKey(link);
+    if (!calculatorKey) return;
+    incrementCalculatorClick(calculatorKey);
+    sortCalculatorRankSections();
+  });
+}
+
+function sortCalculatorRankSections() {
+  const clicks = readCalculatorClicks();
+  sortCalculatorLinkGroup(document.querySelector(".calculator-cards"), clicks, {
+    itemSelector: ".calculator-card"
+  });
+  sortCalculatorLinkGroup(document.querySelector(".mini-command-list"), clicks, {
+    itemSelector: "a",
+    updateNumbers: true
+  });
+}
+
+function sortCalculatorLinkGroup(container, clicks, options = {}) {
+  if (!container) return;
+  const items = Array.from(container.querySelectorAll(options.itemSelector || "a"))
+    .map((link, index) => {
+      const key = getCalculatorKey(link);
+      return {
+        link,
+        index,
+        key,
+        count: clicks[key] || 0,
+        defaultOrder: getDefaultCalculatorOrder(key)
+      };
+    })
+    .filter((item) => item.key);
+
+  if (!items.length) return;
+
+  items
+    .sort((a, b) => b.count - a.count || a.defaultOrder - b.defaultOrder || a.index - b.index)
+    .forEach((item, index) => {
+      container.append(item.link);
+      if (options.updateNumbers) {
+        const number = item.link.querySelector("span");
+        if (number) number.textContent = String(index + 1).padStart(2, "0");
+      }
+    });
+}
+
+function incrementCalculatorClick(key) {
+  const clicks = readCalculatorClicks();
+  clicks[key] = (clicks[key] || 0) + 1;
+  writeCalculatorClicks(clicks);
+}
+
+function readCalculatorClicks() {
+  try {
+    return JSON.parse(localStorage.getItem(CALCULATOR_CLICK_STORAGE_KEY)) || {};
+  } catch {
+    return {};
+  }
+}
+
+function writeCalculatorClicks(clicks) {
+  try {
+    localStorage.setItem(CALCULATOR_CLICK_STORAGE_KEY, JSON.stringify(clicks));
+  } catch {
+    // 저장 공간이 막혀도 계산기 이동 자체는 그대로 동작해야 합니다.
+  }
+}
+
+function getCalculatorKey(link) {
+  if (!(link instanceof HTMLAnchorElement)) return "";
+  const rawHref = link.getAttribute("href") || "";
+  if (!rawHref || rawHref.startsWith("#") || rawHref.startsWith("mailto:")) return "";
+
+  let url;
+  try {
+    url = new URL(rawHref, location.href);
+  } catch {
+    return "";
+  }
+
+  return normalizeCalculatorHref(url.pathname);
+}
+
+function getDefaultCalculatorOrder(key) {
+  return DEFAULT_CALCULATOR_ORDER.get(key) ?? Number.MAX_SAFE_INTEGER;
+}
+
+function normalizeCalculatorHref(rawHref) {
+  const path = String(rawHref)
+    .split(/[?#]/)[0]
+    .replaceAll("\\", "/")
+    .replace(/^(\.\.\/)+/, "")
+    .replace(/^\.\//, "")
+    .replace(/^\//, "");
+  const match = path.match(/(?:^|.*\/)(calculators\/[^/#?]+\.html)$/);
+  return match ? match[1] : "";
 }
 
 function bindElements() {
