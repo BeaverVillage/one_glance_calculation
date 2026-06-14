@@ -1,4 +1,4 @@
-import { formatWon, getFormNumber } from "./utils.js";
+import { formatWon, getFormNumber } from "./utils.js?v=20260614-cache-fix";
 
 const MINUTES_LOST_PER_CIGARETTE = 20;
 

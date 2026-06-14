@@ -12,7 +12,9 @@ export function clamp(value, min, max) {
 }
 
 export function getFormNumber(form, name, fallback) {
-  const value = Number(new FormData(form).get(name));
+  const rawValue = new FormData(form).get(name);
+  if (rawValue === null || rawValue === "") return fallback;
+  const value = Number(rawValue);
   return Number.isFinite(value) ? value : fallback;
 }
 

@@ -9,3 +9,6 @@
 
 /favicon.svg
   Content-Type: image/svg+xml; charset=utf-8
+
+/assets/js/*
+  Cache-Control: no-cache, max-age=0, must-revalidate
