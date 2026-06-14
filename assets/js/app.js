@@ -132,7 +132,12 @@ function initAffiliateAds() {
         </a>
       </div>
     `;
-    compactSection.after(desktopAdBand);
+    const footer = document.querySelector(".site-footer");
+    if (footer) {
+      footer.before(desktopAdBand);
+    } else {
+      document.body.append(desktopAdBand);
+    }
   }
 
   const mobileAd = document.createElement("aside");
@@ -185,12 +190,18 @@ function initToolDrawer() {
 
   const openDrawer = () => {
     drawer.setAttribute("aria-hidden", "false");
+    drawer.style.transition = "none";
+    drawer.style.transform = "none";
     document.body.classList.add("drawer-open");
-    drawer.querySelector("#tool-search")?.focus();
+    if (!window.matchMedia("(max-width: 720px)").matches) {
+      drawer.querySelector("#tool-search")?.focus();
+    }
   };
 
   const closeDrawer = () => {
     drawer.setAttribute("aria-hidden", "true");
+    drawer.style.transition = "";
+    drawer.style.transform = "";
     document.body.classList.remove("drawer-open");
   };
 

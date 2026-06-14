@@ -3,8 +3,68 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="중고 전자제품 가격 계산기에서 스마트폰 모델, 배터리, 외관, 수리 이력, 구성품을 입력해 얼마에 팔면 좋을지 확인해 보세요.">
+    <meta name="description" content="스마트폰 모델, 배터리, 외관, 수리 이력, 구성품을 입력해 중고 전자제품 예상 판매가를 계산해 보세요.">
     <title>중고 전자제품 가격 계산기 - 한눈계산</title>
+    <link rel="canonical" href="https://one-glance-calculation.pages.dev/calculators/used-device-price.html">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="ko_KR">
+    <meta property="og:site_name" content="한눈계산">
+    <meta property="og:title" content="중고 전자제품 가격 계산기 - 한눈계산">
+    <meta property="og:description" content="스마트폰 모델, 배터리, 외관, 수리 이력, 구성품을 입력해 중고 전자제품 예상 판매가를 계산해 보세요.">
+    <meta property="og:url" content="https://one-glance-calculation.pages.dev/calculators/used-device-price.html">
+    <script type="application/ld+json" data-schema="webapplication">{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "중고 전자제품 가격 계산기",
+  "url": "https://one-glance-calculation.pages.dev/calculators/used-device-price.html",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "Any",
+  "inLanguage": "ko-KR",
+  "description": "스마트폰 모델, 배터리, 외관, 수리 이력, 구성품을 입력해 중고 전자제품 예상 판매가를 계산해 보세요.",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "KRW"
+  }
+}</script>
+    <script type="application/ld+json" data-schema="faqpage">{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "이 가격은 실제 판매가인가요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "아닙니다. 비슷한 매물 가격과 제품 상태를 바탕으로 계산한 참고 가격입니다. 실제 판매가는 지역, 급매 여부, 구성품, 보증 상태에 따라 달라집니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "당근이나 번개장터와 가격이 다를 수 있나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "네. 지역마다 수요가 다르고, 플랫폼마다 매물 성격도 다릅니다. 계산 결과는 처음 등록가를 정할 때 참고하는 용도로 봐 주세요."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "배터리 80% 미만이면 얼마나 감가되나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "배터리 80% 미만은 교체를 고민하는 구매자가 많아지는 구간이라 예상 판매가를 더 낮게 봅니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "모델은 계속 추가되나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "네. 많이 거래되는 스마트폰부터 추가하고 있습니다. 이후 태블릿, 노트북, 무선 이어폰처럼 중고 거래가 활발한 제품도 늘려갈 수 있습니다."
+      }
+    }
+  ]
+}</script>
     <link rel="stylesheet" href="../assets/css/base.css">
     <link rel="stylesheet" href="../assets/css/layout.css">
     <link rel="stylesheet" href="../assets/css/components.css">
@@ -246,6 +306,27 @@
               게임기처럼 중고 거래가 활발한 제품도 추가할 수 있습니다.
             </p>
           </section>
+        </div>
+      </section>
+
+      
+      <section class="content-band calculation-guide" data-quality-section="calculator">
+        <div class="container">
+          <div class="section-intro narrow">
+            <p class="eyebrow">계산 기준</p>
+            <h2>계산 전에 확인할 내용</h2>
+            <p>아래 내용은 계산 결과를 해석할 때 필요한 기준과 주의사항입니다.</p>
+          </div>
+          <div class="guide-grid">
+            <article><h3>이 계산기는 무엇을 계산하나요?</h3><p>선택한 기기의 기준 시세에 배터리, 외관 상태, 수리 이력, 구성품 가중치를 적용해 예상 판매가 범위를 계산합니다.</p></article>
+            <article><h3>입력값 설명</h3><ul><li>모델: 기준 시세가 있는 기종을 선택합니다.</li><li>배터리·외관·수리 이력·구성품: 거래가에 영향을 줄 수 있는 상태값입니다.</li></ul></article>
+            <article><h3>계산식</h3><p>예상가 = 모델 기준가 × 배터리 보정 × 외관 보정 × 수리 이력 보정 + 구성품 보정입니다.</p></article>
+            <article><h3>예시 계산</h3><p>상태가 좋은 기기와 구성품이 있는 기기는 기준가보다 높게, 수리 이력이 있거나 배터리가 낮으면 낮게 계산됩니다.</p></article>
+            <article><h3>결과 해석</h3><p>결과는 판매글 가격을 정할 때의 출발점입니다. 실제 거래는 지역 수요와 사진 상태에 따라 달라집니다.</p></article>
+            <article><h3>주의사항</h3><p>당근·번개장터 등의 실제 매물과 거래완료 가격을 함께 확인하는 것이 좋습니다.</p></article>
+            <article><h3>참고한 공식 자료 또는 안내 문구</h3><p>초기 데이터셋과 공개 중고 매물 검색 결과를 참고한 간편 추정 방식입니다.</p></article>
+          </div>
+          <p class="guide-updated">최종 업데이트 날짜: 2026-06-14</p>
         </div>
       </section>
 

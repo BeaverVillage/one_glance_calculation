@@ -16,7 +16,7 @@ export function initWeeklyHolidayPayCalculator(root = document) {
     const result = calculateWeeklyHolidayPay({
       hourlyWage: getFormNumber(form, "hourlyWage", 10030),
       weeklyHours: getFormNumber(form, "weeklyHours", 20),
-      workingWeeks: getFormNumber(form, "workingWeeks", 4.345),
+      monthDays: getFormNumber(form, "monthDays", 30),
       fullAttendance: form.elements.fullAttendance.checked
     });
     renderWeeklyHolidayPay(els, result);
@@ -34,12 +34,16 @@ export function initWeeklyHolidayPayCalculator(root = document) {
 export function calculateWeeklyHolidayPay(values) {
   const hourlyWage = Math.max(0, values.hourlyWage);
   const weeklyHours = Math.max(0, values.weeklyHours);
+  const monthDays = Math.min(31, Math.max(1, values.monthDays || 30));
+  const workingWeeks = monthDays / 7;
   const eligible = values.fullAttendance && weeklyHours >= 15;
   const paidHolidayHours = eligible ? Math.min(8, weeklyHours / 40 * 8) : 0;
   const weeklyPay = paidHolidayHours * hourlyWage;
-  const monthlyPay = weeklyPay * Math.max(0, values.workingWeeks);
+  const monthlyPay = weeklyPay * workingWeeks;
   return {
     eligible,
+    monthDays,
+    workingWeeks,
     paidHolidayHours,
     weeklyPay,
     monthlyPay,
@@ -53,7 +57,7 @@ function renderWeeklyHolidayPay(els, result) {
   els.hours.textContent = `${round(result.paidHolidayHours, 2)}시간`;
   els.total.textContent = formatWon(result.weeklyTotalPay);
   els.detail.textContent = result.eligible
-    ? "1주 15시간 이상 근무하고 약정 근무일을 개근한 조건으로 계산했습니다."
+    ? `1주 15시간 이상 근무하고 약정 근무일을 개근한 조건입니다. 월 환산은 ${result.monthDays}일 기준 ${round(result.workingWeeks, 2)}주로 계산했습니다.`
     : "1주 15시간 미만이거나 개근 조건을 선택하지 않아 주휴수당을 0원으로 계산했습니다.";
 }
 

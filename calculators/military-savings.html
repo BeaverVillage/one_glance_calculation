@@ -3,8 +3,68 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="군적금 계산기에서 월 납입액, 납입 개월, 금리, 정부 지원율을 입력해 만기 때 받을 수 있는 금액을 예상해 보세요.">
+    <meta name="description" content="월 납입액, 납입 개월, 금리, 정부 지원율을 입력해 군적금 만기 예상액과 이자를 계산해 보세요.">
     <title>군적금 계산기 - 한눈계산</title>
+    <link rel="canonical" href="https://one-glance-calculation.pages.dev/calculators/military-savings.html">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="ko_KR">
+    <meta property="og:site_name" content="한눈계산">
+    <meta property="og:title" content="군적금 계산기 - 한눈계산">
+    <meta property="og:description" content="월 납입액, 납입 개월, 금리, 정부 지원율을 입력해 군적금 만기 예상액과 이자를 계산해 보세요.">
+    <meta property="og:url" content="https://one-glance-calculation.pages.dev/calculators/military-savings.html">
+    <script type="application/ld+json" data-schema="webapplication">{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "군적금 계산기",
+  "url": "https://one-glance-calculation.pages.dev/calculators/military-savings.html",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "Any",
+  "inLanguage": "ko-KR",
+  "description": "월 납입액, 납입 개월, 금리, 정부 지원율을 입력해 군적금 만기 예상액과 이자를 계산해 보세요.",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "KRW"
+  }
+}</script>
+    <script type="application/ld+json" data-schema="faqpage">{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "계산 결과가 실제 만기액과 같나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "완전히 같다고 보기는 어렵습니다. 실제 금액은 가입 은행, 납입일, 우대금리 조건, 지원 기준에 따라 달라질 수 있습니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "정부 지원율은 왜 직접 입력하나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "지원율은 시점에 따라 바뀔 수 있습니다. 그래서 최신 안내에서 확인한 숫자를 직접 넣어 계산하는 방식으로 만들었습니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "월 납입액은 마음대로 넣어도 되나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "계산은 여러 경우를 비교할 수 있게 넓게 열어두었습니다. 실제로 가입할 수 있는 월 납입 한도는 은행 안내를 확인하세요."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "비과세 체크는 무엇인가요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "체크하면 이자에서 세금을 빼지 않고 계산합니다. 체크를 해제하면 이자에서 15.4%를 뺀 금액으로 계산합니다."
+      }
+    }
+  ]
+}</script>
     <link rel="stylesheet" href="../assets/css/base.css">
     <link rel="stylesheet" href="../assets/css/layout.css">
     <link rel="stylesheet" href="../assets/css/components.css">
@@ -175,6 +235,27 @@
               </a>
             </div>
           </section>
+        </div>
+      </section>
+
+      
+      <section class="content-band calculation-guide" data-quality-section="calculator">
+        <div class="container">
+          <div class="section-intro narrow">
+            <p class="eyebrow">계산 기준</p>
+            <h2>계산 전에 확인할 내용</h2>
+            <p>아래 내용은 계산 결과를 해석할 때 필요한 기준과 주의사항입니다.</p>
+          </div>
+          <div class="guide-grid">
+            <article><h3>이 계산기는 무엇을 계산하나요?</h3><p>군적금에 매달 납입했을 때 만기 원금, 예상 이자, 지원금을 합산한 예상 수령액을 계산합니다.</p></article>
+            <article><h3>입력값 설명</h3><ul><li>월 납입액: 매달 넣을 금액입니다.</li><li>납입 개월: 적금을 유지할 기간입니다.</li><li>연 금리와 지원율: 상품 안내에 적힌 기준을 입력합니다.</li></ul></article>
+            <article><h3>계산식</h3><p>월별 납입액에 납입 기간과 연 금리를 반영해 이자를 추정하고, 입력한 지원율을 원금 기준으로 더합니다.</p></article>
+            <article><h3>예시 계산</h3><p>월 40만원을 18개월 납입하고 연 5% 금리와 71% 지원율을 넣으면 만기 예상액을 분리해 보여줍니다.</p></article>
+            <article><h3>결과 해석</h3><p>만기 예상액은 은행별 우대금리, 세금, 납입일에 따라 달라질 수 있습니다.</p></article>
+            <article><h3>주의사항</h3><p>정확한 가입 조건과 지원금은 가입 은행과 병무청·국방부 안내를 확인하세요.</p></article>
+            <article><h3>참고한 공식 자료 또는 안내 문구</h3><p><a href="https://www.mma.go.kr/" target="_blank" rel="noopener">병무청</a> 및 가입 은행의 상품 안내를 함께 확인하세요.</p></article>
+          </div>
+          <p class="guide-updated">최종 업데이트 날짜: 2026-06-14</p>
         </div>
       </section>
 

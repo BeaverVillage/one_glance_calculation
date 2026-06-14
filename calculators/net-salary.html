@@ -3,8 +3,68 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="월급, 비과세 금액, 부양가족, 4대보험 반영 여부를 입력해 월 실수령액을 추정해 보세요.">
+    <meta name="description" content="월급, 비과세 금액, 부양가족, 4대보험 반영 여부를 입력해 예상 월 실수령액을 계산해 보세요.">
     <title>월 실수령액 계산기 - 한눈계산</title>
+    <link rel="canonical" href="https://one-glance-calculation.pages.dev/calculators/net-salary.html">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="ko_KR">
+    <meta property="og:site_name" content="한눈계산">
+    <meta property="og:title" content="월 실수령액 계산기 - 한눈계산">
+    <meta property="og:description" content="월급, 비과세 금액, 부양가족, 4대보험 반영 여부를 입력해 예상 월 실수령액을 계산해 보세요.">
+    <meta property="og:url" content="https://one-glance-calculation.pages.dev/calculators/net-salary.html">
+    <script type="application/ld+json" data-schema="webapplication">{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "월 실수령액 계산기",
+  "url": "https://one-glance-calculation.pages.dev/calculators/net-salary.html",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "Any",
+  "inLanguage": "ko-KR",
+  "description": "월급, 비과세 금액, 부양가족, 4대보험 반영 여부를 입력해 예상 월 실수령액을 계산해 보세요.",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "KRW"
+  }
+}</script>
+    <script type="application/ld+json" data-schema="faqpage">{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "정확한 급여명세서와 같은가요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "아닙니다. 실제 회사의 원천징수 방식과 비과세 항목에 따라 달라질 수 있는 참고 계산입니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "비과세 금액은 무엇인가요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "대표적으로 월 식대 비과세처럼 세금 계산에서 제외되는 금액입니다. 회사 급여 규정에 따라 다를 수 있습니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "4대보험 요율은 왜 추정인가요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "보험료율과 상하한 기준은 바뀔 수 있고, 보수월액 산정 방식도 개인마다 다를 수 있기 때문입니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "연봉 계산에도 쓸 수 있나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "연봉을 12로 나눠 입력하면 대략적인 월 실수령액을 비교할 수 있습니다."
+      }
+    }
+  ]
+}</script>
     <link rel="stylesheet" href="../assets/css/base.css">
     <link rel="stylesheet" href="../assets/css/layout.css">
     <link rel="stylesheet" href="../assets/css/components.css">
@@ -125,6 +185,27 @@
               <li><a href="https://www.nts.go.kr/nts/cm/cntnts/cntntsView.do?cntntsId=7703&mi=2291" target="_blank" rel="noopener">국세청 원천세 세율 안내</a>와 <a href="https://www.hometax.go.kr/" target="_blank" rel="noopener">홈택스</a>에서 최종 확인하세요.</li>
             </ul>
           </section>
+        </div>
+      </section>
+
+      
+      <section class="content-band calculation-guide" data-quality-section="calculator">
+        <div class="container">
+          <div class="section-intro narrow">
+            <p class="eyebrow">계산 기준</p>
+            <h2>계산 전에 확인할 내용</h2>
+            <p>아래 내용은 계산 결과를 해석할 때 필요한 기준과 주의사항입니다.</p>
+          </div>
+          <div class="guide-grid">
+            <article><h3>이 계산기는 무엇을 계산하나요?</h3><p>월급에서 4대보험과 소득세·지방소득세 추정액을 제외한 월 실수령액을 계산합니다.</p></article>
+            <article><h3>입력값 설명</h3><ul><li>월급: 세전 월 급여입니다.</li><li>비과세 금액: 식대 등 비과세로 볼 수 있는 금액입니다.</li><li>부양가족과 4대보험 선택: 공제 추정에 영향을 줍니다.</li></ul></article>
+            <article><h3>계산식</h3><p>실수령액 = 세전 급여 - 4대보험 추정액 - 근로소득세 추정액 - 지방소득세 추정액입니다.</p></article>
+            <article><h3>예시 계산</h3><p>세전 300만원, 비과세 20만원을 입력하면 보험료와 세금 추정액을 뺀 금액을 보여줍니다.</p></article>
+            <article><h3>결과 해석</h3><p>결과는 급여명세서를 미리 가늠하는 참고값입니다.</p></article>
+            <article><h3>주의사항</h3><p>회사 공제 방식, 부양가족, 비과세 항목, 최신 세율에 따라 실제 금액은 달라질 수 있습니다.</p></article>
+            <article><h3>참고한 공식 자료 또는 안내 문구</h3><p><a href="https://www.nts.go.kr/" target="_blank" rel="noopener">국세청</a>과 4대사회보험 정보연계센터 등 공식 안내를 확인하세요.</p></article>
+          </div>
+          <p class="guide-updated">최종 업데이트 날짜: 2026-06-14</p>
         </div>
       </section>
 

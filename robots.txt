@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://one-glance-calculation.pages.dev/sitemap.xml

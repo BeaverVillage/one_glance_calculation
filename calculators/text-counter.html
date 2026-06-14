@@ -5,6 +5,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="공백 포함 글자수, 공백 제외 글자수, UTF-8 byte, 한글 2바이트 기준 byte를 한 번에 확인하세요.">
     <title>글자수·바이트 계산기 - 한눈계산</title>
+    <link rel="canonical" href="https://one-glance-calculation.pages.dev/calculators/text-counter.html">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="ko_KR">
+    <meta property="og:site_name" content="한눈계산">
+    <meta property="og:title" content="글자수·바이트 계산기 - 한눈계산">
+    <meta property="og:description" content="공백 포함 글자수, 공백 제외 글자수, UTF-8 byte, 한글 2바이트 기준 byte를 한 번에 확인하세요.">
+    <meta property="og:url" content="https://one-glance-calculation.pages.dev/calculators/text-counter.html">
+    <script type="application/ld+json" data-schema="webapplication">{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "글자수·바이트 계산기",
+  "url": "https://one-glance-calculation.pages.dev/calculators/text-counter.html",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "Any",
+  "inLanguage": "ko-KR",
+  "description": "공백 포함 글자수, 공백 제외 글자수, UTF-8 byte, 한글 2바이트 기준 byte를 한 번에 확인하세요.",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "KRW"
+  }
+}</script>
+    <script type="application/ld+json" data-schema="faqpage">{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "공백 제외는 무엇을 빼나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "띄어쓰기, 줄바꿈, 탭 같은 공백 문자를 제외합니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "UTF-8 byte는 어디에 쓰나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "웹 서비스나 데이터 저장 기준에서 자주 쓰이는 byte 계산입니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "한글 2 byte 기준은 정확한가요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "간편 추정입니다. 제출 사이트의 실제 카운터와 한 번 더 비교하세요."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "입력한 글은 저장되나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "저장하지 않고 현재 화면에서만 계산합니다."
+      }
+    }
+  ]
+}</script>
     <link rel="stylesheet" href="../assets/css/base.css">
     <link rel="stylesheet" href="../assets/css/layout.css">
     <link rel="stylesheet" href="../assets/css/components.css">
@@ -18,6 +78,27 @@
         <aside class="result-panel"><div class="report-summary"><span class="report-kicker">공백 포함 글자수</span><strong id="text-count-with-spaces" class="result-number">-</strong><span>입력하는 즉시 자동으로 계산됩니다.</span></div><div class="metric-grid savings-metrics"><div><span>공백 제외</span><strong id="text-count-without-spaces">-</strong></div><div><span>UTF-8 byte</span><strong id="text-count-utf8">-</strong></div><div><span>한글 2 byte 기준</span><strong id="text-count-euckr">-</strong></div><div><span>단어 수</span><strong id="text-count-words">-</strong></div><div><span>줄 수</span><strong id="text-count-lines">-</strong></div></div></aside>
       </section></div></section>
       <section class="content-band muted"><div class="container two-column"><section class="info-block"><p class="eyebrow">사용 방법</p><h2>붙여 넣으면 바로 계산됩니다.</h2><ol class="step-list"><li><strong>글 붙여넣기</strong><span>확인할 문장을 입력창에 넣습니다.</span></li><li><strong>조건 확인</strong><span>공백 포함, 공백 제외, byte를 나눠 봅니다.</span></li><li><strong>제출 기준 비교</strong><span>사이트나 과제에서 요구하는 기준과 맞춥니다.</span></li></ol></section><section class="info-block"><p class="eyebrow">계산 기준</p><h2>byte 기준은 서비스마다 다를 수 있습니다.</h2><ul class="plain-list"><li>UTF-8은 한글이 보통 3 byte로 계산됩니다.</li><li>일부 오래된 입력칸은 한글 2 byte 기준을 사용하기도 합니다.</li><li>줄바꿈과 특수문자 처리 방식은 제출 사이트마다 다를 수 있습니다.</li></ul></section></div></section>
+      
+      <section class="content-band calculation-guide" data-quality-section="calculator">
+        <div class="container">
+          <div class="section-intro narrow">
+            <p class="eyebrow">계산 기준</p>
+            <h2>계산 전에 확인할 내용</h2>
+            <p>아래 내용은 계산 결과를 해석할 때 필요한 기준과 주의사항입니다.</p>
+          </div>
+          <div class="guide-grid">
+            <article><h3>이 계산기는 무엇을 계산하나요?</h3><p>입력한 문장의 글자수와 바이트 수를 공백 포함·제외 기준으로 계산합니다.</p></article>
+            <article><h3>입력값 설명</h3><ul><li>텍스트: 확인할 문장이나 문단을 붙여 넣습니다.</li><li>공백과 줄바꿈: 제출처 기준에 따라 포함 여부를 확인합니다.</li></ul></article>
+            <article><h3>계산식</h3><p>글자수는 문자열 길이와 공백 제거 길이를 세고, UTF-8 바이트는 TextEncoder 기준으로 계산합니다.</p></article>
+            <article><h3>예시 계산</h3><p>“한눈 계산”은 공백 포함 5자, 공백 제외 4자로 계산됩니다.</p></article>
+            <article><h3>결과 해석</h3><p>자기소개서, 게시글, 제출 양식의 제한 글자수와 비교해 사용하세요.</p></article>
+            <article><h3>주의사항</h3><p>제출 사이트에 따라 줄바꿈, 이모지, 한글 바이트 처리 기준이 다를 수 있습니다.</p></article>
+            <article><h3>참고한 공식 자료 또는 안내 문구</h3><p>브라우저의 표준 문자열 처리와 UTF-8 인코딩 기준을 사용합니다.</p></article>
+          </div>
+          <p class="guide-updated">최종 업데이트 날짜: 2026-06-14</p>
+        </div>
+      </section>
+
       <section class="content-band"><div class="container faq-wrap"><p class="eyebrow">자주 묻는 질문</p><h2>글자수 계산기 자주 묻는 질문</h2><div class="faq-grid"><details open><summary>공백 제외는 무엇을 빼나요?</summary><p>띄어쓰기, 줄바꿈, 탭 같은 공백 문자를 제외합니다.</p></details><details><summary>UTF-8 byte는 어디에 쓰나요?</summary><p>웹 서비스나 데이터 저장 기준에서 자주 쓰이는 byte 계산입니다.</p></details><details><summary>한글 2 byte 기준은 정확한가요?</summary><p>간편 추정입니다. 제출 사이트의 실제 카운터와 한 번 더 비교하세요.</p></details><details><summary>입력한 글은 저장되나요?</summary><p>저장하지 않고 현재 화면에서만 계산합니다.</p></details></div></div></section>
     </main>
     <footer class="site-footer"><div class="container footer-grid"><div><strong>한눈계산</strong><p>복잡한 계산을 쉽게 확인하는 실용 계산 도구입니다.</p></div><nav aria-label="정책 메뉴"><a href="../about.html">사이트 소개</a><a href="../privacy.html">개인정보 처리방침</a><a href="../contact.html">문의</a><a href="../disclaimer.html">이용 안내</a></nav></div></footer>

@@ -3,8 +3,68 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="전기차 충전비와 주유비를 월 주행거리 기준으로 비교해 보세요. 전비, 충전 단가, 연비, 유가를 입력하면 월 비용과 100km당 비용을 계산합니다.">
+    <meta name="description" content="월 주행거리, 전비, 충전 단가, 연비, 유가를 입력해 전기차 충전비와 내연기관 주유비를 비교해 보세요.">
     <title>전기차 충전비 vs 주유비 계산기 - 한눈계산</title>
+    <link rel="canonical" href="https://one-glance-calculation.pages.dev/calculators/ev-vs-gas.html">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="ko_KR">
+    <meta property="og:site_name" content="한눈계산">
+    <meta property="og:title" content="전기차 충전비 vs 주유비 계산기 - 한눈계산">
+    <meta property="og:description" content="월 주행거리, 전비, 충전 단가, 연비, 유가를 입력해 전기차 충전비와 내연기관 주유비를 비교해 보세요.">
+    <meta property="og:url" content="https://one-glance-calculation.pages.dev/calculators/ev-vs-gas.html">
+    <script type="application/ld+json" data-schema="webapplication">{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "전기차 충전비 vs 주유비 계산기",
+  "url": "https://one-glance-calculation.pages.dev/calculators/ev-vs-gas.html",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "Any",
+  "inLanguage": "ko-KR",
+  "description": "월 주행거리, 전비, 충전 단가, 연비, 유가를 입력해 전기차 충전비와 내연기관 주유비를 비교해 보세요.",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "KRW"
+  }
+}</script>
+    <script type="application/ld+json" data-schema="faqpage">{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "충전 단가는 얼마로 넣어야 하나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "자주 쓰는 충전소의 원/kWh 단가를 넣으면 됩니다. 완속, 급속, 아파트 충전기마다 단가가 다를 수 있습니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "충전 손실은 꼭 넣어야 하나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "정확히 모르겠다면 5~10% 정도로 두고 계산해 보세요. 손실을 넣으면 실제 전기 사용량에 더 가깝게 계산됩니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "하이브리드차도 비교할 수 있나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "가능합니다. 하이브리드차의 실제 연비를 휘발유차 연비 칸에 넣으면 됩니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "보험료나 정비비도 포함되나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "아니요. 이 계산기는 충전비와 주유비만 비교합니다. 차량 구매비, 보험료, 정비비, 감가상각은 포함하지 않습니다."
+      }
+    }
+  ]
+}</script>
     <link rel="stylesheet" href="../assets/css/base.css">
     <link rel="stylesheet" href="../assets/css/layout.css">
     <link rel="stylesheet" href="../assets/css/components.css">
@@ -158,6 +218,27 @@
               <li>유가와 충전 단가는 지역과 시간대에 따라 달라질 수 있습니다.</li>
             </ul>
           </section>
+        </div>
+      </section>
+
+      
+      <section class="content-band calculation-guide" data-quality-section="calculator">
+        <div class="container">
+          <div class="section-intro narrow">
+            <p class="eyebrow">계산 기준</p>
+            <h2>계산 전에 확인할 내용</h2>
+            <p>아래 내용은 계산 결과를 해석할 때 필요한 기준과 주의사항입니다.</p>
+          </div>
+          <div class="guide-grid">
+            <article><h3>이 계산기는 무엇을 계산하나요?</h3><p>월 주행거리 기준으로 전기차 충전비와 내연기관 차량 주유비를 비교합니다.</p></article>
+            <article><h3>입력값 설명</h3><ul><li>월 주행거리: 한 달 동안 달리는 거리입니다.</li><li>전비·충전 단가: 전기차의 kWh당 주행거리와 요금입니다.</li><li>연비·유가: 내연기관 차량의 L당 주행거리와 유류 가격입니다.</li></ul></article>
+            <article><h3>계산식</h3><p>전기차 비용 = 주행거리 ÷ 전비 × 충전 단가, 주유비 = 주행거리 ÷ 연비 × 유가입니다.</p></article>
+            <article><h3>예시 계산</h3><p>월 1,000km를 주행할 때 전비 5km/kWh, 충전 단가 300원/kWh이면 충전비는 약 60,000원입니다.</p></article>
+            <article><h3>결과 해석</h3><p>월 절감액이 크면 충전 환경까지 고려해 차량 유지비 비교에 활용할 수 있습니다.</p></article>
+            <article><h3>주의사항</h3><p>급속·완속 충전 단가, 계절별 전비, 실제 연비에 따라 결과가 달라질 수 있습니다.</p></article>
+            <article><h3>참고한 공식 자료 또는 안내 문구</h3><p>입력한 단가와 효율을 기준으로 한 산술 비교입니다.</p></article>
+          </div>
+          <p class="guide-updated">최종 업데이트 날짜: 2026-06-14</p>
         </div>
       </section>
 
