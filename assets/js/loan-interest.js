@@ -9,6 +9,7 @@ const METHOD_LABELS = {
 export function initLoanInterestCalculator(root = document) {
   const form = root.querySelector("#loan-form");
   if (!form) return;
+  if (form.dataset.calculatorReady === "loan") return;
 
   const els = {
     monthlyPayment: root.querySelector("#loan-monthly-payment"),
@@ -20,13 +21,16 @@ export function initLoanInterestCalculator(root = document) {
     balanceBar: root.querySelector("#loan-balance-bar"),
     scheduleBody: root.querySelector("#loan-schedule-body")
   };
+  if (Object.values(els).some((element) => !element)) return;
+
+  form.dataset.calculatorReady = "loan";
 
   const update = () => {
     const result = calculateLoan({
       principal: readNumber(form.elements.principal, 100000000),
       annualRate: readNumber(form.elements.annualRate, 4.5),
       months: readNumber(form.elements.months, 360),
-      method: form.elements.method.value
+      method: getSelectedMethod(form)
     });
     renderLoan(els, result);
   };
@@ -143,6 +147,22 @@ function readNumber(input, fallback) {
   return Number.isFinite(value) ? value : fallback;
 }
 
+function getSelectedMethod(form) {
+  return form.querySelector('input[name="method"]:checked')?.value || "equalPayment";
+}
+
 function formatPercent(value) {
   return `${value.toLocaleString("ko-KR", { maximumFractionDigits: 1 })}%`;
+}
+
+function bootLoanInterestCalculator() {
+  initLoanInterestCalculator();
+}
+
+if (typeof document !== "undefined") {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bootLoanInterestCalculator, { once: true });
+  } else {
+    bootLoanInterestCalculator();
+  }
 }

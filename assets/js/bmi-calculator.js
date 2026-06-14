@@ -1,6 +1,7 @@
 export function initBmiCalculator(root = document) {
   const form = root.querySelector("#bmi-form");
   if (!form) return;
+  if (form.dataset.calculatorReady === "bmi") return;
 
   const els = {
     score: root.querySelector("#bmi-score"),
@@ -10,6 +11,9 @@ export function initBmiCalculator(root = document) {
     difference: root.querySelector("#bmi-difference"),
     detail: root.querySelector("#bmi-detail")
   };
+  if (Object.values(els).some((element) => !element)) return;
+
+  form.dataset.calculatorReady = "bmi";
 
   const update = () => {
     const heightCm = readNumber(form.elements.heightCm, 170);
@@ -100,4 +104,16 @@ function formatNumber(value, digits = 0) {
     minimumFractionDigits: digits,
     maximumFractionDigits: digits
   });
+}
+
+function bootBmiCalculator() {
+  initBmiCalculator();
+}
+
+if (typeof document !== "undefined") {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bootBmiCalculator, { once: true });
+  } else {
+    bootBmiCalculator();
+  }
 }
