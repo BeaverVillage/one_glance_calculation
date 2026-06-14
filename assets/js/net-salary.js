@@ -52,7 +52,7 @@ export function calculateNetSalary(values) {
 
   const earnedDeduction = getEarnedIncomeDeduction(annualGross);
   const personalDeduction = Math.max(1, values.dependents) * 1500000;
-  const childDeduction = Math.max(0, values.children) * 150000;
+  const childDeduction = getChildTaxCredit(values.children);
   const taxableIncome = Math.max(0, annualGross - earnedDeduction - personalDeduction - monthlySocial * 12);
   const calculatedTax = getIncomeTax(taxableIncome);
   const earnedTaxCredit = getEarnedTaxCredit(calculatedTax, annualGross);
@@ -117,5 +117,14 @@ function getEarnedTaxCredit(calculatedTax, annualGross) {
 
   if (annualGross <= 33000000) return Math.min(credit, 740000);
   if (annualGross <= 70000000) return Math.min(credit, Math.max(660000, 740000 - (annualGross - 33000000) * 0.008));
-  return Math.min(credit, Math.max(500000, 660000 - (annualGross - 70000000) * 0.5));
+  if (annualGross <= 120000000) return Math.min(credit, Math.max(500000, 660000 - (annualGross - 70000000) * 0.5));
+  return Math.min(credit, Math.max(200000, 500000 - (annualGross - 120000000) * 0.5));
+}
+
+function getChildTaxCredit(children) {
+  const count = Math.max(0, Math.floor(children));
+  if (count === 0) return 0;
+  if (count === 1) return 250000;
+  if (count === 2) return 550000;
+  return 550000 + (count - 2) * 400000;
 }

@@ -6,7 +6,9 @@ export function initBmiCalculator(root = document) {
   const els = {
     score: root.querySelector("#bmi-score"),
     category: root.querySelector("#bmi-category"),
-    marker: root.querySelector("#bmi-marker"),
+    markerLine: root.querySelector("#bmi-marker-line"),
+    markerDot: root.querySelector("#bmi-marker-dot"),
+    markerText: root.querySelector("#bmi-marker-text"),
     healthyRange: root.querySelector("#bmi-healthy-range"),
     difference: root.querySelector("#bmi-difference"),
     detail: root.querySelector("#bmi-detail")
@@ -57,7 +59,12 @@ function renderBmi(els, result) {
   els.score.textContent = formatNumber(result.bmi, 1);
   els.category.textContent = result.category.label;
   els.category.className = `bmi-category ${result.category.tone}`;
-  els.marker.style.left = `${result.markerPercent}%`;
+  const markerX = 16 + 388 * result.markerPercent / 100;
+  els.markerLine.setAttribute("x1", markerX);
+  els.markerLine.setAttribute("x2", markerX);
+  els.markerDot.setAttribute("cx", markerX);
+  els.markerText.setAttribute("x", clamp(markerX, 42, 378));
+  els.markerText.textContent = `BMI ${formatNumber(result.bmi, 1)}`;
   els.healthyRange.textContent = `${formatNumber(result.minHealthyWeight, 1)} ~ ${formatNumber(result.maxHealthyWeight, 1)} kg`;
 
   if (result.targetDiff > 0) {
@@ -97,6 +104,10 @@ function getMarkerPercent(bmi) {
 function readNumber(input, fallback) {
   const value = Number(input?.value);
   return Number.isFinite(value) ? value : fallback;
+}
+
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
 }
 
 function formatNumber(value, digits = 0) {

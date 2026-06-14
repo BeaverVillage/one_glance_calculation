@@ -19,7 +19,13 @@ export function initLoanInterestCalculator(root = document) {
     detail: root.querySelector("#loan-detail"),
     principalRatio: root.querySelector("#loan-principal-ratio"),
     interestRatio: root.querySelector("#loan-interest-ratio"),
-    balanceBar: root.querySelector("#loan-balance-bar"),
+    ratioNote: root.querySelector("#loan-ratio-note"),
+    principalSegment: root.querySelector("#loan-principal-segment"),
+    interestSegment: root.querySelector("#loan-interest-segment"),
+    ratioDivider: root.querySelector("#loan-ratio-divider"),
+    ratioPin: root.querySelector("#loan-ratio-pin"),
+    principalSvgLabel: root.querySelector("#loan-principal-svg-label"),
+    interestSvgLabel: root.querySelector("#loan-interest-svg-label"),
     scheduleBody: root.querySelector("#loan-schedule-body")
   };
   if (Object.values(els).some((element) => !element)) return;
@@ -120,10 +126,8 @@ function renderLoan(els, result) {
   if (result.totalPayment <= 0) {
     els.principalRatio.textContent = "원금 -";
     els.interestRatio.textContent = "이자 -";
-    els.balanceBar.classList.add("empty");
-    els.balanceBar.removeAttribute("style");
-    els.balanceBar.textContent = "대출 조건을 입력하면 비율 그래프가 표시됩니다.";
-    els.balanceBar.setAttribute("aria-label", "원금과 이자 비율 그래프 대기 중");
+    els.ratioNote.textContent = "대출 조건을 입력하면 원금과 이자 비중을 그림으로 표시합니다.";
+    updateLoanRatioGraphic(els, 0, 0);
     els.scheduleBody.innerHTML = "";
     return;
   }
@@ -132,10 +136,8 @@ function renderLoan(els, result) {
   const interestRatio = result.totalInterest / result.totalPayment * 100;
   els.principalRatio.textContent = `원금 ${formatPercent(principalRatio)}`;
   els.interestRatio.textContent = `이자 ${formatPercent(interestRatio)}`;
-  els.balanceBar.classList.remove("empty");
-  els.balanceBar.innerHTML = "<span></span><span></span>";
-  els.balanceBar.style.gridTemplateColumns = `${Math.max(0, principalRatio)}fr ${Math.max(0, interestRatio)}fr`;
-  els.balanceBar.setAttribute("aria-label", `총 상환액 중 원금 ${formatPercent(principalRatio)}, 이자 ${formatPercent(interestRatio)}`);
+  els.ratioNote.textContent = `총 상환액 ${formatWon(result.totalPayment)} 중 원금과 이자의 비중입니다.`;
+  updateLoanRatioGraphic(els, principalRatio, interestRatio);
 
   els.scheduleBody.innerHTML = result.schedule.map((item) => `
     <tr>
@@ -146,6 +148,23 @@ function renderLoan(els, result) {
       <td data-label="남은 잔액">${formatWon(item.balance)}</td>
     </tr>
   `).join("");
+}
+
+function updateLoanRatioGraphic(els, principalRatio, interestRatio) {
+  const barX = 16;
+  const barWidth = 388;
+  const principalWidth = barWidth * clamp(principalRatio, 0, 100) / 100;
+  const interestWidth = Math.max(0, barWidth - principalWidth);
+  const dividerX = barX + principalWidth;
+
+  els.principalSegment.setAttribute("width", principalWidth);
+  els.interestSegment.setAttribute("x", dividerX);
+  els.interestSegment.setAttribute("width", interestWidth);
+  els.ratioDivider.setAttribute("x1", dividerX);
+  els.ratioDivider.setAttribute("x2", dividerX);
+  els.ratioPin.setAttribute("cx", dividerX);
+  els.principalSvgLabel.textContent = `원금 ${formatPercent(principalRatio)}`;
+  els.interestSvgLabel.textContent = `이자 ${formatPercent(interestRatio)}`;
 }
 
 function row(month, payment, principal, interest, balance) {
@@ -161,6 +180,10 @@ function row(month, payment, principal, interest, balance) {
 function readNumber(input, fallback) {
   const value = Number(input?.value);
   return Number.isFinite(value) ? value : fallback;
+}
+
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
 }
 
 function getSelectedMethod(form) {

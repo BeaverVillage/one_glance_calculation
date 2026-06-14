@@ -94,7 +94,25 @@
         </form>
         <aside class="bmi-visual" aria-live="polite">
           <div class="bmi-score-card"><span>BMI 지수</span><strong id="bmi-score">-</strong><p id="bmi-category" class="bmi-category">-</p></div>
-          <div><div class="bmi-track" aria-label="BMI 구간 막대"><span class="low"></span><span class="normal"></span><span class="watch"></span><span class="high"></span><span class="danger"></span><i id="bmi-marker" class="bmi-marker" aria-hidden="true"></i></div><div class="bmi-track-labels"><span>저체중</span><span>정상</span><span>과체중</span><span>비만</span><span>고도비만</span></div></div>
+          <div class="bmi-gauge-wrap">
+            <svg id="bmi-gauge-chart" class="bmi-gauge-chart" viewBox="0 0 420 126" role="img" aria-labelledby="bmi-gauge-title bmi-gauge-desc">
+              <title id="bmi-gauge-title">BMI 구간 게이지</title>
+              <desc id="bmi-gauge-desc">저체중, 정상, 과체중, 비만, 고도비만 구간과 현재 BMI 위치를 보여줍니다.</desc>
+              <rect class="bmi-segment low" x="16" y="44" width="83.1" height="18" rx="9"></rect>
+              <rect class="bmi-segment normal" x="99.1" y="44" width="83.1" height="18"></rect>
+              <rect class="bmi-segment watch" x="182.2" y="44" width="36.9" height="18"></rect>
+              <rect class="bmi-segment high" x="219.1" y="44" width="92.4" height="18"></rect>
+              <rect class="bmi-segment danger" x="311.5" y="44" width="92.5" height="18" rx="9"></rect>
+              <line id="bmi-marker-line" class="bmi-marker-line" x1="16" y1="34" x2="16" y2="76"></line>
+              <circle id="bmi-marker-dot" class="bmi-marker-dot" cx="16" cy="53" r="6"></circle>
+              <text id="bmi-marker-text" class="bmi-marker-text" x="16" y="24">BMI -</text>
+              <text class="bmi-gauge-label" x="16" y="94">저체중</text>
+              <text class="bmi-gauge-label middle" x="140.6" y="94">정상</text>
+              <text class="bmi-gauge-label middle" x="200.7" y="94">과체중</text>
+              <text class="bmi-gauge-label middle" x="265.3" y="94">비만</text>
+              <text class="bmi-gauge-label end" x="404" y="94">고도비만</text>
+            </svg>
+          </div>
           <div class="bmi-mini-grid"><div><span>정상 체중 범위</span><strong id="bmi-healthy-range">-</strong></div><div><span>정상 범위와 차이</span><strong id="bmi-difference">-</strong></div></div>
           <p id="bmi-detail">키와 몸무게를 입력하면 BMI를 계산합니다.</p>
         </aside>
