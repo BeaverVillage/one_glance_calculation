@@ -19,7 +19,7 @@
     <meta name="google-adsense-account" content="ca-pub-6340743169950430">
     <meta name="msvalidate.01" content="71220435128A45EF179793784E9AFC3E">
     <meta name="naver-site-verification" content="0f429adf1d8d3475017f3824ee96355074bcfd23">
-    <meta name="description" content="월 납입액, 납입 개월, 금리, 정부 지원율을 입력해 군적금 만기 예상액과 이자를 계산해 보세요.">
+    <meta name="description" content="입대일, 전역일, 월 납입액과 금리를 입력해 연도별 군적금 지원율을 반영한 만기 예상액을 계산해 보세요.">
     <title>군적금 계산기 - 한눈계산</title>
     <link rel="canonical" href="https://hannuncalc.com/calculators/military-savings.html">
     <meta property="og:type" content="website">
@@ -57,10 +57,10 @@
     },
     {
       "@type": "Question",
-      "name": "정부 지원율은 왜 직접 입력하나요?",
+      "name": "연도별 지원율은 어떻게 반영하나요?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "지원율은 시점에 따라 바뀔 수 있습니다. 그래서 최신 안내에서 확인한 숫자를 직접 넣어 계산하는 방식으로 만들었습니다."
+        "text": "복무 기간에 포함된 납입 월을 연도별로 나눈 뒤 2022년 33%, 2023년 71%, 2024년 이후 100%를 기본값으로 적용합니다."
       }
     },
     {
@@ -68,7 +68,7 @@
       "name": "월 납입액은 마음대로 넣어도 되나요?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "계산은 여러 경우를 비교할 수 있게 넓게 열어두었습니다. 실제로 가입할 수 있는 월 납입 한도는 은행 안내를 확인하세요."
+        "text": "계산기는 입력값을 받되, 지원금 계산에는 2024년까지 월 40만원, 2025년 이후 월 55만원 한도를 반영합니다. 실제 한도는 은행 안내를 확인하세요."
       }
     },
     {
@@ -125,33 +125,27 @@
             <form id="military-savings-form" class="input-panel">
               <div class="field-row">
                 <div class="field">
-                  <label for="savings-monthly">월 납입액</label>
-                  <div class="input-suffix">
-                    <input id="savings-monthly" name="monthlyDeposit" type="number" min="0" step="10000" value="400000" inputmode="numeric">
-                    <span>원</span>
-                  </div>
+                  <label for="savings-enlist-date">입대일</label>
+                  <input id="savings-enlist-date" name="enlistDate" type="date" value="2025-01-01">
                 </div>
                 <div class="field">
-                  <label for="savings-months">납입 개월</label>
-                  <div class="input-suffix">
-                    <input id="savings-months" name="months" type="number" min="1" max="36" value="18" inputmode="numeric">
-                    <span>개월</span>
-                  </div>
+                  <label for="savings-discharge-date">전역일</label>
+                  <input id="savings-discharge-date" name="dischargeDate" type="date" value="2026-06-30">
                 </div>
               </div>
 
               <div class="field-row">
                 <div class="field">
-                  <label for="savings-rate">은행 연 금리</label>
+                  <label for="savings-monthly">월 납입액</label>
                   <div class="input-suffix">
-                    <input id="savings-rate" name="annualRate" type="number" min="0" max="20" step="0.1" value="5.0" inputmode="decimal">
-                    <span>%</span>
+                    <input id="savings-monthly" name="monthlyDeposit" type="number" min="0" step="10000" value="550000" inputmode="numeric">
+                    <span>원</span>
                   </div>
                 </div>
                 <div class="field">
-                  <label for="savings-match">정부 매칭 지원율</label>
+                  <label for="savings-rate">은행 연 금리</label>
                   <div class="input-suffix">
-                    <input id="savings-match" name="matchRate" type="number" min="0" max="200" step="1" value="100" inputmode="numeric">
+                    <input id="savings-rate" name="annualRate" type="number" min="0" max="20" step="0.1" value="5.0" inputmode="decimal">
                     <span>%</span>
                   </div>
                 </div>
@@ -188,9 +182,16 @@
                   <span>월평균 환산</span>
                   <strong id="savings-average">-</strong>
                 </div>
+                <div>
+                  <span>계산 납입 개월</span>
+                  <strong id="savings-months-result">-</strong>
+                </div>
+              </div>
+              <div id="savings-support-breakdown" class="support-breakdown">
+                <p class="fine-print">연도별 지원금 내역이 여기에 표시됩니다.</p>
               </div>
               <p class="fine-print">
-                은행마다 금리와 우대 조건이 다를 수 있습니다. 실제 가입 전에는 이용할 은행의 안내를 꼭 확인하세요.
+                2022년 33%, 2023년 71%, 2024년 이후 100% 지원율을 기본값으로 두고 계산합니다. 2025년 이후 월 납입 한도는 55만원, 이전 연도는 40만원으로 반영했습니다.
               </p>
             </aside>
           </section>
@@ -201,22 +202,23 @@
         <div class="container two-column">
           <section class="info-block">
             <p class="eyebrow">사용 방법</p>
-            <h2>내가 매달 넣을 수 있는 금액부터 정해 보세요.</h2>
+            <h2>입대일과 전역일을 먼저 넣어 보세요.</h2>
             <ol class="step-list">
+              <li><strong>복무 기간 입력</strong><span>입대일과 전역일을 넣으면 계산기가 납입 월수를 자동으로 잡습니다.</span></li>
               <li><strong>월 납입액 입력</strong><span>매달 무리 없이 넣을 수 있는 금액을 입력합니다.</span></li>
-              <li><strong>납입 기간 입력</strong><span>몇 개월 동안 넣을지 입력합니다.</span></li>
-              <li><strong>금리와 지원율 입력</strong><span>은행이나 안내문에서 본 숫자를 그대로 넣습니다.</span></li>
+              <li><strong>은행 금리 입력</strong><span>가입하려는 은행의 기본금리와 우대금리를 합쳐 입력합니다.</span></li>
               <li><strong>세금 선택</strong><span>비과세 상품이면 체크한 상태로 계산합니다.</span></li>
             </ol>
           </section>
 
           <section class="info-block">
             <p class="eyebrow">계산할 때 알아둘 점</p>
-            <h2>매달 같은 금액을 넣는다고 보고 계산합니다.</h2>
+            <h2>연도별 지원율과 납입 한도를 나눠 계산합니다.</h2>
             <ul class="plain-list">
-              <li>원금은 월 납입액에 납입 개월 수를 곱해 계산합니다.</li>
+              <li>복무 기간에 포함된 달을 기준으로 납입 월수를 계산합니다.</li>
               <li>이자는 매달 넣은 돈이 만기까지 남아 있는 기간을 고려해 예상합니다.</li>
-              <li>정부 지원 예상액은 원금에 입력한 지원율을 곱해 계산합니다.</li>
+              <li>정부 지원 예상액은 각 납입 월의 연도별 지원율을 적용해 합산합니다.</li>
+              <li>월 납입액이 해당 연도의 한도를 넘으면 지원 계산에는 한도까지만 반영합니다.</li>
               <li>비과세를 해제하면 이자에서 세금 15.4%를 뺀 금액으로 보여줍니다.</li>
             </ul>
           </section>
@@ -231,7 +233,7 @@
             <ul class="tip-list">
               <li><strong>무리한 금액은 피하기</strong><span>휴가비, 통신비, 교통비를 남겨두고 유지 가능한 금액을 정하세요.</span></li>
               <li><strong>은행별 조건 비교하기</strong><span>우대금리 조건이 다를 수 있으니 가입 전에 비교해 보세요.</span></li>
-              <li><strong>지원율은 최신 숫자로 입력하기</strong><span>지원 기준은 바뀔 수 있으니 최근 안내에서 본 숫자를 넣어 계산하세요.</span></li>
+              <li><strong>지원 기준 다시 확인하기</strong><span>지원율과 월 납입 한도는 예산과 제도 변경에 따라 달라질 수 있습니다.</span></li>
             </ul>
           </section>
 
@@ -263,13 +265,13 @@
             <p>아래 내용은 계산 결과를 해석할 때 필요한 기준과 주의사항입니다.</p>
           </div>
           <div class="guide-grid">
-            <article><h3>이 계산기는 무엇을 계산하나요?</h3><p>군적금에 매달 납입했을 때 만기 원금, 예상 이자, 지원금을 합산한 예상 수령액을 계산합니다.</p></article>
-            <article><h3>입력값 설명</h3><ul><li>월 납입액: 매달 넣을 금액입니다.</li><li>납입 개월: 적금을 유지할 기간입니다.</li><li>연 금리와 지원율: 상품 안내에 적힌 기준을 입력합니다.</li></ul></article>
-            <article><h3>계산식</h3><p>월별 납입액에 납입 기간과 연 금리를 반영해 이자를 추정하고, 입력한 지원율을 원금 기준으로 더합니다.</p></article>
-            <article><h3>예시 계산</h3><p>월 40만원을 18개월 납입하고 연 5% 금리와 71% 지원율을 넣으면 만기 예상액을 분리해 보여줍니다.</p></article>
-            <article><h3>결과 해석</h3><p>만기 예상액은 은행별 우대금리, 세금, 납입일에 따라 달라질 수 있습니다.</p></article>
-            <article><h3>주의사항</h3><p>정확한 가입 조건과 지원금은 가입 은행과 병무청·국방부 안내를 확인하세요.</p></article>
-            <article><h3>참고한 공식 자료 또는 안내 문구</h3><p><a href="https://www.mma.go.kr/" target="_blank" rel="noopener">병무청</a> 및 가입 은행의 상품 안내를 함께 확인하세요.</p></article>
+            <article><h3>이 계산기는 무엇을 계산하나요?</h3><p>입대일부터 전역일까지 매달 군적금에 납입한다고 보고 원금, 은행 이자, 연도별 정부 지원금을 합산한 만기 예상액을 계산합니다.</p></article>
+            <article><h3>입력값 설명</h3><ul><li>입대일·전역일: 납입 가능한 복무 기간을 추정하는 기준입니다.</li><li>월 납입액: 매달 넣을 예정 금액입니다.</li><li>은행 연 금리: 기본금리와 우대금리를 합친 연 기준 금리입니다.</li></ul></article>
+            <article><h3>계산식</h3><p>월별 납입 원금은 해당 연도 월 한도 안에서 반영하고, 이자는 월 납입액 × 월 이율 × 남은 개월 수로 단순 추정합니다. 지원금은 연도별 납입 원금 × 해당 연도 지원율입니다.</p></article>
+            <article><h3>예시 계산</h3><p>2025년 1월 입대, 2026년 6월 전역, 월 55만원, 연 5%라면 18개월 납입 원금과 2025~2026년 지원율을 나눠 만기 예상액을 보여줍니다.</p></article>
+            <article><h3>결과 해석</h3><p>연도별 지원금 표는 어떤 해에 몇 개월 납입으로 계산됐는지 보여줍니다. 월평균 환산액은 총 예상 수령액을 납입 개월로 나눈 참고값입니다.</p></article>
+            <article><h3>주의사항</h3><p>실제 납입 가능 월수, 월 한도, 은행 우대금리, 정부 지원율은 가입 시점의 제도와 은행 안내에 따라 달라질 수 있습니다.</p></article>
+            <article><h3>참고한 공식 자료 또는 안내 문구</h3><p><a href="https://www.mma.go.kr/" target="_blank" rel="noopener">병무청</a>, <a href="https://www.mnd.go.kr/" target="_blank" rel="noopener">국방부</a>, 가입 은행의 장병내일준비적금 안내를 함께 확인하세요.</p></article>
           </div>
           <p class="guide-updated">최종 업데이트 날짜: 2026-06-14</p>
         </div>
@@ -285,12 +287,12 @@
               <p>완전히 같다고 보기는 어렵습니다. 실제 금액은 가입 은행, 납입일, 우대금리 조건, 지원 기준에 따라 달라질 수 있습니다.</p>
             </details>
             <details>
-              <summary>정부 지원율은 왜 직접 입력하나요?</summary>
-              <p>지원율은 시점에 따라 바뀔 수 있습니다. 그래서 최신 안내에서 확인한 숫자를 직접 넣어 계산하는 방식으로 만들었습니다.</p>
+              <summary>연도별 지원율은 어떻게 반영하나요?</summary>
+              <p>복무 기간에 포함된 납입 월을 연도별로 나눈 뒤 2022년 33%, 2023년 71%, 2024년 이후 100%를 기본값으로 적용합니다.</p>
             </details>
             <details>
               <summary>월 납입액은 마음대로 넣어도 되나요?</summary>
-              <p>계산은 여러 경우를 비교할 수 있게 넓게 열어두었습니다. 실제로 가입할 수 있는 월 납입 한도는 은행 안내를 확인하세요.</p>
+              <p>계산기는 입력값을 받되, 지원금 계산에는 2024년까지 월 40만원, 2025년 이후 월 55만원 한도를 반영합니다. 실제 한도는 가입 은행 안내를 확인하세요.</p>
             </details>
             <details>
               <summary>비과세 체크는 무엇인가요?</summary>
@@ -316,6 +318,6 @@
       </div>
     </footer>
 
-    <script type="module" src="../assets/js/app.js?v=20260614-click-rank-sidebar-default"></script>
+    <script type="module" src="../assets/js/app.js?v=20260614-space-cigarette-military"></script>
   </body>
 </html>

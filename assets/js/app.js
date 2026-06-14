@@ -10,6 +10,7 @@ import { renderPriceChart } from "./chart.js";
 import { initEvCostCalculator } from "./ev-cost.js";
 import { initMilitarySavingsCalculator } from "./military-savings.js";
 import { initScientificCalculator } from "./scientific.js";
+import { initSpaceTravelCalculator } from "./space-travel.js";
 import { initTextCounter } from "./text-counter.js";
 import { formatWon, getCheckedValue, getFormNumber } from "./utils.js";
 import { initWeeklyHolidayPayCalculator } from "./weekly-holiday-pay.js";
@@ -46,6 +47,12 @@ const TOOL_GROUPS = [
     tools: [
       ["BMI 계산기", "calculators/bmi.html"],
       ["카페인 수면 영향 계산기", "calculators/caffeine-sleep.html"]
+    ]
+  },
+  {
+    label: "재미·상상",
+    tools: [
+      ["우주 이동 시간 계산기", "calculators/space-travel.html"]
     ]
   }
 ];
@@ -120,6 +127,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   initCaffeineSleepCalculator();
   initPercentileCalculator();
   initCigaretteCostCalculator();
+  initSpaceTravelCalculator();
   bindElements();
 
   if (!els.form) return;
