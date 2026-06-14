@@ -34,7 +34,7 @@ export function calculateBmi({ heightCm, weightKg }) {
   const weight = Math.max(0, weightKg);
   const bmi = weight / (heightM * heightM);
   const minHealthyWeight = 18.5 * heightM * heightM;
-  const maxHealthyWeight = 22.9 * heightM * heightM;
+  const maxHealthyWeight = 23 * heightM * heightM;
   const category = getBmiCategory(bmi);
   const targetDiff = weight < minHealthyWeight
     ? weight - minHealthyWeight
@@ -61,11 +61,11 @@ function renderBmi(els, result) {
   els.healthyRange.textContent = `${formatNumber(result.minHealthyWeight, 1)} ~ ${formatNumber(result.maxHealthyWeight, 1)} kg`;
 
   if (result.targetDiff > 0) {
-    els.difference.textContent = `정상 범위 상단보다 +${formatNumber(result.targetDiff, 1)} kg`;
+    els.difference.textContent = `정상 범위보다 +${formatNumber(result.targetDiff, 1)} kg`;
   } else if (result.targetDiff < 0) {
-    els.difference.textContent = `정상 범위 하단보다 ${formatNumber(result.targetDiff, 1)} kg`;
+    els.difference.textContent = `정상 범위보다 ${formatNumber(result.targetDiff, 1)} kg`;
   } else {
-    els.difference.textContent = "정상 체중 범위 안에 있습니다.";
+    els.difference.textContent = "정상 범위 내";
   }
 
   els.detail.textContent = `${result.category.description} BMI는 참고 지표이므로 근육량, 체지방률, 질환 여부와 함께 해석하세요.`;

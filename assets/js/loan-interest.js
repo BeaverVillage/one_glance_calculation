@@ -13,6 +13,7 @@ export function initLoanInterestCalculator(root = document) {
 
   const els = {
     monthlyPayment: root.querySelector("#loan-monthly-payment"),
+    principalAmount: root.querySelector("#loan-principal-amount"),
     totalPayment: root.querySelector("#loan-total-payment"),
     totalInterest: root.querySelector("#loan-total-interest"),
     detail: root.querySelector("#loan-detail"),
@@ -88,8 +89,8 @@ export function calculateLoan({ principal, annualRate, months, method }) {
     }
   }
 
-  const totalPayment = schedule.reduce((sum, item) => sum + item.payment, 0);
   const totalInterest = schedule.reduce((sum, item) => sum + item.interest, 0);
+  const totalPayment = loanPrincipal + totalInterest;
   const firstPayment = schedule[0]?.payment || 0;
   const lastPayment = schedule[schedule.length - 1]?.payment || 0;
 
@@ -111,23 +112,38 @@ function renderLoan(els, result) {
   els.monthlyPayment.textContent = result.method === "equalPayment"
     ? formatWon(result.firstPayment)
     : `${formatWon(result.firstPayment)} → ${formatWon(result.lastPayment)}`;
+  els.principalAmount.textContent = formatWon(result.principal);
   els.totalPayment.textContent = formatWon(result.totalPayment);
   els.totalInterest.textContent = formatWon(result.totalInterest);
   els.detail.textContent = `${result.methodLabel} 방식으로 ${result.months}개월 동안 상환하는 조건입니다.`;
 
-  const principalRatio = result.totalPayment ? result.principal / result.totalPayment * 100 : 0;
-  const interestRatio = 100 - principalRatio;
+  if (result.totalPayment <= 0) {
+    els.principalRatio.textContent = "원금 -";
+    els.interestRatio.textContent = "이자 -";
+    els.balanceBar.classList.add("empty");
+    els.balanceBar.removeAttribute("style");
+    els.balanceBar.textContent = "대출 조건을 입력하면 비율 그래프가 표시됩니다.";
+    els.balanceBar.setAttribute("aria-label", "원금과 이자 비율 그래프 대기 중");
+    els.scheduleBody.innerHTML = "";
+    return;
+  }
+
+  const principalRatio = result.principal / result.totalPayment * 100;
+  const interestRatio = result.totalInterest / result.totalPayment * 100;
   els.principalRatio.textContent = `원금 ${formatPercent(principalRatio)}`;
   els.interestRatio.textContent = `이자 ${formatPercent(interestRatio)}`;
+  els.balanceBar.classList.remove("empty");
+  els.balanceBar.innerHTML = "<span></span><span></span>";
   els.balanceBar.style.gridTemplateColumns = `${Math.max(0, principalRatio)}fr ${Math.max(0, interestRatio)}fr`;
+  els.balanceBar.setAttribute("aria-label", `총 상환액 중 원금 ${formatPercent(principalRatio)}, 이자 ${formatPercent(interestRatio)}`);
 
   els.scheduleBody.innerHTML = result.schedule.map((item) => `
     <tr>
-      <td>${item.month}</td>
-      <td>${formatWon(item.payment)}</td>
-      <td>${formatWon(item.principal)}</td>
-      <td>${formatWon(item.interest)}</td>
-      <td>${formatWon(item.balance)}</td>
+      <td data-label="회차">${item.month}</td>
+      <td data-label="월 납입액">${formatWon(item.payment)}</td>
+      <td data-label="상환 원금">${formatWon(item.principal)}</td>
+      <td data-label="이자">${formatWon(item.interest)}</td>
+      <td data-label="남은 잔액">${formatWon(item.balance)}</td>
     </tr>
   `).join("");
 }
