@@ -3,6 +3,7 @@ import { initBmiCalculator } from "./bmi-calculator.js?v=20260614-cache-fix";
 import { initCaffeineSleepCalculator } from "./caffeine-sleep.js?v=20260614-cache-fix";
 import { initCigaretteCostCalculator } from "./cigarette-cost.js?v=20260614-cache-fix";
 import { initApplianceElectricityCalculator } from "./appliance-electricity.js?v=20260614-cache-fix";
+import { initAustraliaPayCalculator } from "./australia-pay.js?v=20260615-australia-pay";
 import { initLoanInterestCalculator } from "./loan-interest.js?v=20260614-cache-fix";
 import { initNetSalaryCalculator } from "./net-salary.js?v=20260614-cache-fix";
 import { initPercentileCalculator } from "./percentile.js?v=20260614-cache-fix";
@@ -28,6 +29,7 @@ const TOOL_GROUPS = [
     label: "돈·세금",
     tools: [
       ["월 실수령액 계산기", "calculators/net-salary.html"],
+      ["호주 워홀 월급 원화 환산 계산기", "calculators/australia-pay.html"],
       ["대출 이자 계산기", "calculators/loan-interest.html"],
       ["주휴수당 계산기", "calculators/weekly-holiday-pay.html"],
       ["군적금 계산기", "calculators/military-savings.html"],
@@ -119,6 +121,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   initMilitarySavingsCalculator();
   initEvCostCalculator();
   initApplianceElectricityCalculator();
+  initAustraliaPayCalculator();
   initNetSalaryCalculator();
   initLoanInterestCalculator();
   initWeeklyHolidayPayCalculator();

@@ -605,6 +605,7 @@ input[type="text"],
 input[type="date"],
 input[type="time"],
 input[type="search"],
+input[type="file"],
 textarea {
   width: 100%;
   color: var(--ink);
@@ -618,7 +619,8 @@ input[type="number"],
 input[type="text"],
 input[type="date"],
 input[type="time"],
-input[type="search"] {
+input[type="search"],
+input[type="file"] {
   min-height: 42px;
   padding: 9px 10px;
 }
@@ -732,6 +734,12 @@ textarea {
   background: #0d6a57;
 }
 
+.button-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.45fr) minmax(180px, 1fr);
+  gap: 10px;
+}
+
 .quick-models button,
 .subtle-button,
 .keypad button {
@@ -774,6 +782,12 @@ textarea {
 .fine-print {
   color: var(--muted);
   font-size: 0.92rem;
+}
+
+.field-help {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.84rem;
 }
 
 .history-list {
@@ -883,6 +897,81 @@ textarea {
 
 .savings-metrics {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.australia-pay-panel {
+  align-items: start;
+}
+
+.privacy-note {
+  margin-bottom: 14px;
+}
+
+.privacy-note p {
+  margin: 6px 0 0;
+}
+
+.ocr-status-box {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0;
+  padding: 12px;
+  color: var(--muted);
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+}
+
+#au-ocr-status[data-tone="good"] {
+  color: var(--green);
+  font-weight: 800;
+}
+
+#au-ocr-status[data-tone="warn"] {
+  color: var(--amber);
+  font-weight: 800;
+}
+
+#au-ocr-progress {
+  width: 100%;
+  height: 10px;
+  overflow: hidden;
+  accent-color: var(--green);
+}
+
+.raw-text-box {
+  margin: 14px 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+.raw-text-box summary {
+  color: var(--blue);
+  cursor: pointer;
+  font-weight: 850;
+}
+
+.raw-text-box textarea {
+  min-height: 180px;
+  margin: 12px 0 10px;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 0.86rem;
+}
+
+.australia-pay-metrics {
+  margin-top: 14px;
+}
+
+.australia-pay-metrics em {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-style: normal;
+  font-weight: 800;
 }
 
 .loan-metrics {
@@ -1651,7 +1740,8 @@ details p {
 @media (max-width: 520px) {
   .sheet-heading,
   .section-heading-row,
-  .metric-grid {
+  .metric-grid,
+  .button-row {
     align-items: flex-start;
     flex-direction: column;
     grid-template-columns: 1fr;
