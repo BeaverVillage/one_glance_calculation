@@ -129,9 +129,9 @@ export function initAustraliaPayCalculator(root = document) {
     resultSummary: root.querySelector("#au-result-summary")
   };
 
-  const requiredEls = { ...els };
-  delete requiredEls.debugOutput;
-  if (Object.values(requiredEls).some((element) => !element)) return;
+  const requiredElements = { ...els };
+  delete requiredElements.debugOutput;
+  if (Object.values(requiredElements).some((element) => !element)) return;
 
   els.pdfFile.addEventListener("change", async () => {
     const file = els.pdfFile.files?.[0];
@@ -141,7 +141,7 @@ export function initAustraliaPayCalculator(root = document) {
 
   els.analyzeTextButton.addEventListener("click", () => {
     applyParsedFields(els, parsePayslipText(els.rawText.value));
-    setStatus(els, "붙여넣은 텍스트에서 값을 다시 찾았습니다. 자동 추출값을 확인한 뒤 계산해 주세요.", "good");
+    setStatus(els, "붙여넣은 텍스트에서 값을 다시 찾았습니다. 입력칸의 값을 확인한 뒤 계산해 주세요.", "good");
   });
 
   els.refreshRateButton.addEventListener("click", async () => {
@@ -219,12 +219,15 @@ async function analyzePdfFile(els, file) {
 
 async function extractTextFromPdf(pdf, els) {
   const structured = await extractStructuredTextFromPdf(pdf, els);
-  return { text: structured.rawText, structured };
+  return {
+    text: structured.rawText,
+    structured
+  };
 }
 
 async function extractStructuredTextFromPdf(pdf, els) {
   const tokens = [];
-  const fallbackPages = [];
+  const fallbackPageTexts = [];
 
   for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
     setStatus(els, `PDF 텍스트 추출 중입니다. ${pageNumber}/${pdf.numPages}페이지`, "info");
@@ -233,12 +236,12 @@ async function extractStructuredTextFromPdf(pdf, els) {
     const textContent = await page.getTextContent();
     const pageTokens = textContent.items
       .map((item) => {
-        const tokenText = String(item.str || "").trim();
-        if (!tokenText) return null;
+        const text = String(item.str || "").trim();
+        if (!text) return null;
         const transform = item.transform || [];
         const height = Math.abs(transform[3] || item.height || 0) || 8;
         return {
-          text: tokenText,
+          text,
           x: Number(transform[4] || 0),
           y: Number(transform[5] || 0),
           width: Number(item.width || 0),
@@ -248,14 +251,19 @@ async function extractStructuredTextFromPdf(pdf, els) {
       })
       .filter(Boolean);
     tokens.push(...pageTokens);
-    fallbackPages.push(pageTokens.map((token) => token.text).join(" "));
+    fallbackPageTexts.push(pageTokens.map((token) => token.text).join(" "));
   }
 
   const lines = groupTokensIntoLines(tokens);
   const blocks = detectLayoutBlocks(lines);
-  const rawText = lines.map((line) => line.text).filter(Boolean).join("\n").trim() || fallbackPages.join("\n\n");
+  const lineText = lines.map((line) => line.text).filter(Boolean).join("\n").trim();
 
-  return { rawText, tokens, lines, blocks };
+  return {
+    rawText: lineText || fallbackPageTexts.join("\n\n"),
+    tokens,
+    lines,
+    blocks
+  };
 }
 
 function groupTokensIntoLines(tokens) {
@@ -268,33 +276,34 @@ function groupTokensIntoLines(tokens) {
   const lines = [];
   for (const [pageNumber, pageTokens] of pages.entries()) {
     const sorted = pageTokens.slice().sort((a, b) => b.y - a.y || a.x - b.x);
-    const grouped = [];
+    const pageLines = [];
 
     for (const token of sorted) {
-      const threshold = Math.max(3, Math.min(10, token.height * 0.65));
-      let line = grouped.find((entry) => Math.abs(entry.y - token.y) <= threshold);
+      const threshold = Math.max(3, Math.min(9, token.height * 0.55));
+      let line = pageLines.find((entry) => Math.abs(entry.y - token.y) <= threshold);
       if (!line) {
         line = { pageNumber, y: token.y, tokens: [] };
-        grouped.push(line);
+        pageLines.push(line);
       }
       line.tokens.push(token);
       line.y = (line.y * (line.tokens.length - 1) + token.y) / line.tokens.length;
     }
 
-    grouped
+    pageLines
       .sort((a, b) => b.y - a.y)
       .forEach((line, index) => {
         const lineTokens = line.tokens.slice().sort((a, b) => a.x - b.x);
+        const text = joinPdfLineTokens(lineTokens);
         const xs = lineTokens.map((token) => token.x);
         const xEnds = lineTokens.map((token) => token.x + token.width);
         lines.push({
           pageNumber,
           index,
+          y: line.y,
           xMin: Math.min(...xs),
           xMax: Math.max(...xEnds),
-          y: line.y,
-          tokens: lineTokens,
-          text: joinPdfLineTokens(lineTokens)
+          text,
+          tokens: lineTokens
         });
       });
   }
@@ -304,16 +313,16 @@ function groupTokensIntoLines(tokens) {
 
 function joinPdfLineTokens(tokens) {
   let result = "";
-  let previous = null;
+  let prev = null;
   for (const token of tokens) {
-    if (!previous) {
+    if (!prev) {
       result = token.text;
     } else {
-      const gap = token.x - (previous.x + previous.width);
-      const spaces = gap > 22 ? "   " : " ";
-      result += spaces + token.text;
+      const gap = token.x - (prev.x + prev.width);
+      const spaceCount = gap > 22 ? 3 : gap > 8 ? 2 : 1;
+      result += " ".repeat(spaceCount) + token.text;
     }
-    previous = token;
+    prev = token;
   }
   return result.replace(/\s+/g, " ").trim();
 }
@@ -322,8 +331,7 @@ function detectLayoutBlocks(lines) {
   const blocks = [];
   let current = { id: "header", lines: [] };
   const flush = () => {
-    if (!current.lines.length) return;
-    blocks.push({ ...current, text: current.lines.map((line) => line.text).join("\n") });
+    if (current.lines.length) blocks.push(current);
   };
 
   for (const line of lines) {
@@ -335,7 +343,11 @@ function detectLayoutBlocks(lines) {
     current.lines.push(line);
   }
   flush();
-  return blocks;
+
+  return blocks.map((block) => ({
+    ...block,
+    text: block.lines.map((line) => line.text).join("\n")
+  }));
 }
 
 async function ocrPdfPages(pdf, tesseract, els) {
@@ -377,11 +389,12 @@ function isTextSufficient(text) {
 }
 
 export function parsePayslipText(text) {
-  const originalLines = normalizeOcrLines(text);
-  const lines = normalizeTemplateLines(originalLines);
-  const documentText = lines.join("\n");
-  const oneLineText = lines.join(" ").replace(/\s+/g, " ").trim();
-  const blocks = buildTemplateBlocks(lines, oneLineText, originalLines);
+  const rawText = String(text || "");
+  const lines = normalizeOcrLines(rawText);
+  const normalizedLines = normalizePayslipLineBreaks(lines);
+  const documentText = normalizedLines.join("\n");
+  const oneLineText = normalizedLines.join(" ").replace(/\s+/g, " ").trim();
+  const blocks = buildPayslipTextBlocks(normalizedLines, oneLineText);
   const meta = {};
   const debug = { fields: {} };
 
@@ -390,11 +403,11 @@ export function parsePayslipText(text) {
     netPay: pickTemplateMoneyField("netPay", blocks, meta, debug),
     taxWithheld: pickTemplateMoneyField("taxWithheld", blocks, meta, debug),
     superannuation: pickTemplateMoneyField("superannuation", blocks, meta, debug),
-    hoursWorked: pickTemplateHours(blocks, lines, meta, debug),
+    hoursWorked: pickTemplateHours(blocks, normalizedLines, meta, debug),
     payDate: pickTemplateDate(blocks, documentText, meta, debug),
     payPeriod: pickTemplatePeriod(blocks, documentText, meta, debug),
-    employerName: pickTemplateText("employerName", blocks, lines, meta),
-    employeeName: pickTemplateText("employeeName", blocks, lines, meta)
+    employerName: pickTemplateText("employerName", blocks, normalizedLines, meta),
+    employeeName: pickTemplateText("employeeName", blocks, normalizedLines, meta)
   };
 
   validateTemplateParsedValues(parsed, meta, debug);
@@ -403,71 +416,90 @@ export function parsePayslipText(text) {
   return parsed;
 }
 
-const TEMPLATE_AMOUNT_PATTERN = String.raw`([\d,]+(?:\.\d{1,2})?)`;
-const TEMPLATE_MONEY_START = String.raw`(?:AUD\s*)?(?:A\$\s*|\$\s*)?`;
-const TEMPLATE_MONEY_END = String.raw`(?:\s*(?:AUD|2\/AUD))?`;
+const TEMPLATE_AMOUNT = String.raw`([\d,]+(?:\.\d{1,2})?)`;
+const TEMPLATE_MONEY_PREFIX = String.raw`(?:AUD\s*)?(?:A\$\s*|\$\s*)?`;
+const TEMPLATE_MONEY_SUFFIX = String.raw`(?:\s*AUD)?`;
+
 const TEMPLATE_FIELD_PATTERNS = {
   grossPay: [
-    new RegExp(String.raw`\bGross\s+Pay\s*:?\s*${TEMPLATE_MONEY_START}${TEMPLATE_AMOUNT_PATTERN}${TEMPLATE_MONEY_END}`, "gi"),
-    new RegExp(String.raw`\bTotal\s+Gross(?:\s+Pay)?\s*:?\s*${TEMPLATE_MONEY_START}${TEMPLATE_AMOUNT_PATTERN}${TEMPLATE_MONEY_END}`, "gi"),
-    new RegExp(String.raw`\bGross\s+Earnings\s*:?\s*${TEMPLATE_MONEY_START}${TEMPLATE_AMOUNT_PATTERN}${TEMPLATE_MONEY_END}`, "gi")
+    new RegExp(String.raw`\bGross\s+Pay\s*:?\s*${TEMPLATE_MONEY_PREFIX}${TEMPLATE_AMOUNT}${TEMPLATE_MONEY_SUFFIX}`, "gi"),
+    new RegExp(String.raw`\bTotal\s+Gross(?:\s+Pay)?\s*:?\s*${TEMPLATE_MONEY_PREFIX}${TEMPLATE_AMOUNT}${TEMPLATE_MONEY_SUFFIX}`, "gi"),
+    new RegExp(String.raw`\bGross\s+Earnings\s*:?\s*${TEMPLATE_MONEY_PREFIX}${TEMPLATE_AMOUNT}${TEMPLATE_MONEY_SUFFIX}`, "gi")
   ],
   netPay: [
-    new RegExp(String.raw`\bNet\s+Pay\s*:?\s*${TEMPLATE_MONEY_START}${TEMPLATE_AMOUNT_PATTERN}${TEMPLATE_MONEY_END}`, "gi"),
-    new RegExp(String.raw`\bAmount\s+Paid\s*\/\s*Net\s+Pay\s*:?\s*${TEMPLATE_MONEY_START}${TEMPLATE_AMOUNT_PATTERN}${TEMPLATE_MONEY_END}`, "gi"),
-    new RegExp(String.raw`\bAmount\s+Paid\s*:?\s*${TEMPLATE_MONEY_START}${TEMPLATE_AMOUNT_PATTERN}${TEMPLATE_MONEY_END}`, "gi"),
-    new RegExp(String.raw`\bPay\s+Amount\s*:?\s*${TEMPLATE_MONEY_START}${TEMPLATE_AMOUNT_PATTERN}${TEMPLATE_MONEY_END}`, "gi")
+    new RegExp(String.raw`\bNet\s+Pay\s*:?\s*${TEMPLATE_MONEY_PREFIX}${TEMPLATE_AMOUNT}${TEMPLATE_MONEY_SUFFIX}`, "gi"),
+    new RegExp(String.raw`\bAmount\s+Paid(?:\s*\/\s*Net\s+Pay)?\s*:?\s*${TEMPLATE_MONEY_PREFIX}${TEMPLATE_AMOUNT}${TEMPLATE_MONEY_SUFFIX}`, "gi"),
+    new RegExp(String.raw`\bPay\s+Amount\s*:?\s*${TEMPLATE_MONEY_PREFIX}${TEMPLATE_AMOUNT}${TEMPLATE_MONEY_SUFFIX}`, "gi")
   ],
   taxWithheld: [
-    new RegExp(String.raw`\bTax\s+Withheld\s*:?\s*${TEMPLATE_MONEY_START}${TEMPLATE_AMOUNT_PATTERN}${TEMPLATE_MONEY_END}`, "gi"),
-    new RegExp(String.raw`\bPAYG\s+Withholding\s*:?\s*${TEMPLATE_MONEY_START}${TEMPLATE_AMOUNT_PATTERN}${TEMPLATE_MONEY_END}`, "gi"),
-    new RegExp(String.raw`\bPAYG\s+Tax\s*:?\s*${TEMPLATE_MONEY_START}${TEMPLATE_AMOUNT_PATTERN}${TEMPLATE_MONEY_END}`, "gi"),
-    new RegExp(String.raw`\bPAYGER\s*:?\s*${TEMPLATE_MONEY_START}${TEMPLATE_AMOUNT_PATTERN}${TEMPLATE_MONEY_END}`, "gi")
+    new RegExp(String.raw`\bTax\s+Withheld\s*:?\s*${TEMPLATE_MONEY_PREFIX}${TEMPLATE_AMOUNT}${TEMPLATE_MONEY_SUFFIX}`, "gi"),
+    new RegExp(String.raw`\bPAYG\s+Withholding\s*:?\s*${TEMPLATE_MONEY_PREFIX}${TEMPLATE_AMOUNT}${TEMPLATE_MONEY_SUFFIX}`, "gi"),
+    new RegExp(String.raw`\bPAYG\s+Tax\s*:?\s*${TEMPLATE_MONEY_PREFIX}${TEMPLATE_AMOUNT}${TEMPLATE_MONEY_SUFFIX}`, "gi")
   ],
   superannuation: [
-    new RegExp(String.raw`\bSuperannuation\s*:?\s*${TEMPLATE_MONEY_START}${TEMPLATE_AMOUNT_PATTERN}${TEMPLATE_MONEY_END}`, "gi"),
-    new RegExp(String.raw`\bEmployer\s+Super(?:\s+Contribution)?\s*:?\s*${TEMPLATE_MONEY_START}${TEMPLATE_AMOUNT_PATTERN}${TEMPLATE_MONEY_END}`, "gi")
+    new RegExp(String.raw`\bSuperannuation\s*:?\s*${TEMPLATE_MONEY_PREFIX}${TEMPLATE_AMOUNT}${TEMPLATE_MONEY_SUFFIX}`, "gi"),
+    new RegExp(String.raw`\bEmployer\s+Super(?:\s+Contribution)?\s*:?\s*${TEMPLATE_MONEY_PREFIX}${TEMPLATE_AMOUNT}${TEMPLATE_MONEY_SUFFIX}`, "gi")
   ]
 };
 
-function normalizeTemplateLines(lines) {
-  const labelPattern = /(Gross Pay|Total Gross(?: Pay)?|Gross Earnings|Tax Withheld|PAYG Withholding|PAYG Tax|PAYGER|Amount Paid\s*\/\s*Net Pay|Amount Paid|Net Pay|Superannuation|Employer Super(?: Contribution)?|Hours Worked|Total Hours Worked|Total Hours|Pay Date|Pay Cycle|Cycle|Payment Summary|Final Payment Summary|Summary|OCR Test Notes|Expected key fields)/gi;
+const TEMPLATE_TEXT_PATTERNS = {
+  employeeName: [
+    /\bEmployee\s+Name\s*:?\s*([A-Za-z][A-Za-z .'-]+?)(?=\s+(?:Employee\s+ID|Position|Role|Pay\s+Date|Pay\s+Period|Tax\s+File|TFN|Currency|$))/i,
+    /\bEmpioyee\s+Name\s*:?\s*([A-Za-z][A-Za-z .'-]+?)(?=\s+(?:Employee\s+ID|Position|Role|Pay\s+Date|Pay\s+Period|Tax\s+File|TFN|Currency|$))/i
+  ],
+  employerName: [
+    /^\s*([A-Z][A-Z0-9 &.'-]+PTY\s+LTD)\b/i,
+    /^\s*([A-Z][A-Z0-9 &.'-]+GROUP\s+PTY\s+LTD)\b/i
+  ]
+};
+
+function normalizePayslipLineBreaks(lines) {
   const output = [];
+  const splitLabelPattern = /(Gross Pay|Total Gross(?: Pay)?|Gross Earnings|Tax Withheld|PAYG Withholding|PAYG Tax|Amount Paid\s*\/\s*Net Pay|Net Pay|Superannuation|Employer Super(?: Contribution)?|Hours Worked|Total Hours Worked|Total Hours|Pay Date|Pay Cycle|Payment Summary|Final Payment Summary|OCR Test Notes|Expected key fields)/gi;
+
   for (const line of lines) {
-    const cleaned = String(line)
-      .replace(/\u00a0/g, " ")
+    const prepared = String(line)
+      .replace(/\b(AUD)(?=[A-Z])/g, "$1 ")
       .replace(/([a-z])([A-Z])/g, "$1 $2")
       .replace(/\s+/g, " ")
       .trim();
-    if (!cleaned) continue;
-    const split = cleaned.replace(labelPattern, "\n$1").split(/\n+/).map((part) => part.trim()).filter(Boolean);
-    output.push(...(split.length ? split : [cleaned]));
+    if (!prepared) continue;
+
+    const split = prepared.replace(splitLabelPattern, "\n$1").split(/\n+/).map((part) => part.trim()).filter(Boolean);
+    output.push(...(split.length ? split : [prepared]));
   }
+
   return output;
 }
 
-function buildTemplateBlocks(lines, oneLineText, originalLines = lines) {
+function buildPayslipTextBlocks(lines, oneLineText) {
   const blocks = [];
   const add = (id, priority, text) => {
     if (text && text.trim()) blocks.push({ id, priority, text: text.trim() });
   };
 
-  add("paymentSummary", 130, extractTemplateBlock(oneLineText, ["Final Payment Summary", "Payment Summary", "Summary"], ["Bank Payment", "Bank Payment Details", "OCR Test Notes", "Notes"], 900));
-  add("earnings", 80, extractTemplateBlock(oneLineText, ["Hours and Earnings", "Earnings Detail", "Earnings and Payments", "Line Items", "Earnings"], ["Tax / Superannuation", "Deductions", "Payment Summary", "Summary", "OCR Test Notes"], 900));
-  add("taxSuper", 75, extractTemplateBlock(oneLineText, ["Tax / Superannuation", "Taxes, Deductions & Super", "Deductions / Tax", "Deductions", "Superannuation"], ["Payment Summary", "Bank Payment", "OCR Test Notes"], 650));
-  add("ocrTestNotes", 45, extractTemplateBlock(oneLineText, ["Expected key fields", "OCR Test Notes"], [], 1000));
-  add("pairedRows", 115, collectPairedLabelRows(originalLines));
+  add("paymentSummary", 120, extractKeywordBlock(oneLineText, ["Final Payment Summary", "Payment Summary", "Summary"], ["Bank Payment", "Bank Payment Details", "OCR Test Notes", "Employee & Employment Details"], 720));
+  add("earnings", 80, extractKeywordBlock(oneLineText, ["Hours and Earnings", "Earnings Detail", "Earnings and Payments", "Line Items", "Earnings"], ["Deductions", "Tax / Superannuation", "Tax Superannuation", "Taxes", "Payment Summary", "Summary", "OCR Test Notes"], 900));
+  add("taxSuper", 75, extractKeywordBlock(oneLineText, ["Tax / Superannuation", "Taxes, Deductions & Super", "Deductions / Tax", "Deductions", "Superannuation"], ["Payment Summary", "Bank Payment", "OCR Test Notes"], 650));
+  add("ocrTestNotes", 35, extractKeywordBlock(oneLineText, ["Expected key fields", "OCR Test Notes"], [], 900));
   add("document", 55, oneLineText);
+
+  if (!blocks.some((block) => block.id === "paymentSummary")) {
+    const summaryLines = lines.filter((line) => /\b(Gross Pay|Net Pay|Tax Withheld|Superannuation|Hours Worked|Amount Paid|Employer Super)\b/i.test(line));
+    add("summaryLines", 95, summaryLines.join(" "));
+  }
+
   return blocks.sort((a, b) => b.priority - a.priority);
 }
 
-function extractTemplateBlock(text, startKeywords, endKeywords, maxLength) {
+function extractKeywordBlock(text, startKeywords, endKeywords, maxLength = 700) {
   const lower = normalizeText(text);
   const starts = startKeywords
     .map((keyword) => ({ keyword, index: lower.indexOf(normalizeText(keyword)) }))
-    .filter((item) => item.index >= 0)
+    .filter((entry) => entry.index >= 0)
     .sort((a, b) => a.index - b.index);
   if (!starts.length) return "";
+
   const start = starts[0].index;
   let end = Math.min(text.length, start + maxLength);
   for (const keyword of endKeywords) {
@@ -475,35 +507,6 @@ function extractTemplateBlock(text, startKeywords, endKeywords, maxLength) {
     if (index > start && index < end) end = index;
   }
   return text.slice(start, end);
-}
-
-function collectPairedLabelRows(lines) {
-  const pieces = [];
-  const fieldLabels = [
-    { field: "grossPay", label: /\bGross\s+Pay\b/i },
-    { field: "taxWithheld", label: /\b(?:PAYG\s+Tax|Tax\s+Withheld)\b/i },
-    { field: "netPay", label: /\bNet\s+Pay\b/i },
-    { field: "superannuation", label: /\bSuperannuation\b/i },
-    { field: "hoursWorked", label: /\bHours\s+Worked\b/i }
-  ];
-
-  for (let i = 0; i < lines.length - 1; i += 1) {
-    const labels = fieldLabels.filter((entry) => entry.label.test(lines[i]));
-    if (labels.length < 2) continue;
-    const values = extractLooseNumberValues(lines[i + 1]);
-    if (values.length < labels.length) continue;
-    labels.forEach((entry, index) => {
-      const outputLabel = entry.field === "taxWithheld" ? "Tax Withheld" : entry.field === "superannuation" ? "Superannuation" : entry.field === "hoursWorked" ? "Hours Worked" : FIELD_DISPLAY_NAMES[entry.field] || entry.field;
-      pieces.push(`${outputLabel} ${values[index]}`);
-    });
-  }
-  return pieces.join(" ");
-}
-
-function extractLooseNumberValues(text) {
-  return [...String(text).matchAll(/(?:A\$|\$)?\s*([\d,]+(?:\.\d{1,2})?)\s*(?:AUD)?/gi)]
-    .map((match) => match[1])
-    .filter((value) => Number.isFinite(parseNumeric(value)));
 }
 
 function pickTemplateMoneyField(fieldName, blocks, meta, debug) {
@@ -514,67 +517,70 @@ function pickTemplateMoneyField(fieldName, blocks, meta, debug) {
     for (const pattern of patterns) {
       pattern.lastIndex = 0;
       for (const match of block.text.matchAll(pattern)) {
-        const raw = match[1];
-        const value = parseNumeric(raw);
-        const localContext = getTemplateLocalContext(block.text, match.index || 0, match[0].length, 90);
+        const value = parseNumeric(match[1]);
+        const localContext = getLocalContext(block.text, match.index || 0, match[0].length, 90);
         if (!Number.isFinite(value)) continue;
         candidates.push({
           field: fieldName,
           value: round(value, 2),
           block: block.id,
-          score: block.priority + scoreTemplateCandidate(fieldName, block.id, match[0], value),
+          score: block.priority + scoreTemplateCandidate(fieldName, block, match[0], value),
           source: "template-regex",
-          matched: match[0],
-          line: localContext
+          line: localContext,
+          matched: match[0]
         });
       }
     }
   }
 
-  const selected = selectTemplateCandidate(fieldName, candidates, debug);
-  debug.fields[fieldName] = debug.fields[fieldName] || {};
-  debug.fields[fieldName].selected = selected?.value ?? "";
-  debug.fields[fieldName].selectedCandidate = selected || null;
-  debug.fields[fieldName].candidates = candidates.slice(0, 12);
-
+  const selected = selectTemplateMoneyCandidate(fieldName, candidates, debug);
+  debug.fields[fieldName] = {
+    selected: selected?.value ?? "",
+    selectedCandidate: selected || null,
+    candidates: candidates.slice(0, 12)
+  };
   if (!selected) {
     meta[fieldName] = { confidence: "missing", warning: "자동 추출 실패, 직접 입력 필요" };
     return "";
   }
 
-  meta[fieldName] = { confidence: selected.score >= 90 ? "normal" : "low", source: selected.source, section: selected.block, score: selected.score };
+  meta[fieldName] = {
+    confidence: selected.score >= 90 ? "normal" : "low",
+    source: selected.source,
+    section: selected.block,
+    label: selected.matched,
+    score: selected.score
+  };
   return selected.value;
 }
 
-function scoreTemplateCandidate(fieldName, blockId, matchedText, value) {
+function scoreTemplateCandidate(fieldName, block, matchedText, value) {
   let score = 0;
-  if (/\$|A\$|AUD/i.test(matchedText)) score += 24;
-  if (blockId === "paymentSummary" || blockId === "pairedRows") score += 36;
-  if (blockId === "ocrTestNotes") score -= 8;
-  if (fieldName === "grossPay" && /Gross/i.test(matchedText)) score += 16;
-  if (fieldName === "netPay" && /Net\s+Pay|Amount\s+Paid/i.test(matchedText)) score += 24;
-  if (fieldName === "taxWithheld" && /Tax|PAYG/i.test(matchedText)) score += 18;
-  if (fieldName === "superannuation" && /Super/i.test(matchedText)) score += 18;
+  if (/\$|A\$|AUD/i.test(matchedText)) score += 25;
+  if (block.id === "paymentSummary" || block.id === "summaryLines") score += 35;
+  if (block.id === "ocrTestNotes") score -= 12;
+  if (fieldName === "grossPay" && /Gross Pay/i.test(matchedText)) score += 15;
+  if (fieldName === "netPay" && /Net Pay/i.test(matchedText)) score += 25;
+  if (fieldName === "taxWithheld" && /Tax Withheld|PAYG/i.test(matchedText)) score += 18;
+  if (fieldName === "superannuation" && /Superannuation|Employer Super/i.test(matchedText)) score += 18;
   if (value >= 100) score += 10;
   return score;
 }
 
-function selectTemplateCandidate(fieldName, candidates, debug) {
-  const valid = [];
-  for (const candidate of candidates) {
-    const reason = validateTemplateCandidate(fieldName, candidate);
-    if (reason) {
-      debug.fields[fieldName] = debug.fields[fieldName] || {};
-      debug.fields[fieldName].excluded = debug.fields[fieldName].excluded || [];
-      debug.fields[fieldName].excluded.push({ ...candidate, reason });
-    } else {
-      valid.push(candidate);
-    }
-  }
+function selectTemplateMoneyCandidate(fieldName, candidates, debug) {
+  const valid = candidates.filter((candidate) => {
+    const reason = validateTemplateMoneyCandidate(fieldName, candidate);
+    if (!reason) return true;
+    debug.fields[fieldName] ||= {};
+    debug.fields[fieldName].excluded ||= [];
+    debug.fields[fieldName].excluded.push({ ...candidate, reason });
+    return false;
+  });
+
   return valid.sort((a, b) => b.score - a.score || b.value - a.value)[0] || null;
 }
 
-function validateTemplateCandidate(fieldName, candidate) {
+function validateTemplateMoneyCandidate(fieldName, candidate) {
   const value = Number(candidate.value);
   const context = normalizeText(candidate.line || candidate.matched || "");
   if (!Number.isFinite(value)) return "not-a-number";
@@ -583,11 +589,18 @@ function validateTemplateCandidate(fieldName, candidate) {
   if ((fieldName === "taxWithheld" || fieldName === "superannuation") && value < 0) return "negative-value";
   if (value > 100000) return "too-large";
   if (/(bsb|account number|abn|employee id|member no|tax file no|tfn)\b/i.test(context)) {
-    const safe = /gross pay|total gross|gross earnings|net pay|amount paid|tax withheld|payg withholding|payg tax|payger|superannuation|employer super/i;
-    if (!safe.test(context)) return "identifier-context";
+    const safeLabel = new RegExp(`\\b(${TEMPLATE_FIELD_SAFE_LABELS[fieldName].join("|")})\\b`, "i");
+    if (!safeLabel.test(context)) return "identifier-context";
   }
   return "";
 }
+
+const TEMPLATE_FIELD_SAFE_LABELS = {
+  grossPay: ["Gross\\s+Pay", "Total\\s+Gross", "Gross\\s+Earnings"],
+  netPay: ["Net\\s+Pay", "Amount\\s+Paid", "Pay\\s+Amount"],
+  taxWithheld: ["Tax\\s+Withheld", "PAYG\\s+Withholding", "PAYG\\s+Tax"],
+  superannuation: ["Superannuation", "Employer\\s+Super"]
+};
 
 function pickTemplateHours(blocks, lines, meta, debug) {
   const candidates = [];
@@ -595,32 +608,40 @@ function pickTemplateHours(blocks, lines, meta, debug) {
     /\bHours\s+Worked\s*:?\s*([\d,]+(?:\.\d{1,2})?)/gi,
     /\bTotal\s+Hours(?:\s+Worked)?\s*:?\s*([\d,]+(?:\.\d{1,2})?)/gi
   ];
+
   for (const block of blocks) {
     for (const pattern of patterns) {
       pattern.lastIndex = 0;
       for (const match of block.text.matchAll(pattern)) {
         const value = parseNumeric(match[1]);
-        if (Number.isFinite(value)) candidates.push({ field: "hoursWorked", value: round(value, 2), block: block.id, source: "explicit-hours", score: block.priority + 95, line: getTemplateLocalContext(block.text, match.index || 0, match[0].length, 80) });
+        if (Number.isFinite(value)) {
+          candidates.push({ field: "hoursWorked", value: round(value, 2), block: block.id, source: "explicit-hours", score: block.priority + 90, line: getLocalContext(block.text, match.index || 0, match[0].length, 80) });
+        }
       }
     }
   }
-  const summed = sumTemplateHours(lines);
-  if (summed > 0) candidates.push({ field: "hoursWorked", value: round(summed, 2), block: "earnings", source: "earnings-hour-sum", score: 90, line: "Earnings hour sum" });
-  const selected = candidates.filter((c) => c.value > 0 && c.value <= 400).sort((a, b) => b.score - a.score)[0] || null;
+
+  const summedHours = sumTemplateHours(lines);
+  if (summedHours > 0) candidates.push({ field: "hoursWorked", value: round(summedHours, 2), block: "earnings", source: "earnings-hour-sum", score: 90, line: "Earnings table hour sum" });
+
+  const selected = candidates
+    .filter((candidate) => candidate.value > 0 && candidate.value <= 400)
+    .sort((a, b) => b.score - a.score)[0] || null;
+
   debug.fields.hoursWorked = { selected: selected?.value ?? "", selectedCandidate: selected, candidates };
   if (!selected) {
     meta.hoursWorked = { confidence: "missing", warning: "자동 추출 실패, 직접 입력 필요" };
     return "";
   }
-  meta.hoursWorked = { confidence: "normal", source: selected.source, section: selected.block };
+  meta.hoursWorked = { confidence: "normal", source: selected.source, section: selected.block, score: selected.score };
   return selected.value;
 }
 
 function sumTemplateHours(lines) {
-  const rowPattern = /\b(?:Ordinary Hours|Store Hours|Base Hours|Picking Hours|Packing Shift|Saturday Loading|Sunday Loading|Weekend Loading|Late Night Loading|Overtime|Public Holiday Loading)\b\s*([\d,]+(?:\.\d{1,2})?)/i;
+  const hourRows = /\b(?:Ordinary Hours|Store Hours|Base Hours|Picking Hours|Packing Shift|Saturday Loading|Sunday Loading|Weekend Loading|Late Night Loading|Overtime|Public Holiday Loading)\b\s*([\d,]+(?:\.\d{1,2})?)/i;
   let total = 0;
   for (const line of lines) {
-    const match = line.match(rowPattern);
+    const match = line.match(hourRows);
     if (!match) continue;
     const value = parseNumeric(match[1]);
     if (Number.isFinite(value)) total += value;
@@ -632,12 +653,15 @@ function pickTemplateDate(blocks, documentText, meta, debug) {
   const candidates = [];
   const texts = [...blocks, { id: "document", priority: 30, text: documentText }];
   for (const block of texts) {
-    const patterns = [/\bPay\s+Date\s*:?\s*(\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})/gi, /\bPayment\s+Date\s*:?\s*(\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})/gi];
+    const patterns = [
+      /\bPay\s+Date\s*:?\s*(\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})/gi,
+      /\bPayment\s+Date\s*:?\s*(\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})/gi
+    ];
     for (const pattern of patterns) {
       pattern.lastIndex = 0;
       for (const match of block.text.matchAll(pattern)) {
         const value = parseDateFromText(match[1]);
-        if (value) candidates.push({ field: "payDate", value, block: block.id, source: "date-regex", score: block.priority + 55, line: getTemplateLocalContext(block.text, match.index || 0, match[0].length, 70) });
+        if (value) candidates.push({ field: "payDate", value, block: block.id, source: "date-regex", score: block.priority + 55, line: getLocalContext(block.text, match.index || 0, match[0].length, 70) });
       }
     }
   }
@@ -652,17 +676,21 @@ function pickTemplatePeriod(blocks, documentText, meta, debug) {
   const candidates = [];
   const texts = [...blocks, { id: "document", priority: 30, text: documentText }];
   for (const block of texts) {
-    const patterns = [/\bPay\s+Cycle\s*:?\s*(Weekly|Fortnightly|Monthly)\b/gi, /\bCycle\s*:?\s*(Weekly|Fortnightly|Monthly)\b/gi];
+    const patterns = [
+      /\bPay\s+Cycle\s*:?\s*(Weekly|Fortnightly|Monthly)\b/gi,
+      /\bCycle\s*:?\s*(Weekly|Fortnightly|Monthly)\b/gi,
+      /\bPay\s+Period\b[^\n]{0,140}?\b(Weekly|Fortnightly|Monthly)\b/gi
+    ];
     for (const pattern of patterns) {
       pattern.lastIndex = 0;
       for (const match of block.text.matchAll(pattern)) {
         const value = detectPeriodKeyword(normalizeText(match[1]));
-        if (value) candidates.push({ field: "payPeriod", value, block: block.id, source: "period-keyword", score: block.priority + 55, line: getTemplateLocalContext(block.text, match.index || 0, match[0].length, 70) });
+        if (value) candidates.push({ field: "payPeriod", value, block: block.id, source: "period-keyword", score: block.priority + 55, line: getLocalContext(block.text, match.index || 0, match[0].length, 70) });
       }
     }
   }
   const inferred = inferPeriodFromDates(documentText);
-  if (inferred) candidates.push({ field: "payPeriod", value: inferred, block: "document", source: "date-range", score: 45, line: "Pay Period date range" });
+  if (inferred) candidates.push({ field: "payPeriod", value: inferred, block: "document", source: "date-range", score: 65, line: "Pay Period date range" });
   const selected = candidates.sort((a, b) => b.score - a.score)[0] || null;
   debug.fields.payPeriod = { selected: selected?.value ?? "", selectedCandidate: selected, candidates };
   if (!selected) return "";
@@ -671,18 +699,21 @@ function pickTemplatePeriod(blocks, documentText, meta, debug) {
 }
 
 function pickTemplateText(fieldName, blocks, lines, meta) {
-  const text = lines.join(" ");
-  const patterns = fieldName === "employeeName"
-    ? [/\bEmployee\s+Name\s*:?\s*([A-Za-z][A-Za-z .'-]+?)(?=\s+(?:Employee\s+ID|Position|Role|Pay\s+Date|Pay\s+Period|Tax\s+File|TFN|Currency|$))/i]
-    : [/^\s*([A-Z][A-Z0-9 &.'-]+(?:PTY\s+LTD|GROUP\s+PTY\s+LTD))\b/i];
-  for (const pattern of patterns) {
-    const match = text.match(pattern);
-    if (match?.[1] && !/details/i.test(match[1])) {
-      meta[fieldName] = { confidence: "normal", source: "template-text" };
-      return match[1].replace(/\s+/g, " ").trim();
+  const candidates = [];
+  const patterns = TEMPLATE_TEXT_PATTERNS[fieldName] || [];
+  const texts = [{ id: "document", priority: 20, text: lines.join(" ") }, ...blocks];
+  for (const block of texts) {
+    for (const pattern of patterns) {
+      const match = block.text.match(pattern);
+      if (match?.[1]) {
+        const value = match[1].replace(/\s+/g, " ").trim();
+        if (value && !/details/i.test(value)) candidates.push({ value, score: block.priority, block: block.id });
+      }
     }
   }
-  return "";
+  const selected = candidates.sort((a, b) => b.score - a.score)[0];
+  if (selected) meta[fieldName] = { confidence: "normal", source: "template-text", section: selected.block };
+  return selected?.value || "";
 }
 
 function validateTemplateParsedValues(parsed, meta, debug) {
@@ -690,12 +721,14 @@ function validateTemplateParsedValues(parsed, meta, debug) {
   const net = Number(parsed.netPay);
   const tax = Number(parsed.taxWithheld);
   const superValue = Number(parsed.superannuation);
+
   const invalidate = (fieldName, reason) => {
     parsed[fieldName] = "";
     meta[fieldName] = { confidence: "missing", warning: `자동 추출 실패, 직접 입력 필요 (${reason})` };
-    debug.fields[fieldName] = debug.fields[fieldName] || {};
+    debug.fields[fieldName] ||= {};
     debug.fields[fieldName].validationError = reason;
   };
+
   if (parsed.grossPay !== "" && (!Number.isFinite(gross) || gross < 100)) invalidate("grossPay", "Gross Pay 이상값");
   if (parsed.netPay !== "" && (!Number.isFinite(net) || net < 100)) invalidate("netPay", "Net Pay 이상값");
   if (parsed.taxWithheld !== "" && (!Number.isFinite(tax) || tax < 0 || (Number.isFinite(gross) && tax >= gross))) invalidate("taxWithheld", "Tax Withheld 이상값");
@@ -703,8 +736,10 @@ function validateTemplateParsedValues(parsed, meta, debug) {
   if (parsed.netPay !== "" && parsed.grossPay !== "" && net > gross) invalidate("netPay", "Net Pay가 Gross Pay보다 큼");
 }
 
-function getTemplateLocalContext(text, index, length, radius = 60) {
-  return text.slice(Math.max(0, index - radius), Math.min(text.length, index + length + radius)).replace(/\s+/g, " ").trim();
+function getLocalContext(text, index, length, radius = 60) {
+  const start = Math.max(0, index - radius);
+  const end = Math.min(text.length, index + length + radius);
+  return text.slice(start, end).replace(/\s+/g, " ").trim();
 }
 
 function detectTemplateSection(line) {
@@ -1829,7 +1864,7 @@ function applyParsedFields(els, parsed) {
 }
 
 function renderExtractionDebug() {
-  // 사용자 화면에서 자동 추출 후보 보기는 표시하지 않습니다.
+  // 자동 추출 후보 UI는 사용자 화면에서 제거했습니다.
 }
 
 function formatDebugCandidate(candidate) {

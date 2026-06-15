@@ -60,7 +60,7 @@
       "name": "OCR 결과가 틀릴 수 있나요?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "네. 명세서 양식, 스캔 품질, 글자 흐림 정도에 따라 틀릴 수 있으므로 자동 추출값을 확인하고 수정한 뒤 계산해야 합니다."
+        "text": "네. 명세서 양식, 스캔 품질, 글자 흐림 정도에 따라 틀릴 수 있으므로 추출된 값을 확인하고 수정한 뒤 계산해야 합니다."
       }
     },
     {
@@ -142,6 +142,7 @@
                 <button id="au-analyze-text" class="subtle-button" type="button">붙여넣은 텍스트 분석</button>
               </details>
 
+              <pre id="au-extraction-debug" hidden></pre>
 
               <div class="field-row">
                 <div class="field">
@@ -200,9 +201,9 @@
                     <option value="monthly">월급</option>
                   </select>
                 </div>
-                <div class="field exchange-rate-field">
+                <div class="field">
                   <label for="au-exchange-rate">AUD/KRW 환율</label>
-                  <div class="exchange-rate-control">
+                  <div class="rate-input-row">
                     <div class="input-suffix">
                       <input id="au-exchange-rate" name="exchangeRate" type="number" min="0" step="0.0001" inputmode="decimal" placeholder="예: 900">
                       <span>원</span>
@@ -233,7 +234,7 @@
               <div class="report-summary">
                 <span class="report-kicker">원화 환산 결과</span>
                 <strong id="au-period-net-krw" class="result-number">-</strong>
-                <span id="au-result-summary">자동 추출값을 확인한 뒤 계산 버튼을 눌러 주세요.</span>
+                <span id="au-result-summary">PDF에서 추출된 금액을 확인한 뒤 계산 버튼을 눌러 주세요.</span>
               </div>
               <div class="metric-grid australia-pay-metrics">
                 <div>
@@ -272,7 +273,7 @@
             <h2>PDF를 넣고, 값은 한 번 확인한 뒤 계산하세요.</h2>
             <ol class="step-list">
               <li><strong>PDF 업로드</strong><span>텍스트 기반 PDF는 텍스트 추출을 먼저 시도하고, 스캔본은 OCR을 실행합니다.</span></li>
-              <li><strong>자동 추출값 확인</strong><span>Gross Pay, Net Pay, Tax, Super, 근무시간, Pay Date를 확인하고 수정합니다.</span></li>
+              <li><strong>추출값 확인</strong><span>Gross Pay, Net Pay, Tax, Super, 근무시간, Pay Date를 확인하고 수정합니다.</span></li>
               <li><strong>환율 적용</strong><span>최신 AUD/KRW 환율을 조회하거나 직접 환율을 입력합니다. Pay Date는 명세서 확인용으로 유지합니다.</span></li>
               <li><strong>계산 실행</strong><span>“이 값으로 계산하기”를 눌러 원화 실수령액과 연 환산액을 확인합니다.</span></li>
             </ol>
@@ -283,7 +284,7 @@
             <ul class="plain-list">
               <li>PDF 파일은 서버에 저장하지 않고 브라우저에서 처리됩니다.</li>
               <li>TFN, 은행 정보, 직원번호, 주소 같은 민감정보는 가능하면 가린 뒤 사용하세요.</li>
-              <li>자동 추출값은 바로 최종 계산에 쓰지 않고, 사용자가 확인한 입력값으로만 계산합니다.</li>
+              <li>추출된 값은 사용자가 확인한 입력값으로 계산합니다.</li>
               <li>실제 급여, 세금, 환율 판단은 명세서와 금융기관 기준을 확인해야 합니다.</li>
             </ul>
           </section>
@@ -316,7 +317,7 @@
           <h2>호주 워홀 월급 환산 자주 묻는 질문</h2>
           <div class="faq-grid">
             <details open><summary>PDF가 서버로 업로드되나요?</summary><p>아니요. PDF 텍스트 추출과 OCR은 브라우저 안에서 처리합니다. 다만 민감정보는 가능하면 가린 뒤 사용하는 것을 권장합니다.</p></details>
-            <details><summary>OCR 결과가 틀릴 수 있나요?</summary><p>네. 명세서 양식, 스캔 품질, 글자 흐림 정도에 따라 틀릴 수 있으므로 자동 추출값을 확인하고 수정한 뒤 계산해야 합니다.</p></details>
+            <details><summary>OCR 결과가 틀릴 수 있나요?</summary><p>네. 명세서 양식, 스캔 품질, 글자 흐림 정도에 따라 틀릴 수 있으므로 추출된 값을 확인하고 수정한 뒤 계산해야 합니다.</p></details>
             <details><summary>Net Pay가 없으면 어떻게 계산하나요?</summary><p>Net Pay가 없고 Gross Pay와 Tax Withheld가 있으면 Gross Pay - Tax Withheld를 임시 실수령액으로 계산합니다.</p></details>
             <details><summary>환율은 어떤 기준을 사용하나요?</summary><p>환율 조회는 API 키가 필요 없는 공개 환율 API의 최신 AUD/KRW 환율을 사용하며, 조회 실패 시 최근 저장 환율 또는 사용자가 직접 입력한 환율을 사용할 수 있습니다.</p></details>
           </div>
@@ -335,7 +336,7 @@
         </nav>
       </div>
     </footer>
-    <script type="module" src="../assets/js/australia-pay.js?v=20260615-australia-parser"></script>
-    <script type="module" src="../assets/js/app.js?v=20260615-australia-parser"></script>
+    <script type="module" src="../assets/js/australia-pay.js?v=20260615-template-layout-parser"></script>
+    <script type="module" src="../assets/js/app.js?v=20260615-template-layout-parser"></script>
   </body>
 </html>

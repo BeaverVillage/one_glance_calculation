@@ -95,18 +95,6 @@
   align-items: center;
 }
 
-
-.hero-title-two-line {
-  max-width: 13.5em;
-  font-size: clamp(2.25rem, 3.55vw, 3rem);
-  line-height: 1.13;
-  word-break: keep-all;
-}
-
-.hero-title-two-line span {
-  display: block;
-}
-
 .hero-copy {
   padding-top: 18px;
 }
