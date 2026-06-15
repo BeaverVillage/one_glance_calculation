@@ -184,6 +184,19 @@ function initResponsiveNav() {
 function initAffiliateAds() {
   if (document.querySelector(".affiliate-ad")) return;
 
+  const desktopCoupangWidget = createCoupangWidget({
+    id: 997238,
+    slot: "desktop",
+    width: 728,
+    height: 90
+  });
+  const mobileCoupangWidget = createCoupangWidget({
+    id: 997235,
+    slot: "mobile",
+    width: 320,
+    height: 50
+  });
+
   const compactSection = document.querySelector(".content-band.compact");
   if (compactSection) {
     const desktopAdBand = document.createElement("section");
@@ -192,9 +205,7 @@ function initAffiliateAds() {
     desktopAdBand.innerHTML = `
       <div class="container">
         <div class="affiliate-ad-note">이 페이지는 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</div>
-        <a class="affiliate-ad affiliate-ad-desktop" href="https://link.coupang.com/a/eyk42kbyOy" target="_blank" rel="nofollow sponsored noopener" referrerpolicy="unsafe-url">
-          <img src="https://ads-partners.coupang.com/banners/996888?subId=&traceId=V0-301-879dd1202e5c73b2-I996888&w=728&h=90" width="728" height="90" alt="쿠팡 파트너스 광고">
-        </a>
+        ${desktopCoupangWidget}
       </div>
     `;
     const footer = document.querySelector(".site-footer");
@@ -210,11 +221,29 @@ function initAffiliateAds() {
   mobileAd.setAttribute("aria-label", "하단 광고");
   mobileAd.innerHTML = `
     <div class="mobile-affiliate-label">이 페이지는 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</div>
-    <a class="affiliate-ad affiliate-ad-mobile" href="https://link.coupang.com/a/eylcCXiLPU" target="_blank" rel="nofollow sponsored noopener" referrerpolicy="unsafe-url">
-      <img src="https://ads-partners.coupang.com/banners/996895?subId=&traceId=V0-301-879dd1202e5c73b2-I996895&w=320&h=50" width="320" height="50" alt="쿠팡 파트너스 광고">
-    </a>
+    ${mobileCoupangWidget}
   `;
   document.body.append(mobileAd);
+}
+
+function createCoupangWidget({ id, slot, width, height }) {
+  const widgetUrl = `https://ads-partners.coupang.com/widgets.html?id=${id}&template=carousel&trackingCode=AF5055363&width=${width}&height=${height}&tsource=&tag=js`;
+
+  return `
+    <iframe
+      class="affiliate-ad coupang-widget"
+      data-coupang-slot="${slot}"
+      data-coupang-id="${id}"
+      title="쿠팡 파트너스 광고"
+      width="${width}"
+      height="${height}"
+      loading="lazy"
+      referrerpolicy="unsafe-url"
+      scrolling="no"
+      aria-label="쿠팡 파트너스 광고"
+      src="${widgetUrl}"
+    ></iframe>
+  `;
 }
 
 function initToolDrawer() {
