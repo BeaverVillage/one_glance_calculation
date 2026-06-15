@@ -12,7 +12,7 @@ const FIELD_LABELS = {
   superannuation: ["employer super", "superannuation", "super"],
   hoursWorked: ["hours worked", "total hours", "ordinary hours"],
   payDate: ["pay date", "payment date", "period ending"],
-  payPeriod: ["pay period", "period"],
+  payPeriod: ["pay period", "pay cycle", "period"],
   employerName: ["employer name", "employer"],
   employeeName: ["employee name", "employee"]
 };
@@ -216,13 +216,15 @@ function isTextSufficient(text) {
 
 export function parsePayslipText(text) {
   const lines = normalizeOcrLines(text);
+  const paymentSummaryLines = getPaymentSummaryLines(lines);
+  const paymentSummaryValues = parsePaymentSummaryValues(paymentSummaryLines);
   const meta = {};
   const parsed = {
-    grossPay: moneyValue(findMoneyCandidate(lines, MONEY_FIELD_CONFIGS.grossPay, "grossPay", meta)),
-    netPay: moneyValue(findMoneyCandidate(lines, MONEY_FIELD_CONFIGS.netPay, "netPay", meta)),
-    taxWithheld: moneyValue(findMoneyCandidate(lines, MONEY_FIELD_CONFIGS.taxWithheld, "taxWithheld", meta)),
-    superannuation: moneyValue(findMoneyCandidate(lines, MONEY_FIELD_CONFIGS.superannuation, "superannuation", meta)),
-    hoursWorked: findHours(lines, FIELD_LABELS.hoursWorked, meta),
+    grossPay: pickMoneyField("grossPay", lines, paymentSummaryLines, MONEY_FIELD_CONFIGS.grossPay, meta, paymentSummaryValues),
+    netPay: pickMoneyField("netPay", lines, paymentSummaryLines, MONEY_FIELD_CONFIGS.netPay, meta, paymentSummaryValues),
+    taxWithheld: pickMoneyField("taxWithheld", lines, paymentSummaryLines, MONEY_FIELD_CONFIGS.taxWithheld, meta, paymentSummaryValues),
+    superannuation: pickMoneyField("superannuation", lines, paymentSummaryLines, MONEY_FIELD_CONFIGS.superannuation, meta, paymentSummaryValues),
+    hoursWorked: findHours(paymentSummaryLines.length ? paymentSummaryLines : lines, FIELD_LABELS.hoursWorked, meta) || findHours(lines, FIELD_LABELS.hoursWorked, meta),
     payDate: findDate(lines, FIELD_LABELS.payDate, meta),
     payPeriod: findPayPeriod(lines, meta),
     employerName: findLabelText(lines, FIELD_LABELS.employerName, meta, "employerName"),
@@ -245,8 +247,200 @@ function normalizeOcrLines(text) {
     .filter(Boolean);
 }
 
-function findMoneyCandidate(lines, config, fieldName, meta) {
+function getPaymentSummaryLines(lines) {
+  const start = lines.findIndex((line) => normalizeText(line).includes("payment summary"));
+  if (start < 0) return [];
+  return lines.slice(start, Math.min(lines.length, start + 10));
+}
+
+function pickMoneyField(fieldName, lines, paymentSummaryLines, config, meta, paymentSummaryValues) {
+  const summaryValue = paymentSummaryValues[fieldName];
+  if (Number.isFinite(summaryValue)) {
+    meta[fieldName] = {
+      confidence: "normal",
+      source: paymentSummaryValues.__meta?.[fieldName]?.source || "payment-summary",
+      label: paymentSummaryValues.__meta?.[fieldName]?.label || "",
+      section: "payment-summary"
+    };
+    return summaryValue;
+  }
+  return moneyValue(findPreferredMoneyCandidate(lines, paymentSummaryLines, config, fieldName, meta));
+}
+
+function parsePaymentSummaryValues(lines) {
+  const result = { __meta: {} };
+  if (!lines.length) return result;
+
+  applySummaryPair(result, lines, "grossPay", FIELD_LABELS.grossPay, "taxWithheld", FIELD_LABELS.taxWithheld);
+  applySummaryPair(result, lines, "netPay", FIELD_LABELS.netPay, "superannuation", FIELD_LABELS.superannuation);
+
+  for (const [fieldName, config] of Object.entries(MONEY_FIELD_CONFIGS)) {
+    if (Number.isFinite(result[fieldName])) continue;
+    const direct = findSummaryDirectMoney(lines, config.labels);
+    const table = direct || findSummaryTableMoney(lines, fieldName);
+    if (!table) continue;
+    result[fieldName] = table.value;
+    result.__meta[fieldName] = {
+      source: table.source,
+      label: table.label
+    };
+  }
+
+  return result;
+}
+
+function applySummaryPair(result, lines, leftField, leftLabels, rightField, rightLabels) {
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    const leftMatch = findFirstLooseLabel(line, leftLabels);
+    const rightMatch = findFirstLooseLabel(line, rightLabels);
+    if (!leftMatch || !rightMatch) continue;
+
+    const pairStart = Math.min(leftMatch.start, rightMatch.start);
+    let values = extractMoneyValuesWithIndex(line)
+      .filter((value) => value.index >= pairStart)
+      .map((value) => value.value);
+    let source = "payment-summary-pair-line";
+    if (values.length < 2) {
+      values = extractMoneyValues(lines[index + 1] || "");
+      source = "payment-summary-pair-next-line";
+    }
+    if (values.length < 2) continue;
+
+    if (!Number.isFinite(result[leftField])) {
+      result[leftField] = values[0];
+      result.__meta[leftField] = { source, label: leftMatch.label };
+    }
+    if (!Number.isFinite(result[rightField])) {
+      result[rightField] = values[1];
+      result.__meta[rightField] = { source, label: rightMatch.label };
+    }
+    return;
+  }
+}
+
+function findFirstLooseLabel(line, labels) {
+  const strict = labels
+    .map((label) => findLabel(line, label))
+    .filter(Boolean)
+    .sort((a, b) => a.start - b.start || b.label.length - a.label.length)[0];
+  if (strict) return strict;
+
+  const normalizedLine = normalizeText(line);
+  return labels
+    .map((label) => {
+      const normalizedLabel = normalizeText(label);
+      const start = normalizedLine.indexOf(normalizedLabel);
+      return start >= 0 ? { label, start, end: start + normalizedLabel.length } : null;
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.start - b.start || b.label.length - a.label.length)[0] || null;
+}
+
+function findSummaryDirectMoney(lines, labels) {
+  for (const line of lines) {
+    for (const label of labels) {
+      const match = findLabel(line, label);
+      if (!match) continue;
+      const nextLabel = findNextKnownMoneyLabel(line, match.end);
+      const segment = line.slice(match.end, nextLabel?.start ?? line.length);
+      const values = extractMoneyValues(segment);
+      if (Number.isFinite(values[0]) && values[0] >= 0) {
+        return { value: values[0], label, source: "payment-summary-direct" };
+      }
+    }
+  }
+  return null;
+}
+
+function findNextKnownMoneyLabel(text, fromIndex) {
+  return Object.values(MONEY_FIELD_CONFIGS)
+    .flatMap((config) => config.labels)
+    .map((label) => findLabel(text.slice(fromIndex), label))
+    .filter(Boolean)
+    .map((match) => ({ ...match, start: match.start + fromIndex, end: match.end + fromIndex }))
+    .sort((a, b) => a.start - b.start)[0] || null;
+}
+
+function findSummaryTableMoney(lines, fieldName) {
+  for (let index = 0; index < lines.length; index += 1) {
+    const labels = collectSummaryMoneyLabels(lines[index]);
+    const fieldIndex = labels.findIndex((label) => label.field === fieldName);
+    if (fieldIndex < 0 || labels.length < 2) continue;
+
+    const sameLineValues = extractMoneyValuesWithIndex(lines[index])
+      .filter((value) => value.index >= labels[0].end)
+      .map((value) => value.value);
+    if (sameLineValues.length >= labels.length) {
+      return {
+        value: sameLineValues[fieldIndex],
+        label: labels[fieldIndex].label,
+        source: "payment-summary-table-line"
+      };
+    }
+
+    const nextLine = lines[index + 1] || "";
+    if (!nextLine || collectSummaryMoneyLabels(nextLine).length) continue;
+    const nextLineValues = extractMoneyValues(nextLine);
+    if (nextLineValues.length >= labels.length) {
+      return {
+        value: nextLineValues[fieldIndex],
+        label: labels[fieldIndex].label,
+        source: "payment-summary-table-next-line"
+      };
+    }
+  }
+  return null;
+}
+
+function collectSummaryMoneyLabels(line) {
+  const normalizedLine = normalizeText(line);
+  const matches = Object.entries(MONEY_FIELD_CONFIGS)
+    .flatMap(([field, config]) => config.labels.map((label) => ({
+      field,
+      label,
+      start: normalizedLine.indexOf(normalizeText(label)),
+      end: normalizedLine.indexOf(normalizeText(label)) + normalizeText(label).length
+    })))
+    .filter((match) => match.start >= 0)
+    .sort((a, b) => a.start - b.start || b.label.length - a.label.length);
+
+  const selected = [];
+  for (const match of matches) {
+    const overlaps = selected.some((item) => match.start < item.end && match.end > item.start);
+    if (!overlaps) selected.push(match);
+  }
+  return selected;
+}
+
+function findPreferredMoneyCandidate(lines, paymentSummaryLines, config, fieldName, meta) {
+  const summaryCandidate = paymentSummaryLines.length
+    ? findMoneyCandidate(paymentSummaryLines, config, fieldName, null, {
+      section: "payment-summary",
+      scoreBoost: 50
+    })
+    : null;
+  const fullCandidate = findMoneyCandidate(lines, config, fieldName, null, {
+    section: "full-text",
+    scoreBoost: 0
+  });
+  const best = summaryCandidate || fullCandidate;
+
+  meta[fieldName] = best
+    ? {
+      confidence: best.score >= 80 ? "normal" : "low",
+      source: best.source,
+      label: best.label,
+      section: best.section
+    }
+    : { confidence: "missing", warning: "자동 추출하지 못했습니다. 직접 확인해 주세요." };
+  return best || null;
+}
+
+function findMoneyCandidate(lines, config, fieldName, meta, options = {}) {
   const candidates = [];
+  const scoreBoost = options.scoreBoost || 0;
+  const section = options.section || "full-text";
 
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
@@ -260,10 +454,24 @@ function findMoneyCandidate(lines, config, fieldName, meta) {
     if (isolated.length) {
       candidates.push({
         value: isolated[0].value,
-        score: 100 + label.label.length,
+        score: 100 + label.label.length + scoreBoost,
         source: "same-line-segment",
+        section,
         line,
         label: label.label
+      });
+      continue;
+    }
+
+    const paired = findPairedMoneyByLabelOrder(lines, index, fieldName);
+    if (paired) {
+      candidates.push({
+        value: paired.value,
+        score: 94 + label.label.length + scoreBoost,
+        source: paired.source,
+        section,
+        line: paired.line,
+        label: paired.label
       });
       continue;
     }
@@ -274,8 +482,9 @@ function findMoneyCandidate(lines, config, fieldName, meta) {
     if (!hasForbiddenContext && afterLabel.length) {
       candidates.push({
         value: afterLabel[0].value,
-        score: 86 + label.label.length,
+        score: 86 + label.label.length + scoreBoost,
         source: "same-line-after-label",
+        section,
         line,
         label: label.label
       });
@@ -285,8 +494,9 @@ function findMoneyCandidate(lines, config, fieldName, meta) {
     if (!hasForbiddenContext && sameLineAmounts.length === 1) {
       candidates.push({
         value: sameLineAmounts[0].value,
-        score: 74 + label.label.length,
+        score: 74 + label.label.length + scoreBoost,
         source: "same-line-single",
+        section,
         line,
         label: label.label
       });
@@ -300,8 +510,9 @@ function findMoneyCandidate(lines, config, fieldName, meta) {
       if (nextValues.length === 1) {
         candidates.push({
           value: nextValues[0].value,
-          score: 62 - offset * 4 + label.label.length,
+          score: 62 - offset * 4 + label.label.length + scoreBoost,
           source: "next-line-single",
+          section,
           line: `${line} / ${nextLine}`,
           label: label.label
         });
@@ -312,9 +523,11 @@ function findMoneyCandidate(lines, config, fieldName, meta) {
 
   candidates.sort((a, b) => b.score - a.score);
   const best = candidates[0];
-  meta[fieldName] = best
-    ? { confidence: best.score >= 80 ? "normal" : "low", source: best.source, label: best.label }
-    : { confidence: "missing", warning: "자동 추출하지 못했습니다. 직접 확인해 주세요." };
+  if (meta) {
+    meta[fieldName] = best
+      ? { confidence: best.score >= 80 ? "normal" : "low", source: best.source, label: best.label, section: best.section }
+      : { confidence: "missing", warning: "자동 추출하지 못했습니다. 직접 확인해 주세요." };
+  }
   return best || null;
 }
 
@@ -326,6 +539,55 @@ function extractMoneyInLabelSegment(line, label) {
   const nextLabel = findNextKnownLabel(line, label.end);
   const segment = line.slice(label.end, nextLabel?.start ?? line.length);
   return extractMoneyValuesWithIndex(segment);
+}
+
+function findPairedMoneyByLabelOrder(lines, index, fieldName) {
+  const line = lines[index];
+  const labels = collectMoneyFieldLabels(line);
+  const fieldIndex = labels.findIndex((label) => label.field === fieldName);
+  if (fieldIndex < 0 || labels.length < 2) return null;
+
+  const sameLineValues = extractMoneyValuesWithIndex(line)
+    .filter((value) => value.index >= labels[0].end);
+  if (sameLineValues.length >= labels.length) {
+    return {
+      value: sameLineValues[fieldIndex].value,
+      source: "same-line-label-value-pair",
+      line,
+      label: labels[fieldIndex].label
+    };
+  }
+
+  const nextLine = lines[index + 1] || "";
+  if (!nextLine || hasAnyKnownFieldLabel(nextLine)) return null;
+
+  const nextLineValues = extractMoneyValuesWithIndex(nextLine);
+  if (nextLineValues.length >= labels.length) {
+    return {
+      value: nextLineValues[fieldIndex].value,
+      source: "next-line-label-value-pair",
+      line: `${line} / ${nextLine}`,
+      label: labels[fieldIndex].label
+    };
+  }
+
+  return null;
+}
+
+function collectMoneyFieldLabels(line) {
+  const matches = Object.entries(MONEY_FIELD_CONFIGS)
+    .flatMap(([field, config]) => config.labels
+      .map((label) => findLabel(line, label))
+      .filter(Boolean)
+      .map((match) => ({ ...match, field })))
+    .sort((a, b) => a.start - b.start || b.label.length - a.label.length);
+
+  const selected = [];
+  for (const match of matches) {
+    const overlaps = selected.some((item) => match.start < item.end && match.end > item.start);
+    if (!overlaps) selected.push(match);
+  }
+  return selected;
 }
 
 function findBestLabel(line, labels) {
@@ -710,7 +972,7 @@ async function updateExchangeRate(els, announce) {
 export async function fetchAudKrwRate(payDate = "") {
   const endpoints = [];
 
-  if (payDate) {
+  if (payDate && !isFutureIsoDate(payDate)) {
     endpoints.push({
       url: `${FRANKFURTER_API}/${payDate}?base=AUD&symbols=KRW`,
       fallback: false
@@ -748,6 +1010,15 @@ export async function fetchAudKrwRate(payDate = "") {
   }
 
   return null;
+}
+
+function isFutureIsoDate(value) {
+  const match = String(value).match(/^(20\d{2})-(\d{2})-(\d{2})$/);
+  if (!match) return false;
+  const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return date.getTime() > today.getTime();
 }
 
 function renderCalculationResult(els, result, rate, rateInfo) {
