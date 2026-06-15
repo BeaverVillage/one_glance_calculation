@@ -141,7 +141,7 @@ export function initAustraliaPayCalculator(root = document) {
 
   els.analyzeTextButton.addEventListener("click", () => {
     applyParsedFields(els, parsePayslipText(els.rawText.value));
-    setStatus(els, "붙여넣은 텍스트에서 값을 다시 찾았습니다. 자동 추출값을 확인한 뒤 계산해 주세요.", "good");
+    setStatus(els, "붙여넣은 텍스트에서 값을 다시 찾았습니다. 필요하면 입력칸에서 수정한 뒤 계산해 주세요.", "good");
   });
 
   els.refreshRateButton.addEventListener("click", async () => {
@@ -579,7 +579,7 @@ function pickTemplateMoneyField(fieldName, blocks, meta, debug) {
   debug.fields[fieldName].candidates = candidates.slice(0, 12);
 
   if (!selected) {
-    meta[fieldName] = { confidence: "missing", warning: "자동 추출 실패, 직접 입력 필요" };
+    meta[fieldName] = { confidence: "missing", warning: "값을 찾지 못했습니다. 직접 입력해 주세요." };
     return "";
   }
 
@@ -650,7 +650,7 @@ function pickTemplateHours(blocks, lines, meta, debug) {
   const selected = candidates.filter((c) => c.value > 0 && c.value <= 400).sort((a, b) => b.score - a.score)[0] || null;
   debug.fields.hoursWorked = { selected: selected?.value ?? "", selectedCandidate: selected, candidates };
   if (!selected) {
-    meta.hoursWorked = { confidence: "missing", warning: "자동 추출 실패, 직접 입력 필요" };
+    meta.hoursWorked = { confidence: "missing", warning: "근무시간을 찾지 못했습니다. 직접 입력해 주세요." };
     return "";
   }
   meta.hoursWorked = { confidence: "normal", source: selected.source, section: selected.block };
@@ -733,7 +733,7 @@ function validateTemplateParsedValues(parsed, meta, debug) {
   const superValue = Number(parsed.superannuation);
   const invalidate = (fieldName, reason) => {
     parsed[fieldName] = "";
-    meta[fieldName] = { confidence: "missing", warning: `자동 추출 실패, 직접 입력 필요 (${reason})` };
+    meta[fieldName] = { confidence: "missing", warning: `값을 찾지 못했습니다. 직접 입력해 주세요. (${reason})` };
     debug.fields[fieldName] = debug.fields[fieldName] || {};
     debug.fields[fieldName].validationError = reason;
   };
@@ -1448,7 +1448,7 @@ function findPreferredMoneyCandidate(lines, paymentSummaryLines, config, fieldNa
       label: best.label,
       section: best.section
     }
-    : { confidence: "missing", warning: "자동 추출하지 못했습니다. 직접 확인해 주세요." };
+    : { confidence: "missing", warning: "값을 찾지 못했습니다. 직접 입력해 주세요." };
   return best || null;
 }
 
@@ -1541,7 +1541,7 @@ function findMoneyCandidate(lines, config, fieldName, meta, options = {}) {
   if (meta) {
     meta[fieldName] = best
       ? { confidence: best.score >= 80 ? "normal" : "low", source: best.source, label: best.label, section: best.section }
-      : { confidence: "missing", warning: "자동 추출하지 못했습니다. 직접 확인해 주세요." };
+      : { confidence: "missing", warning: "값을 찾지 못했습니다. 직접 입력해 주세요." };
   }
   return best || null;
 }
@@ -1678,7 +1678,7 @@ function findHours(lines, labels, meta) {
       return nextHours[0];
     }
   }
-  meta.hoursWorked = { confidence: "missing", warning: "근무시간을 자동 추출하지 못했습니다." };
+  meta.hoursWorked = { confidence: "missing", warning: "근무시간을 찾지 못했습니다." };
   return "";
 }
 
@@ -1698,7 +1698,7 @@ function findDate(lines, labels, meta) {
       return date;
     }
   }
-  meta.payDate = { confidence: "missing", warning: "Pay Date를 자동 추출하지 못했습니다." };
+  meta.payDate = { confidence: "missing", warning: "Pay Date를 찾지 못했습니다." };
   return "";
 }
 
@@ -1725,7 +1725,7 @@ function findPayPeriod(lines, meta) {
     meta.payPeriod = { confidence: "low" };
     return explicit;
   }
-  meta.payPeriod = { confidence: "missing", warning: "급여 기간을 자동 추출하지 못했습니다." };
+  meta.payPeriod = { confidence: "missing", warning: "급여 기간을 찾지 못했습니다." };
   return "";
 }
 

@@ -97,9 +97,9 @@
 
 
 .hero-title-two-line {
-  max-width: 13.5em;
-  font-size: clamp(2.25rem, 3.55vw, 3rem);
-  line-height: 1.13;
+  max-width: 15.5em;
+  font-size: clamp(2.05rem, 3.15vw, 2.8rem);
+  line-height: 1.14;
   word-break: keep-all;
 }
 

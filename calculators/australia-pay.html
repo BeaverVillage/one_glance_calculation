@@ -60,7 +60,7 @@
       "name": "OCR 결과가 틀릴 수 있나요?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "네. 명세서 양식, 스캔 품질, 글자 흐림 정도에 따라 틀릴 수 있으므로 자동 추출값을 확인하고 수정한 뒤 계산해야 합니다."
+        "text": "네. 명세서 양식, 스캔 품질, 글자 흐림 정도에 따라 결과가 달라질 수 있습니다. 입력칸에 들어간 값은 계산 전에 직접 수정할 수 있습니다."
       }
     },
     {
@@ -233,7 +233,7 @@
               <div class="report-summary">
                 <span class="report-kicker">원화 환산 결과</span>
                 <strong id="au-period-net-krw" class="result-number">-</strong>
-                <span id="au-result-summary">자동 추출값을 확인한 뒤 계산 버튼을 눌러 주세요.</span>
+                <span id="au-result-summary">값을 입력하거나 PDF에서 읽어오면 계산 버튼을 눌러 주세요.</span>
               </div>
               <div class="metric-grid australia-pay-metrics">
                 <div>
@@ -257,11 +257,39 @@
                 </div>
               </div>
               <div class="notice-box">
-                <strong>확인하세요</strong>
-                <p>Superannuation은 실수령액에 포함하지 않고 별도로 표시합니다. OCR 결과는 명세서 양식과 이미지 품질에 따라 틀릴 수 있으니 반드시 직접 확인해 주세요.</p>
+                <strong>계산 기준</strong>
+                <p>Superannuation은 실수령액에 포함하지 않고 별도로 표시합니다. 명세서 양식이나 이미지 품질에 따라 인식 결과가 달라질 수 있으며, 입력칸의 값은 언제든 수정할 수 있습니다.</p>
               </div>
             </aside>
           </section>
+        </div>
+      </section>
+
+      <section class="content-band au-context-band">
+        <div class="container">
+          <div class="section-intro narrow">
+            <p class="eyebrow">활용 상황</p>
+            <h2>호주 워홀 급여를 원화 기준으로 정리할 때 사용하세요.</h2>
+            <p>주급·2주급·월급 명세서의 핵심 금액을 한 화면에 모아 보고, 환율을 적용한 원화 금액과 연 환산액을 함께 비교할 수 있습니다.</p>
+          </div>
+          <div class="guide-grid au-context-grid">
+            <article>
+              <h3>명세서 PDF에서 주요 금액 정리</h3>
+              <p>Gross Pay, Net Pay, Tax Withheld/PAYG, Superannuation, Hours Worked처럼 계산에 필요한 항목을 입력칸에 모아 보여줍니다. PDF 인식이 어렵다면 원문 텍스트를 직접 붙여넣어 분석할 수도 있습니다.</p>
+            </article>
+            <article>
+              <h3>원화 실수령액과 연 환산액 확인</h3>
+              <p>Net Pay를 기준으로 기간 실수령액, 연 환산 실수령액, 시간당 실수령액을 AUD와 KRW로 나누어 표시합니다. 주급은 52회, 2주급은 26회, 월급은 12회 기준으로 연 환산합니다.</p>
+            </article>
+            <article>
+              <h3>Superannuation 별도 표시</h3>
+              <p>호주 급여명세서의 Superannuation은 일반적인 실수령액과 성격이 다르기 때문에 결과 카드에서 따로 표시합니다. 통장 입금액과 퇴직연금 성격의 금액을 구분해 볼 수 있습니다.</p>
+            </article>
+            <article>
+              <h3>브라우저 안에서 처리</h3>
+              <p>PDF 분석은 사용자의 브라우저에서 처리되도록 구성되어 있습니다. TFN, 은행 계좌, 주소 등 민감정보가 보이는 파일은 가능한 범위에서 가린 뒤 사용하는 것이 좋습니다.</p>
+            </article>
+          </div>
         </div>
       </section>
 
@@ -272,18 +300,18 @@
             <h2>PDF를 넣고, 값은 한 번 확인한 뒤 계산하세요.</h2>
             <ol class="step-list">
               <li><strong>PDF 업로드</strong><span>텍스트 기반 PDF는 텍스트 추출을 먼저 시도하고, 스캔본은 OCR을 실행합니다.</span></li>
-              <li><strong>자동 추출값 확인</strong><span>Gross Pay, Net Pay, Tax, Super, 근무시간, Pay Date를 확인하고 수정합니다.</span></li>
+              <li><strong>입력값 살펴보기</strong><span>Gross Pay, Net Pay, Tax, Super, 근무시간, Pay Date가 입력칸에 채워지며, 필요하면 직접 수정할 수 있습니다.</span></li>
               <li><strong>환율 적용</strong><span>최신 AUD/KRW 환율을 조회하거나 직접 환율을 입력합니다. Pay Date는 명세서 확인용으로 유지합니다.</span></li>
               <li><strong>계산 실행</strong><span>“이 값으로 계산하기”를 눌러 원화 실수령액과 연 환산액을 확인합니다.</span></li>
             </ol>
           </section>
           <section class="info-block">
-            <p class="eyebrow">개인정보와 정확도</p>
-            <h2>명세서 원본은 스스로 확인해야 합니다.</h2>
+            <p class="eyebrow">개인정보와 계산 기준</p>
+            <h2>민감정보는 줄이고, 입력값은 직접 수정할 수 있습니다.</h2>
             <ul class="plain-list">
               <li>PDF 파일은 서버에 저장하지 않고 브라우저에서 처리됩니다.</li>
               <li>TFN, 은행 정보, 직원번호, 주소 같은 민감정보는 가능하면 가린 뒤 사용하세요.</li>
-              <li>자동 추출값은 바로 최종 계산에 쓰지 않고, 사용자가 확인한 입력값으로만 계산합니다.</li>
+              <li>계산은 화면의 입력칸에 들어간 값을 기준으로 실행됩니다.</li>
               <li>실제 급여, 세금, 환율 판단은 명세서와 금융기관 기준을 확인해야 합니다.</li>
             </ul>
           </section>
@@ -316,7 +344,7 @@
           <h2>호주 워홀 월급 환산 자주 묻는 질문</h2>
           <div class="faq-grid">
             <details open><summary>PDF가 서버로 업로드되나요?</summary><p>아니요. PDF 텍스트 추출과 OCR은 브라우저 안에서 처리합니다. 다만 민감정보는 가능하면 가린 뒤 사용하는 것을 권장합니다.</p></details>
-            <details><summary>OCR 결과가 틀릴 수 있나요?</summary><p>네. 명세서 양식, 스캔 품질, 글자 흐림 정도에 따라 틀릴 수 있으므로 자동 추출값을 확인하고 수정한 뒤 계산해야 합니다.</p></details>
+            <details><summary>PDF 인식 결과가 틀릴 수 있나요?</summary><p>네. 명세서 양식, 스캔 품질, 글자 흐림 정도에 따라 결과가 달라질 수 있습니다. 입력칸에 들어간 값은 계산 전에 직접 수정할 수 있습니다.</p></details>
             <details><summary>Net Pay가 없으면 어떻게 계산하나요?</summary><p>Net Pay가 없고 Gross Pay와 Tax Withheld가 있으면 Gross Pay - Tax Withheld를 임시 실수령액으로 계산합니다.</p></details>
             <details><summary>환율은 어떤 기준을 사용하나요?</summary><p>환율 조회는 API 키가 필요 없는 공개 환율 API의 최신 AUD/KRW 환율을 사용하며, 조회 실패 시 최근 저장 환율 또는 사용자가 직접 입력한 환율을 사용할 수 있습니다.</p></details>
           </div>
