@@ -1992,3 +1992,66 @@ details p {
     text-align: left;
   }
 }
+
+/* 2026-06-15: Australia payslip calculator polish */
+.rate-input-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.rate-input-row .subtle-button {
+  min-height: 42px;
+  white-space: nowrap;
+}
+
+.home-category-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.home-category-card {
+  padding: 14px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 22px rgba(17, 24, 39, 0.06);
+}
+
+.home-category-card strong {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--green);
+  font-weight: 900;
+}
+
+.home-category-card span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.93rem;
+  line-height: 1.5;
+}
+
+.home-category-card.wide {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 721px) {
+  .calculator-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .rate-input-row,
+  .home-category-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .home-category-card.wide {
+    grid-column: auto;
+  }
+}
