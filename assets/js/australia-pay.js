@@ -2,12 +2,12 @@ import { getFormNumber } from "./utils.js";
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
 const MAX_PAGES = 3;
-const FRANKFURTER_API = "https://api.frankfurter.dev/v2/rates";
+const FRANKFURTER_API = "https://api.frankfurter.dev/v1";
 const PDF_WORKER_SRC = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
 const FIELD_LABELS = {
   grossPay: ["gross pay", "total gross", "gross earnings"],
-  netPay: ["net pay", "total net", "amount paid"],
+  netPay: ["net pay", "total net", "amount paid", "pay amount"],
   taxWithheld: ["tax withheld", "payg withholding", "payg", "tax"],
   superannuation: ["employer super", "superannuation", "super"],
   hoursWorked: ["hours worked", "total hours", "ordinary hours"],
@@ -15,6 +15,27 @@ const FIELD_LABELS = {
   payPeriod: ["pay period", "period"],
   employerName: ["employer name", "employer"],
   employeeName: ["employee name", "employee"]
+};
+
+const MONEY_FIELD_CONFIGS = {
+  grossPay: {
+    labels: FIELD_LABELS.grossPay,
+    forbiddenLabels: [...FIELD_LABELS.netPay, ...FIELD_LABELS.taxWithheld, ...FIELD_LABELS.superannuation]
+  },
+  netPay: {
+    labels: FIELD_LABELS.netPay,
+    forbiddenLabels: [...FIELD_LABELS.grossPay, ...FIELD_LABELS.taxWithheld, ...FIELD_LABELS.superannuation]
+  },
+  taxWithheld: {
+    labels: FIELD_LABELS.taxWithheld,
+    forbiddenLabels: [...FIELD_LABELS.grossPay, ...FIELD_LABELS.netPay, ...FIELD_LABELS.superannuation],
+    skipWords: ["taxable", "before tax"]
+  },
+  superannuation: {
+    labels: FIELD_LABELS.superannuation,
+    forbiddenLabels: [...FIELD_LABELS.grossPay, ...FIELD_LABELS.netPay, ...FIELD_LABELS.taxWithheld],
+    skipWords: ["superable"]
+  }
 };
 
 export function initAustraliaPayCalculator(root = document) {
@@ -194,70 +215,192 @@ function isTextSufficient(text) {
 }
 
 export function parsePayslipText(text) {
-  const lines = text
-    .split(/\r?\n/)
-    .map((line) => line.replace(/\s+/g, " ").trim())
-    .filter(Boolean);
+  const lines = normalizeOcrLines(text);
+  const meta = {};
+  const parsed = {
+    grossPay: moneyValue(findMoneyCandidate(lines, MONEY_FIELD_CONFIGS.grossPay, "grossPay", meta)),
+    netPay: moneyValue(findMoneyCandidate(lines, MONEY_FIELD_CONFIGS.netPay, "netPay", meta)),
+    taxWithheld: moneyValue(findMoneyCandidate(lines, MONEY_FIELD_CONFIGS.taxWithheld, "taxWithheld", meta)),
+    superannuation: moneyValue(findMoneyCandidate(lines, MONEY_FIELD_CONFIGS.superannuation, "superannuation", meta)),
+    hoursWorked: findHours(lines, FIELD_LABELS.hoursWorked, meta),
+    payDate: findDate(lines, FIELD_LABELS.payDate, meta),
+    payPeriod: findPayPeriod(lines, meta),
+    employerName: findLabelText(lines, FIELD_LABELS.employerName, meta, "employerName"),
+    employeeName: findLabelText(lines, FIELD_LABELS.employeeName, meta, "employeeName")
+  };
 
+  flagDuplicateMoneyValues(parsed, meta);
+  parsed.__meta = meta;
+  return parsed;
+}
+
+function normalizeOcrLines(text) {
+  return String(text)
+    .replace(/\u00a0/g, " ")
+    .replace(/[₩￦]/g, " ")
+    .replace(/\bA\s*\$/gi, "A$")
+    .replace(/\bAUD\s*[:\-]?\s*/gi, "AUD ")
+    .split(/\r?\n/)
+    .map((line) => line.replace(/[|·•]/g, " ").replace(/\s+/g, " ").trim())
+    .filter(Boolean);
+}
+
+function findMoneyCandidate(lines, config, fieldName, meta) {
+  const candidates = [];
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    const label = findBestLabel(line, config.labels);
+    if (!label) continue;
+
+    const lower = normalizeText(line);
+    if (config.skipWords?.some((word) => lower.includes(word))) continue;
+
+    const isolated = extractMoneyInLabelSegment(line, label);
+    if (isolated.length) {
+      candidates.push({
+        value: isolated[0].value,
+        score: 100 + label.label.length,
+        source: "same-line-segment",
+        line,
+        label: label.label
+      });
+      continue;
+    }
+
+    const hasForbiddenContext = hasAnyLabel(line, config.forbiddenLabels);
+    const sameLineAmounts = extractMoneyValuesWithIndex(line);
+    const afterLabel = sameLineAmounts.filter((item) => item.index >= label.end);
+    if (!hasForbiddenContext && afterLabel.length) {
+      candidates.push({
+        value: afterLabel[0].value,
+        score: 86 + label.label.length,
+        source: "same-line-after-label",
+        line,
+        label: label.label
+      });
+      continue;
+    }
+
+    if (!hasForbiddenContext && sameLineAmounts.length === 1) {
+      candidates.push({
+        value: sameLineAmounts[0].value,
+        score: 74 + label.label.length,
+        source: "same-line-single",
+        line,
+        label: label.label
+      });
+      continue;
+    }
+
+    for (let offset = 1; offset <= 2; offset += 1) {
+      const nextLine = lines[index + offset] || "";
+      if (!nextLine || hasAnyKnownFieldLabel(nextLine)) continue;
+      const nextValues = extractMoneyValuesWithIndex(nextLine);
+      if (nextValues.length === 1) {
+        candidates.push({
+          value: nextValues[0].value,
+          score: 62 - offset * 4 + label.label.length,
+          source: "next-line-single",
+          line: `${line} / ${nextLine}`,
+          label: label.label
+        });
+        break;
+      }
+    }
+  }
+
+  candidates.sort((a, b) => b.score - a.score);
+  const best = candidates[0];
+  meta[fieldName] = best
+    ? { confidence: best.score >= 80 ? "normal" : "low", source: best.source, label: best.label }
+    : { confidence: "missing", warning: "자동 추출하지 못했습니다. 직접 확인해 주세요." };
+  return best || null;
+}
+
+function moneyValue(candidate) {
+  return candidate ? candidate.value : "";
+}
+
+function extractMoneyInLabelSegment(line, label) {
+  const nextLabel = findNextKnownLabel(line, label.end);
+  const segment = line.slice(label.end, nextLabel?.start ?? line.length);
+  return extractMoneyValuesWithIndex(segment);
+}
+
+function findBestLabel(line, labels) {
+  const matches = labels
+    .map((label) => findLabel(line, label))
+    .filter(Boolean)
+    .sort((a, b) => b.label.length - a.label.length || a.start - b.start);
+  return matches[0] || null;
+}
+
+function findLabel(line, label) {
+  const pattern = new RegExp(`(^|[^a-z0-9])${escapeRegExp(label).replaceAll("\\ ", "\\s+")}(?=$|[^a-z0-9])`, "i");
+  const match = pattern.exec(line);
+  if (!match) return null;
+  const start = match.index + match[1].length;
   return {
-    grossPay: findMoney(lines, FIELD_LABELS.grossPay),
-    netPay: findMoney(lines, FIELD_LABELS.netPay),
-    taxWithheld: findMoney(lines, FIELD_LABELS.taxWithheld, { skip: ["taxable", "before tax"] }),
-    superannuation: findMoney(lines, FIELD_LABELS.superannuation),
-    hoursWorked: findHours(lines, FIELD_LABELS.hoursWorked),
-    payDate: findDate(lines, FIELD_LABELS.payDate),
-    payPeriod: findPayPeriod(lines),
-    employerName: findLabelText(lines, FIELD_LABELS.employerName),
-    employeeName: findLabelText(lines, FIELD_LABELS.employeeName)
+    label,
+    start,
+    end: start + match[0].slice(match[1].length).length
   };
 }
 
-function findMoney(lines, labels, options = {}) {
-  for (let index = 0; index < lines.length; index += 1) {
-    const line = lines[index];
-    const lower = normalizeText(line);
-    if (options.skip?.some((word) => lower.includes(word))) continue;
-    const label = labels.find((item) => lower.includes(item));
-    if (!label) continue;
-    const afterLabel = line.slice(lower.indexOf(label) + label.length);
-    const local = extractMoneyValues(afterLabel);
-    if (local.length) return local[local.length - 1];
-    const sameLine = extractMoneyValues(line);
-    if (sameLine.length) return sameLine[sameLine.length - 1];
-    const nextLine = lines[index + 1] || "";
-    const nextValues = extractMoneyValues(nextLine);
-    if (nextValues.length) return nextValues[0];
-  }
-  return "";
+function findNextKnownLabel(line, fromIndex) {
+  return Object.values(FIELD_LABELS)
+    .flat()
+    .map((label) => findLabel(line.slice(fromIndex), label))
+    .filter(Boolean)
+    .map((match) => ({ ...match, start: match.start + fromIndex, end: match.end + fromIndex }))
+    .sort((a, b) => a.start - b.start)[0] || null;
 }
 
-function extractMoneyValues(text) {
+function hasAnyKnownFieldLabel(line) {
+  return Object.values(FIELD_LABELS).flat().some((label) => Boolean(findLabel(line, label)));
+}
+
+function hasAnyLabel(line, labels = []) {
+  return labels.some((label) => Boolean(findLabel(line, label)));
+}
+
+function extractMoneyValuesWithIndex(text) {
   const values = [];
-  const moneyPattern = /(?:AUD\s*)?\$?\s*(-?\(?\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?|-?\(?\d+(?:\.\d{1,2})?)\)?/gi;
+  const moneyPattern = /(?:AUD\s*)?(?:A\$\s*|\$\s*)?(-?\(?\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?|-?\(?\d{1,6}(?:\.\d{1,2})?)\)?/gi;
   for (const match of text.matchAll(moneyPattern)) {
     const value = parseNumeric(match[1]);
     if (Number.isFinite(value) && value >= 0 && value < 1000000) {
-      values.push(value);
+      values.push({ value, index: match.index ?? 0 });
     }
   }
   return values;
 }
 
-function findHours(lines, labels) {
+function extractMoneyValues(text) {
+  return extractMoneyValuesWithIndex(text).map((item) => item.value);
+}
+
+function findHours(lines, labels, meta) {
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
-    const lower = normalizeText(line);
-    const label = labels.find((item) => lower.includes(item));
+    const label = findBestLabel(line, labels);
     if (!label) continue;
-    const afterLabel = line.slice(lower.indexOf(label) + label.length);
+    const afterLabel = line.slice(label.end);
     const hours = extractHourValues(afterLabel);
-    if (hours.length) return hours[0];
-    const sameLine = extractHourValues(line);
-    if (sameLine.length) return sameLine[sameLine.length - 1];
+    if (hours.length) {
+      meta.hoursWorked = { confidence: "normal", label: label.label };
+      return hours[0];
+    }
     const nextLine = lines[index + 1] || "";
+    if (hasAnyKnownFieldLabel(nextLine)) continue;
     const nextHours = extractHourValues(nextLine);
-    if (nextHours.length) return nextHours[0];
+    if (nextHours.length === 1) {
+      meta.hoursWorked = { confidence: "low", label: label.label };
+      return nextHours[0];
+    }
   }
+  meta.hoursWorked = { confidence: "missing", warning: "근무시간을 자동 추출하지 못했습니다." };
   return "";
 }
 
@@ -267,30 +410,45 @@ function extractHourValues(text) {
     .filter((value) => Number.isFinite(value) && value > 0 && value <= 400);
 }
 
-function findDate(lines, labels) {
+function findDate(lines, labels, meta) {
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
-    const lower = normalizeText(line);
-    if (!labels.some((label) => lower.includes(label))) continue;
+    if (!hasAnyLabel(line, labels)) continue;
     const date = parseDateFromText(line) || parseDateFromText(lines[index + 1] || "");
-    if (date) return date;
+    if (date) {
+      meta.payDate = { confidence: "normal" };
+      return date;
+    }
   }
+  meta.payDate = { confidence: "missing", warning: "Pay Date를 자동 추출하지 못했습니다." };
   return "";
 }
 
-function findPayPeriod(lines) {
+function findPayPeriod(lines, meta) {
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
     const lower = normalizeText(line);
-    if (!FIELD_LABELS.payPeriod.some((label) => lower.includes(label))) continue;
+    if (!hasAnyLabel(line, FIELD_LABELS.payPeriod)) continue;
     const explicit = detectPeriodKeyword(lower);
-    if (explicit) return explicit;
+    if (explicit) {
+      meta.payPeriod = { confidence: "normal" };
+      return explicit;
+    }
     const range = inferPeriodFromDates(line);
-    if (range) return range;
+    if (range) {
+      meta.payPeriod = { confidence: "normal" };
+      return range;
+    }
   }
 
   const allText = normalizeText(lines.join(" "));
-  return detectPeriodKeyword(allText) || "";
+  const explicit = detectPeriodKeyword(allText);
+  if (explicit) {
+    meta.payPeriod = { confidence: "low" };
+    return explicit;
+  }
+  meta.payPeriod = { confidence: "missing", warning: "급여 기간을 자동 추출하지 못했습니다." };
+  return "";
 }
 
 function detectPeriodKeyword(text) {
@@ -313,16 +471,19 @@ function inferPeriodFromDates(text) {
   return "";
 }
 
-function findLabelText(lines, labels) {
+function findLabelText(lines, labels, meta, fieldName) {
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
-    const lower = normalizeText(line);
-    const label = labels.find((item) => lower.includes(item));
+    const label = findBestLabel(line, labels);
     if (!label) continue;
-    const afterLabel = line.slice(lower.indexOf(label) + label.length);
+    const afterLabel = line.slice(label.end);
     const value = cleanLabelText(afterLabel) || cleanLabelText(lines[index + 1] || "");
-    if (value && !extractMoneyValues(value).length) return value.slice(0, 80);
+    if (value && isLikelyNameValue(value)) {
+      meta[fieldName] = { confidence: "low", label: label.label };
+      return value.slice(0, 80);
+    }
   }
+  meta[fieldName] = { confidence: "missing" };
   return "";
 }
 
@@ -332,6 +493,41 @@ function cleanLabelText(text) {
     .replace(/\b(employee|employer|name)\b/gi, "")
     .replace(/\s{2,}/g, " ")
     .trim();
+}
+
+function isLikelyNameValue(value) {
+  const normalized = normalizeText(value);
+  if (!value || extractMoneyValues(value).length) return false;
+  if (/^(details|summary|earnings|payments|deductions|tax|super|gross|net|hours|date|period)$/i.test(value)) return false;
+  if (normalized.length < 2 || normalized.length > 80) return false;
+  return /[a-z가-힣]/i.test(value);
+}
+
+function flagDuplicateMoneyValues(parsed, meta) {
+  const fields = ["grossPay", "netPay", "taxWithheld", "superannuation"];
+  const groups = new Map();
+
+  for (const field of fields) {
+    const value = parsed[field];
+    if (!Number.isFinite(value) || value <= 0) continue;
+    const key = round(value, 2).toFixed(2);
+    groups.set(key, [...(groups.get(key) || []), field]);
+  }
+
+  for (const group of groups.values()) {
+    if (group.length < 2) continue;
+    for (const field of group) {
+      meta[field] = {
+        ...(meta[field] || {}),
+        confidence: "low",
+        warning: "다른 항목과 같은 금액으로 추출되었습니다. 명세서 원문과 꼭 비교해 주세요."
+      };
+    }
+  }
+}
+
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function parseDateFromText(text) {
@@ -373,20 +569,59 @@ function toIsoDate(year, month, day) {
 }
 
 function applyParsedFields(els, parsed) {
-  setInputValue(els.grossPay, parsed.grossPay);
-  setInputValue(els.netPay, parsed.netPay);
-  setInputValue(els.taxWithheld, parsed.taxWithheld);
-  setInputValue(els.superannuation, parsed.superannuation);
-  setInputValue(els.hoursWorked, parsed.hoursWorked);
-  setInputValue(els.payDate, parsed.payDate);
-  setInputValue(els.payPeriod, parsed.payPeriod);
-  setInputValue(els.employerName, parsed.employerName);
-  setInputValue(els.employeeName, parsed.employeeName);
+  const fields = {
+    grossPay: els.grossPay,
+    netPay: els.netPay,
+    taxWithheld: els.taxWithheld,
+    superannuation: els.superannuation,
+    hoursWorked: els.hoursWorked,
+    payDate: els.payDate,
+    payPeriod: els.payPeriod,
+    employerName: els.employerName,
+    employeeName: els.employeeName
+  };
+
+  clearExtractionHints(fields);
+
+  for (const [fieldName, input] of Object.entries(fields)) {
+    const value = parsed[fieldName];
+    const didSet = setInputValue(input, value);
+    if (!didSet) continue;
+
+    const meta = parsed.__meta?.[fieldName];
+    const warning = meta?.warning;
+    const tone = meta?.confidence === "low" || warning ? "warn" : "info";
+    const message = warning
+      ? `자동 추출값이므로 확인 필요: ${warning}`
+      : "자동 추출값이므로 확인 필요";
+    markExtractionHint(input, message, tone);
+  }
 }
 
 function setInputValue(input, value) {
-  if (value === "" || value === null || value === undefined) return;
+  if (value === "" || value === null || value === undefined) return false;
   input.value = typeof value === "number" ? round(value, 2) : value;
+  return true;
+}
+
+function clearExtractionHints(fields) {
+  for (const input of Object.values(fields)) {
+    input.classList.remove("auto-extracted", "needs-review");
+    const field = input.closest(".field");
+    field?.querySelector(".extraction-hint")?.remove();
+  }
+}
+
+function markExtractionHint(input, message, tone = "info") {
+  input.classList.add("auto-extracted");
+  if (tone === "warn") input.classList.add("needs-review");
+
+  const field = input.closest(".field");
+  if (!field) return;
+  const hint = document.createElement("p");
+  hint.className = `extraction-hint${tone === "warn" ? " warn" : ""}`;
+  hint.textContent = message;
+  field.appendChild(hint);
 }
 
 async function calculateFromConfirmedValues(els) {
@@ -425,7 +660,8 @@ export function calculateAustraliaPay(values, exchangeRate) {
   const gross = Math.max(0, values.grossPay || 0);
   const tax = Math.max(0, values.taxWithheld || 0);
   const net = Math.max(0, values.netPay || 0);
-  const netPayAud = net > 0 ? net : Math.max(0, gross - tax);
+  const usesNetPay = net > 0;
+  const netPayAud = usesNetPay ? net : Math.max(0, gross - tax);
   const superAud = Math.max(0, values.superannuation || 0);
   const hours = Math.max(0, values.hoursWorked || 0);
   const multiplier = getPeriodMultiplier(values.payPeriod);
@@ -442,54 +678,76 @@ export function calculateAustraliaPay(values, exchangeRate) {
     superAud,
     superKrw: superAud * exchangeRate,
     multiplier,
-    periodLabel: getPeriodLabel(values.payPeriod)
+    periodLabel: getPeriodLabel(values.payPeriod),
+    basis: usesNetPay ? "netPay" : "grossMinusTax",
+    basisLabel: usesNetPay ? "Net Pay" : "Gross Pay - Tax Withheld"
   };
 }
 
 async function updateExchangeRate(els, announce) {
   const payDate = els.payDate.value;
   setRateMeta(els, "환율 조회 중...");
-  try {
-    const rateInfo = await fetchAudKrwRate(payDate);
+  const rateInfo = await fetchAudKrwRate(payDate);
+  if (rateInfo) {
     els.exchangeRate.value = round(rateInfo.rate, 4);
-    setRateMeta(els, `적용 환율: 1 AUD = ${round(rateInfo.rate, 4).toLocaleString("ko-KR")}원 · 기준일 ${rateInfo.date}${rateInfo.fallback ? " (최신 환율)" : ""}`);
+    setRateMeta(els, `적용 환율: 1 AUD = ${round(rateInfo.rate, 4).toLocaleString("ko-KR")}원, 기준일: ${rateInfo.date}, 출처: ${rateInfo.source}${rateInfo.fallback ? " (최신 환율로 대체)" : ""}`);
     if (announce) setStatus(els, "환율을 조회해 입력했습니다.", "good");
     return rateInfo;
-  } catch (error) {
-    const manualRate = readNumber(els.exchangeRate.value);
-    if (Number.isFinite(manualRate) && manualRate > 0) {
-      setRateMeta(els, `환율 API 조회에 실패해 직접 입력한 1 AUD = ${manualRate.toLocaleString("ko-KR")}원을 사용합니다.`);
-      if (announce) setStatus(els, "환율 API 조회에 실패했습니다. 직접 입력한 환율을 사용합니다.", "warn");
-      return { rate: manualRate, date: "직접 입력", fallback: true };
+  }
+
+  const manualRate = readNumber(els.exchangeRate.value);
+  if (Number.isFinite(manualRate) && manualRate > 0) {
+    setRateMeta(els, `환율 API 조회에 실패했습니다. 직접 입력 모드로 전환해 1 AUD = ${manualRate.toLocaleString("ko-KR")}원을 사용합니다.`);
+    if (announce) setStatus(els, "환율 API 조회에 실패했습니다. 직접 입력한 환율을 사용합니다.", "warn");
+    return { rate: manualRate, date: "직접 입력", source: "사용자 입력", fallback: true };
+  }
+
+  setRateMeta(els, "환율 API 조회에 실패했습니다. 직접 입력 모드로 전환했습니다. AUD/KRW 환율을 직접 입력해 주세요.");
+  if (announce) setStatus(els, "환율 API 조회에 실패했습니다. 환율을 직접 입력해 주세요.", "warn");
+  return null;
+}
+
+export async function fetchAudKrwRate(payDate = "") {
+  const endpoints = [];
+
+  if (payDate) {
+    endpoints.push({
+      url: `${FRANKFURTER_API}/${payDate}?base=AUD&symbols=KRW`,
+      fallback: false
+    });
+  }
+
+  endpoints.push({
+    url: `${FRANKFURTER_API}/latest?base=AUD&symbols=KRW`,
+    fallback: Boolean(payDate)
+  });
+
+  for (const endpoint of endpoints) {
+    try {
+      const response = await fetch(endpoint.url);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      const rate = data?.rates?.KRW;
+
+      if (typeof rate === "number" && Number.isFinite(rate) && rate > 0) {
+        return {
+          rate,
+          date: data.date || payDate || "latest",
+          source: "Frankfurter",
+          fallback: endpoint.fallback
+        };
+      }
+
+      throw new Error("KRW rate missing");
+    } catch (error) {
+      console.error("AUD/KRW exchange rate fetch failed:", endpoint.url, error);
     }
-    setRateMeta(els, "환율 API 조회에 실패했습니다. 환율을 직접 입력해 주세요.");
-    if (announce) setStatus(els, "환율 API 조회에 실패했습니다. 환율을 직접 입력해 주세요.", "warn");
-    return null;
   }
-}
 
-export async function fetchAudKrwRate(date = "") {
-  try {
-    if (date) return await requestRate(date, false);
-  } catch {
-    return requestRate("", true);
-  }
-  return requestRate("", false);
-}
-
-async function requestRate(date, fallback) {
-  const params = new URLSearchParams({ base: "AUD", quotes: "KRW" });
-  if (date) params.set("date", date);
-  const response = await fetch(`${FRANKFURTER_API}?${params.toString()}`);
-  if (!response.ok) throw new Error("exchange-rate-failed");
-  const data = await response.json();
-  const rate = Number(data?.rates?.KRW ?? data?.rate);
-  if (!Number.isFinite(rate) || rate <= 0) throw new Error("exchange-rate-missing");
-  return {
-    rate,
-    date: data.date || date || "latest",
-    fallback
-  };
+  return null;
 }
 
 function renderCalculationResult(els, result, rate, rateInfo) {
@@ -501,8 +759,8 @@ function renderCalculationResult(els, result, rate, rateInfo) {
   els.hourlyNetKrw.textContent = result.hourlyNetKrw > 0 ? formatWon(result.hourlyNetKrw) : "-";
   els.superAud.textContent = result.superAud > 0 ? formatAud(result.superAud) : "-";
   els.superKrw.textContent = result.superKrw > 0 ? formatWon(result.superKrw) : "-";
-  els.resultSummary.textContent = `${result.periodLabel} 실수령액 기준으로 연 환산 ${formatWon(result.annualNetKrw)}입니다. Superannuation은 실수령액에 포함하지 않았습니다.`;
-  setRateMeta(els, `적용 환율: 1 AUD = ${round(rate, 4).toLocaleString("ko-KR")}원 · 기준일 ${rateInfo?.date || "직접 입력"}${rateInfo?.fallback ? " (대체 적용)" : ""}`);
+  els.resultSummary.textContent = `${result.periodLabel} ${result.basisLabel} 기준으로 연 환산 ${formatWon(result.annualNetKrw)}입니다. Superannuation은 실수령액에 포함하지 않았습니다.`;
+  setRateMeta(els, `적용 환율: 1 AUD = ${round(rate, 4).toLocaleString("ko-KR")}원, 기준일: ${rateInfo?.date || "직접 입력"}, 출처: ${rateInfo?.source || "사용자 입력"}${rateInfo?.fallback ? " (대체 적용)" : ""}`);
 }
 
 function getPeriodMultiplier(period) {
