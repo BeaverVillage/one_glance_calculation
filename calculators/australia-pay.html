@@ -120,8 +120,9 @@
           <section class="tool-panel australia-pay-panel" aria-label="호주 주급 명세서 자동 원화 환산 계산기">
             <form id="australia-pay-form" class="input-panel">
               <div class="notice-box privacy-note">
-                <strong>개인정보 보호 안내</strong>
-                <p>PDF 파일은 서버에 저장하지 않고 브라우저에서 처리됩니다. 이름, 주소, 직원번호, TFN, 은행 정보 등 민감정보는 가능하면 가린 뒤 사용하세요.</p>
+                <strong>개인정보와 자동 인식 안내</strong>
+                <p>PDF 파일은 서버에 저장하지 않고 브라우저에서 처리됩니다. 이름, 주소, 직원번호, TFN, 은행 정보 등 민감정보는 가능한 한 가린 뒤 사용하세요.</p>
+                <p>OCR 결과는 명세서 양식, 스캔 상태, 이미지 품질에 따라 틀릴 수 있습니다. 자동으로 채워진 Gross Pay, Net Pay, Tax Withheld, Superannuation, Hours Worked 값은 계산 전에 직접 확인해 주세요.</p>
               </div>
 
               <div class="field">
@@ -131,7 +132,7 @@
               </div>
 
               <div class="ocr-status-box" aria-live="polite">
-                <span id="au-ocr-status" data-tone="info">PDF를 업로드하면 텍스트 추출을 먼저 시도하고, 필요할 때만 OCR을 실행합니다.</span>
+                <span id="au-ocr-status" data-tone="info">PDF를 업로드하면 텍스트 추출을 먼저 시도하고, 필요할 때만 OCR을 실행합니다. 인식된 값은 직접 확인한 뒤 계산하세요.</span>
                 <progress id="au-ocr-progress" max="100" value="0" aria-label="PDF 분석 진행률"></progress>
               </div>
 
@@ -223,7 +224,7 @@
                 </div>
               </div>
 
-              <p id="au-rate-meta" class="fine-print">환율 조회는 API 키가 필요 없는 공개 환율 API를 사용하며, 조회 실패 시 최근 저장 환율 또는 직접 입력 환율을 사용할 수 있습니다.</p>
+              <p id="au-rate-meta" class="fine-print">환율 조회는 공개 환율 API 기준입니다. 실제 송금 환율, 카드사 환율, 은행 환전 환율과 다를 수 있으므로 필요한 경우 직접 입력해 보정하세요.</p>
               <div class="button-row">
                 <button class="primary-button" type="submit">이 값으로 계산하기</button>
               </div>
@@ -258,7 +259,7 @@
               </div>
               <div class="notice-box">
                 <strong>계산 기준</strong>
-                <p>Superannuation은 실수령액에 포함하지 않고 별도로 표시합니다. 명세서 양식이나 이미지 품질에 따라 인식 결과가 달라질 수 있으며, 입력칸의 값은 언제든 수정할 수 있습니다.</p>
+                <p>Superannuation은 실수령액에 포함하지 않고 별도로 표시합니다. 이 계산기는 참고용이며, 실제 급여·세금·환율 판단은 급여명세서, 고용계약서, 금융기관 기준을 확인해야 합니다.</p>
               </div>
             </aside>
           </section>
@@ -287,7 +288,7 @@
             </article>
             <article>
               <h3>브라우저 안에서 처리</h3>
-              <p>PDF 분석은 사용자의 브라우저에서 처리되도록 구성되어 있습니다. TFN, 은행 계좌, 주소 등 민감정보가 보이는 파일은 가능한 범위에서 가린 뒤 사용하는 것이 좋습니다.</p>
+              <p>PDF 분석은 사용자의 브라우저에서 처리되도록 구성되어 있습니다. TFN, 은행 계좌, 주소 등 민감정보가 보이는 파일은 가능한 범위에서 가린 뒤 사용하는 것이 좋고, 자동 추출값은 계산 전 직접 확인해야 합니다.</p>
             </article>
           </div>
         </div>
@@ -327,14 +328,15 @@
           </div>
           <div class="guide-grid">
             <article><h3>이 계산기는 무엇을 계산하나요?</h3><p>호주 월급명세서의 Net Pay 또는 Gross Pay와 Tax Withheld를 기준으로 기간별 실수령액, 연 환산 실수령액, 시간당 실수령액, Superannuation 원화 환산액을 계산합니다.</p></article>
+            <article><h3>이런 상황에서 사용하면 좋습니다</h3><p>호주 워홀이나 유학 중 받은 주급·2주급 명세서를 한국 원화 기준으로 정리하고, 통장 입금액과 Superannuation을 구분해 보고 싶을 때 유용합니다.</p></article>
             <article><h3>입력값 설명</h3><ul><li>Gross Pay: 세전 급여입니다.</li><li>Net Pay: 세금 등을 뺀 실제 지급액입니다.</li><li>Tax Withheld/PAYG: 원천징수된 세금입니다.</li><li>Superannuation: 퇴직연금 성격의 고용주 부담금입니다.</li><li>Hours Worked: 해당 급여 기간의 근무시간입니다.</li></ul></article>
             <article><h3>계산식</h3><p>Net Pay가 있으면 실수령액은 Net Pay를 사용합니다. Net Pay가 없고 Gross Pay와 Tax Withheld가 있으면 Gross Pay - Tax Withheld를 임시 실수령액으로 사용합니다. 주급은 ×52, 2주급은 ×26, 월급은 ×12로 연 환산합니다.</p></article>
             <article><h3>예시 계산</h3><p>2주급 Net Pay가 A$1,600이고 환율이 900원이면 기간 실수령액은 약 144만원, 연 환산 실수령액은 A$41,600 × 900원으로 계산합니다.</p></article>
             <article><h3>결과 해석</h3><p>원화 환산액은 적용 환율에 따라 달라집니다. Superannuation은 통장에 바로 들어오는 실수령액이 아니므로 별도 항목으로 표시합니다.</p></article>
-            <article><h3>주의사항</h3><p>OCR은 틀릴 수 있고, 환율은 조회 시점과 기준 기관에 따라 다를 수 있습니다. 세금 신고, 비자, 고용 조건 판단에는 공식 자료와 고용주 명세서를 확인하세요.</p></article>
+            <article><h3>주의사항</h3><p>OCR은 명세서 양식과 이미지 품질에 따라 틀릴 수 있고, 환율은 공개 환율 API의 조회 시점 기준이라 실제 송금·카드·은행 환전 환율과 다를 수 있습니다. 세금 신고, 비자, 고용 조건 판단에는 공식 자료와 고용주 명세서를 확인하세요.</p></article>
             <article><h3>참고한 공식 자료 또는 안내 문구</h3><p>환율 조회는 API 키가 필요 없는 공개 환율 API를 사용하며, 조회 실패 시 최근 저장 환율 또는 사용자가 직접 입력한 환율을 사용할 수 있습니다. 실제 급여 항목의 의미는 고용주가 발급한 payslip 기준을 우선하세요.</p></article>
           </div>
-          <p class="guide-updated">최종 업데이트 날짜: 2026-06-15</p>
+          <p class="guide-updated">최종 업데이트 날짜: 2026-06-16</p>
         </div>
       </section>
 

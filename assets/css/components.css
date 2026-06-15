@@ -103,8 +103,8 @@
 }
 
 .tool-drawer-close {
-  width: 30px;
-  height: 30px;
+  width: 36px;
+  height: 36px;
   color: var(--green);
   background: var(--green-soft);
   border: 1px solid #c6e7dc;
@@ -225,11 +225,13 @@ body.drawer-open .tool-drawer {
   padding: 0 4px env(safe-area-inset-bottom, 0);
   background: rgba(255, 255, 255, 0.96);
   border-top: 1px solid var(--line);
+  overflow: hidden;
   box-shadow: 0 -6px 18px rgba(17, 24, 39, 0.12);
 }
 
 .mobile-affiliate-label {
-  width: calc(100vw - 8px);
+  width: 100%;
+  max-width: 100%;
   margin-bottom: 0;
   overflow: hidden;
   color: var(--muted);
@@ -762,6 +764,7 @@ textarea {
 .quick-models button,
 .subtle-button,
 .keypad button {
+  min-height: 42px;
   padding: 8px 11px;
   color: var(--green);
   background: var(--green-soft);
@@ -841,6 +844,7 @@ textarea {
 #estimated-price {
   display: block;
   margin: 6px 0 4px;
+  overflow-wrap: anywhere;
   color: var(--blue);
   font-size: clamp(1.8rem, 4vw, 2.65rem);
   line-height: 1.1;
@@ -849,6 +853,7 @@ textarea {
 .result-number {
   display: block;
   margin: 6px 0 4px;
+  overflow-wrap: anywhere;
   color: var(--blue);
   font-size: clamp(1.75rem, 4vw, 2.45rem);
   line-height: 1.1;

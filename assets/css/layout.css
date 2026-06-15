@@ -266,8 +266,8 @@
 
   .site-nav a,
   .site-nav button {
-    min-height: 30px;
-    padding: 5px 9px;
+    min-height: 36px;
+    padding: 7px 10px;
   }
 
   .hero-band {
