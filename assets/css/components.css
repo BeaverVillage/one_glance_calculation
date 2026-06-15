@@ -903,6 +903,51 @@ textarea {
   align-items: start;
 }
 
+.australia-pay-panel .field-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+}
+
+.australia-pay-panel .field {
+  min-width: 0;
+}
+
+.australia-pay-panel .field > label {
+  display: flex;
+  min-height: 2.1em;
+  align-items: flex-end;
+  line-height: 1.25;
+}
+
+.australia-pay-panel .input-suffix,
+.australia-pay-panel select,
+.australia-pay-panel input[type="number"],
+.australia-pay-panel input[type="text"],
+.australia-pay-panel input[type="date"] {
+  min-height: 42px;
+}
+
+.extraction-hint {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.extraction-hint.warn {
+  color: var(--amber);
+}
+
+.auto-extracted {
+  border-color: rgba(31, 122, 101, 0.42);
+  background: #fbfffd;
+}
+
+.needs-review {
+  border-color: rgba(184, 116, 33, 0.5);
+}
+
 .privacy-note {
   margin-bottom: 14px;
 }
@@ -959,6 +1004,22 @@ textarea {
   margin: 12px 0 10px;
   font-family: Consolas, "Courier New", monospace;
   font-size: 0.86rem;
+}
+
+.extraction-debug-box pre {
+  max-height: 260px;
+  margin: 12px 0 0;
+  padding: 12px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--ink);
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 0.78rem;
+  line-height: 1.55;
 }
 
 .australia-pay-metrics {
@@ -1714,6 +1775,14 @@ details p {
   .report-grid,
   .field-row {
     grid-template-columns: 1fr;
+  }
+
+  .australia-pay-panel .field-row {
+    grid-template-columns: 1fr;
+  }
+
+  .australia-pay-panel .field > label {
+    min-height: auto;
   }
 
   .segmented-field {

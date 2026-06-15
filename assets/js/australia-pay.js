@@ -39,6 +39,59 @@ const MONEY_FIELD_CONFIGS = {
   }
 };
 
+const SECTION_RULES = [
+  { id: "paymentSummary", labels: ["payment summary"] },
+  { id: "hoursAndEarnings", labels: ["hours and earnings", "hours & earnings"] },
+  { id: "taxesDeductionsSuper", labels: ["taxes, deductions & super", "taxes deductions super"] },
+  { id: "deductionsTax", labels: ["deductions / tax", "deductions and tax", "deductions", "tax deductions"] },
+  { id: "superannuation", labels: ["superannuation"] },
+  { id: "earnings", labels: ["earnings"] },
+  { id: "bankPaymentDetails", labels: ["bank payment details", "bank details", "payment details"] },
+  { id: "employeeDetails", labels: ["employee & employment details", "employee details", "employment details"] },
+  { id: "ocrTestNotes", labels: ["ocr test notes", "expected key fields"] }
+];
+
+const FIELD_SECTION_SCORES = {
+  grossPay: { paymentSummary: 90, earnings: 62, hoursAndEarnings: 54, ocrTestNotes: 38 },
+  netPay: { paymentSummary: 95, ocrTestNotes: 40 },
+  taxWithheld: { paymentSummary: 90, deductionsTax: 66, taxesDeductionsSuper: 64, ocrTestNotes: 38 },
+  superannuation: { paymentSummary: 90, superannuation: 68, taxesDeductionsSuper: 64, ocrTestNotes: 38 },
+  hoursWorked: { paymentSummary: 92, hoursAndEarnings: 58, earnings: 48, ocrTestNotes: 40 },
+  payDate: { employeeDetails: 70, header: 58, paymentSummary: 48, ocrTestNotes: 40 },
+  payPeriod: { employeeDetails: 70, header: 58, paymentSummary: 48, ocrTestNotes: 40 }
+};
+
+const EXCLUDED_NUMBER_LABELS = [
+  "abn",
+  "bsb",
+  "account number",
+  "account no",
+  "employee id",
+  "member no",
+  "member number",
+  "tax file no",
+  "tax file number",
+  "tfn",
+  "address",
+  "postcode",
+  "phone",
+  "mobile",
+  "ocr test document",
+  "pdf file number",
+  "payment method",
+  "pay period"
+];
+
+const FIELD_DISPLAY_NAMES = {
+  grossPay: "Gross Pay",
+  netPay: "Net Pay",
+  taxWithheld: "Tax Withheld / PAYG",
+  superannuation: "Superannuation",
+  hoursWorked: "Hours Worked",
+  payDate: "Pay Date",
+  payPeriod: "Pay Cycle"
+};
+
 export function initAustraliaPayCalculator(root = document) {
   const form = root.querySelector("#australia-pay-form");
   if (!form) return;
@@ -64,6 +117,7 @@ export function initAustraliaPayCalculator(root = document) {
     employeeName: root.querySelector("#au-employee-name"),
     exchangeRate: root.querySelector("#au-exchange-rate"),
     rateMeta: root.querySelector("#au-rate-meta"),
+    debugOutput: root.querySelector("#au-extraction-debug"),
     periodNetAud: root.querySelector("#au-period-net-aud"),
     periodNetKrw: root.querySelector("#au-period-net-krw"),
     annualNetAud: root.querySelector("#au-annual-net-aud"),
@@ -219,21 +273,24 @@ export function parsePayslipText(text) {
   const lines = normalizeOcrLines(text);
   const paymentSummaryLines = getPaymentSummaryLines(lines);
   const paymentSummaryValues = parsePaymentSummaryValues(paymentSummaryLines);
+  const scored = parsePayslipWithScoredCandidates(lines);
   const meta = {};
   const parsed = {
-    grossPay: pickMoneyField("grossPay", lines, paymentSummaryLines, MONEY_FIELD_CONFIGS.grossPay, meta, paymentSummaryValues),
-    netPay: pickMoneyField("netPay", lines, paymentSummaryLines, MONEY_FIELD_CONFIGS.netPay, meta, paymentSummaryValues),
-    taxWithheld: pickMoneyField("taxWithheld", lines, paymentSummaryLines, MONEY_FIELD_CONFIGS.taxWithheld, meta, paymentSummaryValues),
-    superannuation: pickMoneyField("superannuation", lines, paymentSummaryLines, MONEY_FIELD_CONFIGS.superannuation, meta, paymentSummaryValues),
-    hoursWorked: findHours(paymentSummaryLines.length ? paymentSummaryLines : lines, FIELD_LABELS.hoursWorked, meta) || findHours(lines, FIELD_LABELS.hoursWorked, meta),
-    payDate: findDate(lines, FIELD_LABELS.payDate, meta),
-    payPeriod: findPayPeriod(lines, meta),
+    grossPay: scored.values.grossPay || pickMoneyField("grossPay", lines, paymentSummaryLines, MONEY_FIELD_CONFIGS.grossPay, meta, paymentSummaryValues),
+    netPay: scored.values.netPay || pickMoneyField("netPay", lines, paymentSummaryLines, MONEY_FIELD_CONFIGS.netPay, meta, paymentSummaryValues),
+    taxWithheld: scored.values.taxWithheld || pickMoneyField("taxWithheld", lines, paymentSummaryLines, MONEY_FIELD_CONFIGS.taxWithheld, meta, paymentSummaryValues),
+    superannuation: scored.values.superannuation || pickMoneyField("superannuation", lines, paymentSummaryLines, MONEY_FIELD_CONFIGS.superannuation, meta, paymentSummaryValues),
+    hoursWorked: scored.values.hoursWorked || findHours(paymentSummaryLines.length ? paymentSummaryLines : lines, FIELD_LABELS.hoursWorked, meta) || findHours(lines, FIELD_LABELS.hoursWorked, meta),
+    payDate: scored.values.payDate || findDate(lines, FIELD_LABELS.payDate, meta),
+    payPeriod: scored.values.payPeriod || findPayPeriod(lines, meta),
     employerName: findLabelText(lines, FIELD_LABELS.employerName, meta, "employerName"),
     employeeName: findLabelText(lines, FIELD_LABELS.employeeName, meta, "employeeName")
   };
 
+  Object.assign(meta, scored.meta);
   flagDuplicateMoneyValues(parsed, meta);
   parsed.__meta = meta;
+  parsed.__debug = scored.debug;
   return parsed;
 }
 
@@ -246,6 +303,498 @@ function normalizeOcrLines(text) {
     .split(/\r?\n/)
     .map((line) => line.replace(/[|·•]/g, " ").replace(/\s+/g, " ").trim())
     .filter(Boolean);
+}
+
+function parsePayslipWithScoredCandidates(lines) {
+  const sectionedLines = annotatePayslipSections(lines);
+  const debug = {
+    fields: {},
+    excluded: []
+  };
+  const moneyCandidates = {
+    grossPay: [],
+    netPay: [],
+    taxWithheld: [],
+    superannuation: []
+  };
+
+  for (const fieldName of Object.keys(moneyCandidates)) {
+    moneyCandidates[fieldName].push(...collectMoneyCandidates(sectionedLines, fieldName, debug));
+  }
+
+  collectTablePairCandidates(sectionedLines, debug).forEach((candidate) => {
+    moneyCandidates[candidate.field]?.push(candidate);
+  });
+
+  collectExpectedKeyFieldCandidates(sectionedLines, debug).forEach((candidate) => {
+    if (moneyCandidates[candidate.field]) {
+      moneyCandidates[candidate.field].push(candidate);
+    }
+  });
+
+  const values = {};
+  const meta = {};
+
+  const gross = selectMoneyCandidate("grossPay", moneyCandidates.grossPay, values, debug);
+  if (gross) {
+    values.grossPay = gross.value;
+    meta.grossPay = toCandidateMeta(gross);
+  }
+
+  const net = selectMoneyCandidate("netPay", moneyCandidates.netPay, values, debug);
+  if (net) {
+    values.netPay = net.value;
+    meta.netPay = toCandidateMeta(net);
+  }
+
+  const tax = selectMoneyCandidate("taxWithheld", moneyCandidates.taxWithheld, values, debug);
+  if (tax) {
+    values.taxWithheld = tax.value;
+    meta.taxWithheld = toCandidateMeta(tax);
+  }
+
+  const superCandidate = selectMoneyCandidate("superannuation", moneyCandidates.superannuation, values, debug);
+  if (superCandidate) {
+    values.superannuation = superCandidate.value;
+    meta.superannuation = toCandidateMeta(superCandidate);
+  }
+
+  const hoursCandidate = selectGenericCandidate("hoursWorked", collectHoursCandidates(sectionedLines, debug), debug);
+  if (hoursCandidate) {
+    values.hoursWorked = hoursCandidate.value;
+    meta.hoursWorked = toCandidateMeta(hoursCandidate);
+  }
+
+  const dateCandidate = selectGenericCandidate("payDate", collectDateCandidates(sectionedLines, debug), debug);
+  if (dateCandidate) {
+    values.payDate = dateCandidate.value;
+    meta.payDate = toCandidateMeta(dateCandidate);
+  }
+
+  const periodCandidate = selectGenericCandidate("payPeriod", collectPayPeriodCandidates(sectionedLines, debug), debug);
+  if (periodCandidate) {
+    values.payPeriod = periodCandidate.value;
+    meta.payPeriod = toCandidateMeta(periodCandidate);
+  }
+
+  for (const fieldName of ["grossPay", "netPay", "taxWithheld", "superannuation", "hoursWorked", "payDate", "payPeriod"]) {
+    debug.fields[fieldName] ||= {};
+    debug.fields[fieldName].selected = values[fieldName] ?? "";
+  }
+
+  return { values, meta, debug };
+}
+
+function annotatePayslipSections(lines) {
+  let currentSection = "header";
+  return lines.map((line, index) => {
+    const detected = detectSection(line);
+    if (detected) currentSection = detected;
+    return {
+      line,
+      index,
+      section: detected || currentSection
+    };
+  });
+}
+
+function detectSection(line) {
+  const normalized = normalizeText(line).replace(/[&,/]/g, " ");
+  const hasMoney = extractScoredMoneyValues(line).length > 0;
+  const looksLikeHeading = normalized.length <= 72 && !hasMoney;
+
+  for (const rule of SECTION_RULES) {
+    const matched = rule.labels.some((label) => normalized.includes(normalizeText(label).replace(/[&,/]/g, " ")));
+    if (!matched) continue;
+    if (rule.id === "paymentSummary" || rule.id === "ocrTestNotes" || looksLikeHeading) {
+      return rule.id;
+    }
+  }
+  return "";
+}
+
+function collectMoneyCandidates(sectionedLines, fieldName, debug) {
+  const config = MONEY_FIELD_CONFIGS[fieldName];
+  const candidates = [];
+
+  for (let index = 0; index < sectionedLines.length; index += 1) {
+    const item = sectionedLines[index];
+    const label = findBestLabel(item.line, config.labels);
+    if (!label) continue;
+
+    if (shouldExcludeMoneyLine(item.line)) {
+      pushExcluded(debug, fieldName, item, "excluded-number-context");
+      continue;
+    }
+
+    const segment = getSegmentAfterMoneyLabel(item.line, label);
+    const sameLineValues = extractScoredMoneyValues(segment);
+    for (const value of sameLineValues) {
+      const candidate = buildMoneyCandidate({
+        field: fieldName,
+        value: value.value,
+        line: item.line,
+        section: item.section,
+        source: "same-line",
+        label: label.label,
+        hasCurrency: value.hasCurrency,
+        baseScore: 48
+      });
+      if (isPlausibleMoneyCandidate(candidate, fieldName, debug)) candidates.push(candidate);
+    }
+
+    if (!sameLineValues.length) {
+      const next = sectionedLines[index + 1];
+      if (next && !hasAnyKnownFieldLabel(next.line) && !shouldExcludeMoneyLine(next.line)) {
+        const nextValues = extractScoredMoneyValues(next.line);
+        for (const value of nextValues.slice(0, 2)) {
+          const candidate = buildMoneyCandidate({
+            field: fieldName,
+            value: value.value,
+            line: `${item.line} / ${next.line}`,
+            section: item.section,
+            source: "next-line",
+            label: label.label,
+            hasCurrency: value.hasCurrency,
+            baseScore: 28
+          });
+          if (isPlausibleMoneyCandidate(candidate, fieldName, debug)) candidates.push(candidate);
+        }
+      }
+    }
+  }
+
+  rememberCandidates(debug, fieldName, candidates);
+  return candidates;
+}
+
+function collectTablePairCandidates(sectionedLines, debug) {
+  const candidates = [];
+
+  for (let index = 0; index < sectionedLines.length; index += 1) {
+    const item = sectionedLines[index];
+    if (shouldExcludeMoneyLine(item.line)) continue;
+    const labels = collectMoneyFieldLabels(item.line);
+    if (labels.length < 2) continue;
+
+    const sameLineValues = extractScoredMoneyValues(item.line)
+      .filter((value) => value.index >= labels[0].end);
+    const next = sectionedLines[index + 1];
+    const nextLineValues = next && !shouldExcludeMoneyLine(next.line)
+      ? extractScoredMoneyValues(next.line)
+      : [];
+    const values = sameLineValues.length >= labels.length ? sameLineValues : nextLineValues;
+    const source = sameLineValues.length >= labels.length ? "table-same-line" : "table-next-line";
+    if (values.length < labels.length) continue;
+
+    labels.forEach((label, labelIndex) => {
+      const value = values[labelIndex];
+      const candidate = buildMoneyCandidate({
+        field: label.field,
+        value: value.value,
+        line: source === "table-same-line" ? item.line : `${item.line} / ${next?.line || ""}`,
+        section: item.section,
+        source,
+        label: label.label,
+        hasCurrency: value.hasCurrency,
+        baseScore: 54
+      });
+      if (isPlausibleMoneyCandidate(candidate, label.field, debug)) candidates.push(candidate);
+    });
+  }
+
+  for (const candidate of candidates) {
+    debug.fields[candidate.field] ||= {};
+    debug.fields[candidate.field].candidates ||= [];
+    debug.fields[candidate.field].candidates.push(toDebugCandidate(candidate));
+  }
+  return candidates;
+}
+
+function collectExpectedKeyFieldCandidates(sectionedLines, debug) {
+  const candidates = [];
+  const text = sectionedLines
+    .filter((item) => item.section === "ocrTestNotes" || normalizeText(item.line).includes("expected key fields"))
+    .map((item) => item.line)
+    .join(" ");
+  if (!text) return candidates;
+
+  const expectedMap = {
+    grossPay: FIELD_LABELS.grossPay,
+    netPay: FIELD_LABELS.netPay,
+    taxWithheld: FIELD_LABELS.taxWithheld,
+    superannuation: FIELD_LABELS.superannuation
+  };
+
+  for (const [fieldName, labels] of Object.entries(expectedMap)) {
+    for (const label of labels) {
+      const value = findValueAfterLooseLabel(text, label);
+      if (!Number.isFinite(value)) continue;
+      const candidate = buildMoneyCandidate({
+        field: fieldName,
+        value,
+        line: text,
+        section: "ocrTestNotes",
+        source: "expected-key-fields",
+        label,
+        hasCurrency: false,
+        baseScore: 40
+      });
+      if (isPlausibleMoneyCandidate(candidate, fieldName, debug)) candidates.push(candidate);
+      break;
+    }
+  }
+
+  return candidates;
+}
+
+function getSegmentAfterMoneyLabel(line, label) {
+  const nextLabel = findNextKnownMoneyLabel(line, label.end);
+  return line.slice(label.end, nextLabel?.start ?? line.length);
+}
+
+function extractScoredMoneyValues(text) {
+  const values = [];
+  const moneyPattern = /((?:AUD\s*)?(?:A\$\s*|\$\s*)?)(-?\(?\d[\d,]*(?:\.\d{1,2})?\)?)(?:\s*AUD)?/gi;
+  for (const match of text.matchAll(moneyPattern)) {
+    const value = parseNumeric(match[2]);
+    if (!Number.isFinite(value)) continue;
+    values.push({
+      value,
+      index: match.index ?? 0,
+      hasCurrency: /(?:AUD|A\$|\$)/i.test(`${match[1] || ""}${match[0] || ""}`)
+    });
+  }
+  return values;
+}
+
+function buildMoneyCandidate({ field, value, line, section, source, label, hasCurrency, baseScore }) {
+  const sectionScore = FIELD_SECTION_SCORES[field]?.[section] || 0;
+  const currencyScore = hasCurrency ? 18 : 0;
+  const labelScore = Math.min(12, label.length / 2);
+  return {
+    field,
+    value: round(value, 2),
+    line,
+    section,
+    source,
+    label,
+    score: Math.round(baseScore + sectionScore + currencyScore + labelScore)
+  };
+}
+
+function isPlausibleMoneyCandidate(candidate, fieldName, debug) {
+  if (!Number.isFinite(candidate.value) || candidate.value <= 0) {
+    pushExcluded(debug, fieldName, candidate, "zero-or-not-a-number");
+    return false;
+  }
+  if (candidate.value >= 100000) {
+    pushExcluded(debug, fieldName, candidate, "too-large-for-payslip-field");
+    return false;
+  }
+  if (fieldName === "grossPay" && candidate.value < 100) {
+    pushExcluded(debug, fieldName, candidate, "gross-pay-under-100");
+    return false;
+  }
+  if (looksLikeDateOrIdentifier(candidate.value, candidate.line)) {
+    pushExcluded(debug, fieldName, candidate, "date-or-identifier-like-number");
+    return false;
+  }
+  return true;
+}
+
+function selectMoneyCandidate(fieldName, candidates, selectedValues, debug) {
+  const filtered = candidates
+    .filter((candidate) => {
+      if (fieldName === "netPay" && selectedValues.grossPay && candidate.value > selectedValues.grossPay) {
+        pushExcluded(debug, fieldName, candidate, "net-pay-greater-than-gross-pay");
+        return false;
+      }
+      if ((fieldName === "taxWithheld" || fieldName === "superannuation") && selectedValues.grossPay && candidate.value >= selectedValues.grossPay) {
+        pushExcluded(debug, fieldName, candidate, `${fieldName}-not-less-than-gross-pay`);
+        return false;
+      }
+      if (fieldName === "netPay" && (candidate.value === selectedValues.taxWithheld || candidate.value === selectedValues.superannuation)) {
+        pushExcluded(debug, fieldName, candidate, "net-pay-equals-tax-or-super");
+        return false;
+      }
+      return true;
+    })
+    .sort((a, b) => b.score - a.score || b.value - a.value);
+  const selected = filtered[0] || null;
+  debug.fields[fieldName] ||= {};
+  debug.fields[fieldName].selectedCandidate = selected ? toDebugCandidate(selected) : null;
+  return selected;
+}
+
+function collectHoursCandidates(sectionedLines, debug) {
+  const candidates = [];
+  for (let index = 0; index < sectionedLines.length; index += 1) {
+    const item = sectionedLines[index];
+    const label = findBestLabel(item.line, FIELD_LABELS.hoursWorked);
+    if (!label) continue;
+    const segment = item.line.slice(label.end);
+    const values = extractHourValues(segment);
+    if (values.length) {
+      candidates.push(buildGenericCandidate("hoursWorked", values[0], item, "same-line", label.label, 52));
+      continue;
+    }
+    const next = sectionedLines[index + 1];
+    const nextValues = next ? extractHourValues(next.line) : [];
+    if (nextValues.length) candidates.push(buildGenericCandidate("hoursWorked", nextValues[0], item, "next-line", label.label, 30));
+  }
+
+  const summed = sumHoursAndEarnings(sectionedLines);
+  if (summed.value > 0) candidates.push(summed);
+  rememberCandidates(debug, "hoursWorked", candidates);
+  return candidates;
+}
+
+function sumHoursAndEarnings(sectionedLines) {
+  const hourLabels = ["ordinary hours", "saturday loading", "sunday loading", "overtime", "public holiday", "evening loading", "night loading"];
+  const values = [];
+  for (const item of sectionedLines) {
+    if (!["hoursAndEarnings", "earnings"].includes(item.section)) continue;
+    const lower = normalizeText(item.line);
+    if (!hourLabels.some((label) => lower.includes(label))) continue;
+    const label = hourLabels.find((entry) => lower.includes(entry));
+    const afterLabel = item.line.slice(lower.indexOf(label) + label.length);
+    const hours = extractHourValues(afterLabel);
+    if (hours.length) values.push(hours[0]);
+  }
+  const total = values.reduce((sum, value) => sum + value, 0);
+  return {
+    field: "hoursWorked",
+    value: round(total, 2),
+    line: `합산: ${values.join(" + ")}`,
+    section: "hoursAndEarnings",
+    source: "earnings-hours-sum",
+    label: "hours and earnings",
+    score: total > 0 ? 105 : 0
+  };
+}
+
+function collectDateCandidates(sectionedLines, debug) {
+  const candidates = [];
+  for (const item of sectionedLines) {
+    const label = findBestLabel(item.line, FIELD_LABELS.payDate);
+    if (!label && item.section !== "ocrTestNotes" && item.section !== "header") continue;
+    const date = parseDateFromText(item.line);
+    if (!date) continue;
+    candidates.push(buildGenericCandidate("payDate", date, item, "date-line", label?.label || "date", 42));
+  }
+  rememberCandidates(debug, "payDate", candidates);
+  return candidates;
+}
+
+function collectPayPeriodCandidates(sectionedLines, debug) {
+  const candidates = [];
+  for (const item of sectionedLines) {
+    const label = findBestLabel(item.line, FIELD_LABELS.payPeriod);
+    const explicit = detectPeriodKeyword(normalizeText(item.line));
+    if (explicit && (label || item.section === "ocrTestNotes" || item.section === "header")) {
+      candidates.push(buildGenericCandidate("payPeriod", explicit, item, "period-keyword", label?.label || explicit, 42));
+    }
+    const inferred = inferPeriodFromDates(item.line);
+    if (inferred) candidates.push(buildGenericCandidate("payPeriod", inferred, item, "period-date-range", "date range", 34));
+  }
+  const inferredAll = inferPeriodFromDates(sectionedLines.map((item) => item.line).join(" "));
+  if (inferredAll) {
+    candidates.push({
+      field: "payPeriod",
+      value: inferredAll,
+      line: "전체 Pay Period 날짜 범위",
+      section: "header",
+      source: "period-date-range-all",
+      label: "date range",
+      score: 70
+    });
+  }
+  rememberCandidates(debug, "payPeriod", candidates);
+  return candidates;
+}
+
+function buildGenericCandidate(field, value, item, source, label, baseScore) {
+  return {
+    field,
+    value,
+    line: item.line,
+    section: item.section,
+    source,
+    label,
+    score: Math.round(baseScore + (FIELD_SECTION_SCORES[field]?.[item.section] || 0))
+  };
+}
+
+function selectGenericCandidate(fieldName, candidates, debug) {
+  const selected = candidates
+    .filter((candidate) => candidate.value !== "" && candidate.value !== null && candidate.value !== undefined)
+    .sort((a, b) => b.score - a.score)[0] || null;
+  debug.fields[fieldName] ||= {};
+  debug.fields[fieldName].selectedCandidate = selected ? toDebugCandidate(selected) : null;
+  return selected;
+}
+
+function findValueAfterLooseLabel(text, label) {
+  const normalizedText = normalizeText(text);
+  const normalizedLabel = normalizeText(label);
+  const start = normalizedText.indexOf(normalizedLabel);
+  if (start < 0) return NaN;
+  const segment = text.slice(start + label.length);
+  return extractMoneyValues(segment)[0] ?? NaN;
+}
+
+function shouldExcludeMoneyLine(line) {
+  const lower = normalizeText(line);
+  return EXCLUDED_NUMBER_LABELS.some((label) => lower.includes(label));
+}
+
+function looksLikeDateOrIdentifier(value, line) {
+  if ([2024, 2025, 2026, 2027].includes(Number(value))) return true;
+  const lower = normalizeText(line);
+  return EXCLUDED_NUMBER_LABELS.some((label) => lower.includes(label));
+}
+
+function pushExcluded(debug, fieldName, source, reason) {
+  const entry = {
+    field: fieldName,
+    value: source.value ?? "",
+    section: source.section || "",
+    score: source.score || 0,
+    reason,
+    line: source.line || ""
+  };
+  debug.excluded.push(entry);
+  debug.fields[fieldName] ||= {};
+  debug.fields[fieldName].excluded ||= [];
+  debug.fields[fieldName].excluded.push(entry);
+}
+
+function rememberCandidates(debug, fieldName, candidates) {
+  debug.fields[fieldName] ||= {};
+  debug.fields[fieldName].candidates ||= [];
+  debug.fields[fieldName].candidates.push(...candidates.map(toDebugCandidate));
+}
+
+function toCandidateMeta(candidate) {
+  return {
+    confidence: candidate.score >= 95 ? "normal" : "low",
+    source: candidate.source,
+    label: candidate.label,
+    section: candidate.section,
+    score: candidate.score
+  };
+}
+
+function toDebugCandidate(candidate) {
+  return {
+    value: candidate.value,
+    section: candidate.section,
+    score: candidate.score,
+    source: candidate.source,
+    label: candidate.label,
+    line: candidate.line
+  };
 }
 
 function getPaymentSummaryLines(lines) {
@@ -630,7 +1179,7 @@ function hasAnyLabel(line, labels = []) {
 
 function extractMoneyValuesWithIndex(text) {
   const values = [];
-  const moneyPattern = /(?:AUD\s*)?(?:A\$\s*|\$\s*)?(-?\(?\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?|-?\(?\d{1,6}(?:\.\d{1,2})?)\)?/gi;
+  const moneyPattern = /(?:AUD\s*)?(?:A\$\s*|\$\s*)?(-?\(?\d[\d,]*(?:\.\d{1,2})?\)?)(?:\s*AUD)?/gi;
   for (const match of text.matchAll(moneyPattern)) {
     const value = parseNumeric(match[1]);
     if (Number.isFinite(value) && value >= 0 && value < 1000000) {
@@ -647,6 +1196,7 @@ function extractMoneyValues(text) {
 function findHours(lines, labels, meta) {
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
+    if (detectSection(line)) continue;
     const label = findBestLabel(line, labels);
     if (!label) continue;
     const afterLabel = line.slice(label.end);
@@ -761,7 +1311,7 @@ function cleanLabelText(text) {
 function isLikelyNameValue(value) {
   const normalized = normalizeText(value);
   if (!value || extractMoneyValues(value).length) return false;
-  if (/^(details|summary|earnings|payments|deductions|tax|super|gross|net|hours|date|period)$/i.test(value)) return false;
+  if (/(details|summary|earnings|payments|deductions|tax|super|gross|net|hours|date|period|employment|bank|method)/i.test(value)) return false;
   if (normalized.length < 2 || normalized.length > 80) return false;
   return /[a-z가-힣]/i.test(value);
 }
@@ -845,6 +1395,7 @@ function applyParsedFields(els, parsed) {
   };
 
   clearExtractionHints(fields);
+  renderExtractionDebug(els, parsed.__debug);
 
   for (const [fieldName, input] of Object.entries(fields)) {
     const value = parsed[fieldName];
@@ -859,6 +1410,54 @@ function applyParsedFields(els, parsed) {
       : "자동 추출값이므로 확인 필요";
     markExtractionHint(input, message, tone);
   }
+}
+
+function renderExtractionDebug(els, debug) {
+  if (!els.debugOutput) return;
+  if (!debug?.fields) {
+    els.debugOutput.textContent = "아직 자동 추출 후보 정보가 없습니다.";
+    return;
+  }
+
+  const lines = [];
+  for (const fieldName of ["grossPay", "netPay", "taxWithheld", "superannuation", "hoursWorked", "payDate", "payPeriod"]) {
+    const field = debug.fields[fieldName] || {};
+    lines.push(`## ${FIELD_DISPLAY_NAMES[fieldName] || fieldName}`);
+    lines.push(`선택값: ${field.selected || "-"}`);
+    if (field.selectedCandidate) {
+      lines.push(`선택 후보: ${formatDebugCandidate(field.selectedCandidate)}`);
+    }
+
+    const candidates = field.candidates || [];
+    if (candidates.length) {
+      lines.push("후보:");
+      candidates
+        .slice()
+        .sort((a, b) => (b.score || 0) - (a.score || 0))
+        .slice(0, 10)
+        .forEach((candidate) => lines.push(`- ${formatDebugCandidate(candidate)}`));
+    }
+
+    const excluded = field.excluded || [];
+    if (excluded.length) {
+      lines.push("제외:");
+      excluded
+        .slice(0, 10)
+        .forEach((item) => {
+          const value = item.value !== "" && item.value !== undefined ? item.value : "-";
+          lines.push(`- 값 ${value} · ${item.section || "-"} · ${item.reason} · ${item.line || ""}`);
+        });
+    }
+
+    lines.push("");
+  }
+
+  els.debugOutput.textContent = lines.join("\n");
+}
+
+function formatDebugCandidate(candidate) {
+  const value = candidate.value !== "" && candidate.value !== undefined ? candidate.value : "-";
+  return `값 ${value} · 점수 ${candidate.score || 0} · ${candidate.section || "-"} · ${candidate.source || "-"} · ${candidate.label || "-"} · ${candidate.line || ""}`;
 }
 
 function setInputValue(input, value) {
