@@ -2,7 +2,8 @@ import { getFormNumber } from "./utils.js";
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
 const MAX_PAGES = 3;
-const FRANKFURTER_API = "https://api.frankfurter.dev/v1";
+const AUD_KRW_CACHE_KEY = "lastAudKrwRate";
+const EXCHANGE_RATE_API_ATTRIBUTION_URL = "https://www.exchangerate-api.com";
 const PDF_WORKER_SRC = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
 const FIELD_LABELS = {
@@ -947,78 +948,122 @@ export function calculateAustraliaPay(values, exchangeRate) {
 }
 
 async function updateExchangeRate(els, announce) {
-  const payDate = els.payDate.value;
   setRateMeta(els, "환율 조회 중...");
-  const rateInfo = await fetchAudKrwRate(payDate);
+  renderRateAttribution(els, null);
+  const rateInfo = await fetchAudKrwRate();
   if (rateInfo) {
     els.exchangeRate.value = round(rateInfo.rate, 4);
-    setRateMeta(els, `적용 환율: 1 AUD = ${round(rateInfo.rate, 4).toLocaleString("ko-KR")}원, 기준일: ${rateInfo.date}, 출처: ${rateInfo.source}${rateInfo.fallback ? " (최신 환율로 대체)" : ""}`);
+    setRateMeta(els, formatRateMeta(rateInfo));
+    renderRateAttribution(els, rateInfo);
     if (announce) setStatus(els, "환율을 조회해 입력했습니다.", "good");
     return rateInfo;
   }
 
   const manualRate = readNumber(els.exchangeRate.value);
+  renderRateAttribution(els, null);
   if (Number.isFinite(manualRate) && manualRate > 0) {
-    setRateMeta(els, `환율 API 조회에 실패했습니다. 직접 입력 모드로 전환해 1 AUD = ${manualRate.toLocaleString("ko-KR")}원을 사용합니다.`);
-    if (announce) setStatus(els, "환율 API 조회에 실패했습니다. 직접 입력한 환율을 사용합니다.", "warn");
-    return { rate: manualRate, date: "직접 입력", source: "사용자 입력", fallback: true };
+    setRateMeta(els, `환율 API 조회에 실패했습니다. 환율을 직접 입력해 주세요. 현재 입력된 1 AUD = ${manualRate.toLocaleString("ko-KR")}원은 계산 시 사용할 수 있습니다.`);
+    if (announce) setStatus(els, "환율 API 조회에 실패했습니다. 환율을 직접 입력해 주세요.", "warn");
+    return { rate: manualRate, date: "직접 입력", source: "사용자 입력", fallback: true, manual: true };
   }
 
-  setRateMeta(els, "환율 API 조회에 실패했습니다. 직접 입력 모드로 전환했습니다. AUD/KRW 환율을 직접 입력해 주세요.");
+  setRateMeta(els, "환율 API 조회에 실패했습니다. 환율을 직접 입력해 주세요.");
   if (announce) setStatus(els, "환율 API 조회에 실패했습니다. 환율을 직접 입력해 주세요.", "warn");
   return null;
 }
 
-export async function fetchAudKrwRate(payDate = "") {
-  const endpoints = [];
-
-  if (payDate && !isFutureIsoDate(payDate)) {
-    endpoints.push({
-      url: `${FRANKFURTER_API}/${payDate}?base=AUD&symbols=KRW`,
-      fallback: false
-    });
+async function fetchJson(url) {
+  const response = await fetch(url, { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
   }
+  return response.json();
+}
 
-  endpoints.push({
-    url: `${FRANKFURTER_API}/latest?base=AUD&symbols=KRW`,
-    fallback: Boolean(payDate)
-  });
+function isValidAudKrwRate(value) {
+  const rate = Number(value);
+  return Number.isFinite(rate) && rate > 100 && rate < 2000;
+}
 
-  for (const endpoint of endpoints) {
+export async function fetchAudKrwRate() {
+  // 현재 버전은 Pay Date 기준 과거 환율을 조회하지 않고 최신 AUD/KRW 환율만 사용합니다.
+  const providers = [
+    {
+      name: "ExchangeRate-API Open Access",
+      url: "https://open.er-api.com/v6/latest/AUD",
+      parse: (data) => data?.rates?.KRW,
+      date: (data) => data?.time_last_update_utc || "latest",
+      requiresAttribution: true
+    },
+    {
+      name: "Currency API jsDelivr",
+      url: "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/aud.min.json",
+      parse: (data) => data?.aud?.krw,
+      date: (data) => data?.date || "latest"
+    },
+    {
+      name: "Currency API Cloudflare",
+      url: "https://latest.currency-api.pages.dev/v1/currencies/aud.min.json",
+      parse: (data) => data?.aud?.krw,
+      date: (data) => data?.date || "latest"
+    }
+  ];
+
+  for (const provider of providers) {
     try {
-      const response = await fetch(endpoint.url);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
+      const data = await fetchJson(provider.url);
+      const rawRate = provider.parse(data);
+      const rate = Number(rawRate);
 
-      const data = await response.json();
-      const rate = data?.rates?.KRW;
-
-      if (typeof rate === "number" && Number.isFinite(rate) && rate > 0) {
-        return {
+      if (isValidAudKrwRate(rate)) {
+        const result = {
           rate,
-          date: data.date || payDate || "latest",
-          source: "Frankfurter",
-          fallback: endpoint.fallback
+          date: provider.date(data),
+          source: provider.name,
+          requiresAttribution: Boolean(provider.requiresAttribution),
+          savedAt: new Date().toISOString()
         };
+        saveCachedAudKrwRate(result);
+        return result;
       }
 
-      throw new Error("KRW rate missing");
+      console.error("Invalid AUD/KRW rate:", provider.name, rawRate, data);
     } catch (error) {
-      console.error("AUD/KRW exchange rate fetch failed:", endpoint.url, error);
+      console.error("AUD/KRW exchange rate fetch failed:", provider.name, provider.url, error);
     }
   }
+
+  const cached = readCachedAudKrwRate();
+  if (cached) return cached;
 
   return null;
 }
 
-function isFutureIsoDate(value) {
-  const match = String(value).match(/^(20\d{2})-(\d{2})-(\d{2})$/);
-  if (!match) return false;
-  const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return date.getTime() > today.getTime();
+function saveCachedAudKrwRate(result) {
+  if (typeof localStorage === "undefined") return;
+  try {
+    localStorage.setItem(AUD_KRW_CACHE_KEY, JSON.stringify(result));
+  } catch (error) {
+    console.error("Cached AUD/KRW rate write failed:", error);
+  }
+}
+
+function readCachedAudKrwRate() {
+  if (typeof localStorage === "undefined") return null;
+  try {
+    const cached = JSON.parse(localStorage.getItem(AUD_KRW_CACHE_KEY) || "null");
+    if (cached && isValidAudKrwRate(cached.rate)) {
+      return {
+        ...cached,
+        rate: Number(cached.rate),
+        source: "최근 저장된 환율",
+        requiresAttribution: false
+      };
+    }
+  } catch (error) {
+    console.error("Cached AUD/KRW rate read failed:", error);
+  }
+  return null;
 }
 
 function renderCalculationResult(els, result, rate, rateInfo) {
@@ -1031,7 +1076,13 @@ function renderCalculationResult(els, result, rate, rateInfo) {
   els.superAud.textContent = result.superAud > 0 ? formatAud(result.superAud) : "-";
   els.superKrw.textContent = result.superKrw > 0 ? formatWon(result.superKrw) : "-";
   els.resultSummary.textContent = `${result.periodLabel} ${result.basisLabel} 기준으로 연 환산 ${formatWon(result.annualNetKrw)}입니다. Superannuation은 실수령액에 포함하지 않았습니다.`;
-  setRateMeta(els, `적용 환율: 1 AUD = ${round(rate, 4).toLocaleString("ko-KR")}원, 기준일: ${rateInfo?.date || "직접 입력"}, 출처: ${rateInfo?.source || "사용자 입력"}${rateInfo?.fallback ? " (대체 적용)" : ""}`);
+  setRateMeta(els, formatRateMeta({
+    rate,
+    date: rateInfo?.date || "직접 입력",
+    source: rateInfo?.source || "사용자 입력",
+    requiresAttribution: Boolean(rateInfo?.requiresAttribution)
+  }));
+  renderRateAttribution(els, rateInfo);
 }
 
 function getPeriodMultiplier(period) {
@@ -1082,6 +1133,38 @@ function setProgress(els, value) {
 
 function setRateMeta(els, message) {
   els.rateMeta.textContent = message;
+}
+
+function formatRateMeta(rateInfo) {
+  const rate = round(rateInfo.rate, 4).toLocaleString("ko-KR");
+  const savedText = rateInfo.source === "최근 저장된 환율" && rateInfo.savedAt
+    ? ` · 저장 시점: ${formatSavedAt(rateInfo.savedAt)}`
+    : "";
+  return `적용 환율: 1 AUD = ${rate}원 · 기준: ${rateInfo.date || "latest"} · 출처: ${rateInfo.source}${savedText}`;
+}
+
+function renderRateAttribution(els, rateInfo) {
+  const existing = els.rateMeta.parentElement?.querySelector(".exchange-rate-attribution");
+  existing?.remove();
+
+  if (!rateInfo?.requiresAttribution) return;
+
+  const attribution = document.createElement("p");
+  attribution.className = "fine-print exchange-rate-attribution";
+  attribution.innerHTML = `<a href="${EXCHANGE_RATE_API_ATTRIBUTION_URL}" target="_blank" rel="noopener noreferrer">Rates By Exchange Rate API</a>`;
+  els.rateMeta.insertAdjacentElement("afterend", attribution);
+}
+
+function formatSavedAt(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString("ko-KR", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
 }
 
 function normalizeText(text) {

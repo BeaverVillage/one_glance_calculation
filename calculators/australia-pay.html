@@ -76,7 +76,7 @@
       "name": "환율은 어떤 기준을 사용하나요?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Pay Date가 있으면 해당 날짜의 AUD/KRW 환율 조회를 시도하고, 실패하면 최신 환율 또는 사용자가 직접 입력한 환율을 사용합니다."
+        "text": "환율 조회는 API 키가 필요 없는 공개 환율 API의 최신 AUD/KRW 환율을 사용하며, 조회 실패 시 최근 저장 환율 또는 사용자가 직접 입력한 환율을 사용할 수 있습니다."
       }
     }
   ]
@@ -219,7 +219,7 @@
                 </div>
               </div>
 
-              <p id="au-rate-meta" class="fine-print">Pay Date가 있으면 해당 날짜 환율을 조회하고, 실패하면 최신 환율을 시도합니다.</p>
+              <p id="au-rate-meta" class="fine-print">환율 조회는 API 키가 필요 없는 공개 환율 API를 사용하며, 조회 실패 시 최근 저장 환율 또는 직접 입력 환율을 사용할 수 있습니다.</p>
               <div class="button-row">
                 <button id="au-refresh-rate" class="subtle-button" type="button">환율 조회</button>
                 <button class="primary-button" type="submit">이 값으로 계산하기</button>
@@ -270,7 +270,7 @@
             <ol class="step-list">
               <li><strong>PDF 업로드</strong><span>텍스트 기반 PDF는 텍스트 추출을 먼저 시도하고, 스캔본은 OCR을 실행합니다.</span></li>
               <li><strong>자동 추출값 확인</strong><span>Gross Pay, Net Pay, Tax, Super, 근무시간, Pay Date를 확인하고 수정합니다.</span></li>
-              <li><strong>환율 적용</strong><span>Pay Date 기준 환율을 조회하거나 직접 AUD/KRW 환율을 입력합니다.</span></li>
+              <li><strong>환율 적용</strong><span>최신 AUD/KRW 환율을 조회하거나 직접 환율을 입력합니다. Pay Date는 명세서 확인용으로 유지합니다.</span></li>
               <li><strong>계산 실행</strong><span>“이 값으로 계산하기”를 눌러 원화 실수령액과 연 환산액을 확인합니다.</span></li>
             </ol>
           </section>
@@ -301,7 +301,7 @@
             <article><h3>예시 계산</h3><p>2주급 Net Pay가 A$1,600이고 환율이 900원이면 기간 실수령액은 약 144만원, 연 환산 실수령액은 A$41,600 × 900원으로 계산합니다.</p></article>
             <article><h3>결과 해석</h3><p>원화 환산액은 적용 환율에 따라 달라집니다. Superannuation은 통장에 바로 들어오는 실수령액이 아니므로 별도 항목으로 표시합니다.</p></article>
             <article><h3>주의사항</h3><p>OCR은 틀릴 수 있고, 환율은 조회 시점과 기준 기관에 따라 다를 수 있습니다. 세금 신고, 비자, 고용 조건 판단에는 공식 자료와 고용주 명세서를 확인하세요.</p></article>
-            <article><h3>참고한 공식 자료 또는 안내 문구</h3><p>환율 조회는 API 키가 필요 없는 Frankfurter API의 AUD/KRW 환율을 우선 사용합니다. 실제 급여 항목의 의미는 고용주가 발급한 payslip 기준을 우선하세요.</p></article>
+            <article><h3>참고한 공식 자료 또는 안내 문구</h3><p>환율 조회는 API 키가 필요 없는 공개 환율 API를 사용하며, 조회 실패 시 최근 저장 환율 또는 사용자가 직접 입력한 환율을 사용할 수 있습니다. 실제 급여 항목의 의미는 고용주가 발급한 payslip 기준을 우선하세요.</p></article>
           </div>
           <p class="guide-updated">최종 업데이트 날짜: 2026-06-15</p>
         </div>
@@ -315,7 +315,7 @@
             <details open><summary>PDF가 서버로 업로드되나요?</summary><p>아니요. PDF 텍스트 추출과 OCR은 브라우저 안에서 처리합니다. 다만 민감정보는 가능하면 가린 뒤 사용하는 것을 권장합니다.</p></details>
             <details><summary>OCR 결과가 틀릴 수 있나요?</summary><p>네. 명세서 양식, 스캔 품질, 글자 흐림 정도에 따라 틀릴 수 있으므로 자동 추출값을 확인하고 수정한 뒤 계산해야 합니다.</p></details>
             <details><summary>Net Pay가 없으면 어떻게 계산하나요?</summary><p>Net Pay가 없고 Gross Pay와 Tax Withheld가 있으면 Gross Pay - Tax Withheld를 임시 실수령액으로 계산합니다.</p></details>
-            <details><summary>환율은 어떤 기준을 사용하나요?</summary><p>Pay Date가 있으면 해당 날짜의 AUD/KRW 환율 조회를 시도하고, 실패하면 최신 환율 또는 사용자가 직접 입력한 환율을 사용합니다.</p></details>
+            <details><summary>환율은 어떤 기준을 사용하나요?</summary><p>환율 조회는 API 키가 필요 없는 공개 환율 API의 최신 AUD/KRW 환율을 사용하며, 조회 실패 시 최근 저장 환율 또는 사용자가 직접 입력한 환율을 사용할 수 있습니다.</p></details>
           </div>
         </div>
       </section>
@@ -332,7 +332,7 @@
         </nav>
       </div>
     </footer>
-    <script type="module" src="../assets/js/australia-pay.js?v=20260615-australia-pay"></script>
-    <script type="module" src="../assets/js/app.js?v=20260615-australia-pay"></script>
+    <script type="module" src="../assets/js/australia-pay.js?v=20260615-australia-rate-api"></script>
+    <script type="module" src="../assets/js/app.js?v=20260615-australia-rate-api"></script>
   </body>
 </html>
