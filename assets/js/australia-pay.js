@@ -2094,6 +2094,7 @@ async function calculateFromConfirmedValues(els) {
   }
 
   renderCalculationResult(els, result, rate, rateInfo);
+  scrollToAustraliaPayResult();
 }
 
 function readConfirmedValues(els) {
@@ -2255,6 +2256,13 @@ function readCachedAudKrwRate() {
   return null;
 }
 
+function scrollToAustraliaPayResult() {
+  const resultSection = document.querySelector("#australia-pay-result");
+  if (resultSection) {
+    resultSection.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
 function renderCalculationResult(els, result, rate, rateInfo) {
   els.periodNetAud.textContent = formatAud(result.netPayAud);
   els.periodNetKrw.textContent = formatWon(result.netPayKrw);
@@ -2264,7 +2272,7 @@ function renderCalculationResult(els, result, rate, rateInfo) {
   els.hourlyNetKrw.textContent = result.hourlyNetKrw > 0 ? formatWon(result.hourlyNetKrw) : "-";
   els.superAud.textContent = result.superAud > 0 ? formatAud(result.superAud) : "-";
   els.superKrw.textContent = result.superKrw > 0 ? formatWon(result.superKrw) : "-";
-  els.resultSummary.textContent = `${result.periodLabel} ${result.basisLabel} 기준으로 연 환산 ${formatWon(result.annualNetKrw)}입니다. Superannuation은 실수령액에 포함하지 않았습니다.`;
+  els.resultSummary.textContent = `${result.periodLabel} ${result.basisLabel} 기준으로 연 환산 ${formatWon(result.annualNetKrw)}입니다. Superannuation(퇴직연금)은 실수령액에 포함하지 않았습니다.`;
   setRateMeta(els, formatRateMeta({
     rate,
     date: rateInfo?.date || "직접 입력",

@@ -39,15 +39,15 @@ const TOOL_GROUPS = [
   {
     label: "해외·워킹홀리데이",
     tools: [
-      ["호주 주급 명세서 자동 원화 환산", "calculators/australia-pay.html"],
+      ["호주 급여명세서 원화 환산 계산기", "calculators/australia-pay.html"],
       ["호주 워홀 세컨비자 88일 근무일 계산기", "calculators/australia-whv-88-days.html"]
     ]
   },
   {
     label: "생활·차량",
     tools: [
-      ["전기차 충전비 vs 주유비", "calculators/ev-vs-gas.html"],
-      ["가전제품 월 전기요금", "calculators/appliance-electricity.html"],
+      ["전기차 충전비 vs 주유비 계산기", "calculators/ev-vs-gas.html"],
+      ["가전제품 월 전기요금 계산기", "calculators/appliance-electricity.html"],
       ["중고 전자제품 가격 계산기", "calculators/used-device-price.html"]
     ]
   },

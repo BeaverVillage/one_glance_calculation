@@ -19,24 +19,24 @@
     <meta name="google-adsense-account" content="ca-pub-6340743169950430">
     <meta name="msvalidate.01" content="71220435128A45EF179793784E9AFC3E">
     <meta name="naver-site-verification" content="0f429adf1d8d3475017f3824ee96355074bcfd23">
-    <meta name="description" content="호주 급여명세서 PDF 또는 이미지 파일을 업로드하면 OCR로 텍스트를 읽고, 실수령액과 세금, Superannuation을 자동 추출해 원화로 환산합니다.">
-    <title>호주 주급 명세서 자동 원화 환산 계산기 | 한눈계산</title>
+    <meta name="description" content="호주 급여명세서를 읽어 실수령액, 세금, 퇴직연금을 추출하고 원화로 환산해 보세요.">
+    <title>호주 급여명세서 원화 환산 계산기 | 한눈계산</title>
     <link rel="canonical" href="https://hannuncalc.com/calculators/australia-pay.html">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="ko_KR">
     <meta property="og:site_name" content="한눈계산">
-    <meta property="og:title" content="호주 주급 명세서 자동 원화 환산 계산기 | 한눈계산">
-    <meta property="og:description" content="호주 급여명세서 PDF 또는 이미지 파일을 업로드하면 OCR로 텍스트를 읽고, 실수령액과 세금, Superannuation을 자동 추출해 원화로 환산합니다.">
+    <meta property="og:title" content="호주 급여명세서 원화 환산 계산기 | 한눈계산">
+    <meta property="og:description" content="호주 급여명세서를 읽어 실수령액, 세금, 퇴직연금을 추출하고 원화로 환산해 보세요.">
     <meta property="og:url" content="https://hannuncalc.com/calculators/australia-pay.html">
     <script type="application/ld+json" data-schema="webapplication">{
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "호주 주급 명세서 자동 원화 환산 계산기",
+  "name": "호주 급여명세서 원화 환산 계산기",
   "url": "https://hannuncalc.com/calculators/australia-pay.html",
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Any",
   "inLanguage": "ko-KR",
-  "description": "호주 급여명세서 PDF 또는 이미지 파일을 업로드하면 OCR로 텍스트를 읽고, 실수령액과 세금, Superannuation을 자동 추출해 원화로 환산합니다.",
+  "description": "호주 급여명세서를 읽어 실수령액, 세금, 퇴직연금을 추출하고 원화로 환산해 보세요.",
   "offers": {
     "@type": "Offer",
     "price": "0",
@@ -107,9 +107,9 @@
         <div class="container">
           <div class="section-intro">
             <p class="eyebrow">호주 워홀 급여 환산</p>
-            <h1>호주 주급 명세서 자동 원화 환산 계산기</h1>
+            <h1>호주 급여명세서 원화 환산 계산기</h1>
             <p class="lead">
-              호주 월급명세서 PDF를 읽어 실수령액, 세금, Superannuation을 추출하고 AUD/KRW 환율로 원화 환산해 보세요.
+              호주 급여명세서를 읽어 실수령액, 세금, 퇴직연금을 추출하고 원화로 환산해 보세요.
             </p>
           </div>
         </div>
@@ -117,7 +117,7 @@
 
       <section class="content-band compact">
         <div class="container calculator-section">
-          <section class="tool-panel australia-pay-panel" aria-label="호주 주급 명세서 자동 원화 환산 계산기">
+          <section class="tool-panel australia-pay-panel" aria-label="호주 급여명세서 원화 환산 계산기">
             <form id="australia-pay-form" class="input-panel">
               <div class="notice-box privacy-note notice-compact">
                 <strong>개인정보와 자동 인식 안내</strong>
@@ -139,14 +139,14 @@
 
               <div class="field-row">
                 <div class="field">
-                  <label for="au-gross-pay">Gross Pay</label>
+                  <label for="au-gross-pay">Gross Pay(세전급여)</label>
                   <div class="input-suffix">
                     <input id="au-gross-pay" name="grossPay" type="number" min="0" step="0.01" inputmode="decimal">
                     <span>AUD</span>
                   </div>
                 </div>
                 <div class="field">
-                  <label for="au-net-pay">Net Pay</label>
+                  <label for="au-net-pay">Net Pay(세후급여)</label>
                   <div class="input-suffix">
                     <input id="au-net-pay" name="netPay" type="number" min="0" step="0.01" inputmode="decimal">
                     <span>AUD</span>
@@ -156,14 +156,14 @@
 
               <div class="field-row">
                 <div class="field">
-                  <label for="au-tax-withheld">Tax Withheld / PAYG</label>
+                  <label for="au-tax-withheld">Tax Withheld / PAYG(원천징수)</label>
                   <div class="input-suffix">
                     <input id="au-tax-withheld" name="taxWithheld" type="number" min="0" step="0.01" inputmode="decimal">
                     <span>AUD</span>
                   </div>
                 </div>
                 <div class="field">
-                  <label for="au-superannuation">Superannuation</label>
+                  <label for="au-superannuation">Superannuation(퇴직연금)</label>
                   <div class="input-suffix">
                     <input id="au-superannuation" name="superannuation" type="number" min="0" step="0.01" inputmode="decimal">
                     <span>AUD</span>
@@ -173,14 +173,14 @@
 
               <div class="field-row">
                 <div class="field">
-                  <label for="au-hours-worked">Hours Worked</label>
+                  <label for="au-hours-worked">Hours Worked(근무시간)</label>
                   <div class="input-suffix">
                     <input id="au-hours-worked" name="hoursWorked" type="number" min="0" step="0.01" inputmode="decimal">
                     <span>시간</span>
                   </div>
                 </div>
                 <div class="field">
-                  <label for="au-pay-date">Pay Date</label>
+                  <label for="au-pay-date">Pay Date(지급일)</label>
                   <input id="au-pay-date" name="payDate" type="date">
                 </div>
               </div>
@@ -208,11 +208,11 @@
 
               <div class="field-row">
                 <div class="field">
-                  <label for="au-employer-name">Employer Name</label>
+                  <label for="au-employer-name">Employer Name(고용주 이름)</label>
                   <input id="au-employer-name" name="employerName" type="text" autocomplete="off">
                 </div>
                 <div class="field">
-                  <label for="au-employee-name">Employee Name</label>
+                  <label for="au-employee-name">Employee Name(직원 이름)</label>
                   <input id="au-employee-name" name="employeeName" type="text" autocomplete="off">
                 </div>
               </div>
@@ -223,7 +223,7 @@
               </div>
             </form>
 
-            <aside class="result-panel">
+            <aside id="australia-pay-result" class="result-panel">
               <div class="report-summary">
                 <span class="report-kicker">원화 환산 결과</span>
                 <strong id="au-period-net-krw" class="result-number">-</strong>
@@ -245,7 +245,7 @@
                   <em id="au-hourly-net-krw">-</em>
                 </div>
                 <div>
-                  <span>Superannuation</span>
+                  <span>Superannuation(퇴직연금)</span>
                   <strong id="au-super-aud">-</strong>
                   <em id="au-super-krw">-</em>
                 </div>
