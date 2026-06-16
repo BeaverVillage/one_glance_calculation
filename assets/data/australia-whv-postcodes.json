@@ -1,19 +1,21 @@
 {
-  "version": "2026-06-16-home-affairs-reference-v2",
+  "version": "2026-06-16-home-affairs-reference-v3",
   "lastReviewed": "2026-06-16",
   "sourceName": "Australian Department of Home Affairs",
   "sourceUrls": [
     "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/work-holiday-417/specified-work",
     "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/work-holiday-462/specified-462-work",
     "https://immi.homeaffairs.gov.au/what-we-do/whm-program/latest-news",
-    "https://immi.homeaffairs.gov.au/visas/working-in-australia/regional-migration/eligible-regional-areas"
+    "https://immi.homeaffairs.gov.au/visas/working-in-australia/regional-migration/eligible-regional-areas",
+    "https://immi.homeaffairs.gov.au/visas/working-in-australia/skill-occupation-list/regional-postcodes"
   ],
   "disclaimer": "This postcode checker is for reference only. Always verify eligibility on the official Home Affairs website and in ImmiAccount.",
   "notes": [
     "Rules include postcode ranges that could be checked against Australian Department of Home Affairs specified work pages/search result text on 2026-06-16.",
     "The WHM program uses its own specified work postcode lists. The generic designated regional areas list is not used as a substitute for WHM specified work.",
     "Bushfire, flood, natural disaster recovery and other time-sensitive declared areas can change and are left for official check unless exact ranges are added in a later data review.",
-    "The checker only provides a likely postcode-area match. Industry, evidence, visa subclass, application date and Home Affairs instructions still need separate confirmation."
+    "The checker only provides a likely postcode-area match. Industry, evidence, visa subclass, application date and Home Affairs instructions still need separate confirmation.",
+    "v3 UI uses Korean reference labels only. Postcode ranges remain a reference aid and must be checked against Home Affairs specified work pages and latest news before application."
   ],
   "rules": [
     {

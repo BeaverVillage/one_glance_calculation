@@ -45,8 +45,8 @@ export function checkWhvPostcodeEligibility(input, rulesData) {
   if (!subclassType || !industry || !postcode || !state) {
     return {
       status: "unknown",
-      label: "입력 필요",
-      message: "자동 참고 확인: subclass, 업종, postcode, state 입력이 필요합니다.",
+      label: "입력값 부족",
+      message: "자동 참고 확인: subclass, 업종, 우편번호(postcode), state 입력이 필요합니다.",
       sourceVersion,
       matchedRule: null,
       basis: "입력값 부족"
@@ -82,8 +82,8 @@ export function checkWhvPostcodeEligibility(input, rulesData) {
   if (matched) {
     return {
       status: "likelyEligible",
-      label: "eligible 가능성 있음",
-      message: "자동 참고 확인: 입력한 postcode는 현재 참고 데이터 기준 eligible area일 가능성이 있습니다. 공식 기준을 확인하세요.",
+      label: "자격을 갖춘 지역일 수 있음",
+      message: "자동 참고 확인: 입력한 우편번호는 현재 참고 데이터 기준 자격을 갖춘 지역일 가능성이 있습니다. 공식 기준을 확인하세요.",
       sourceVersion,
       matchedRule: matched,
       basis: matched.note || "local WHV postcode data v" + sourceVersion
@@ -91,8 +91,8 @@ export function checkWhvPostcodeEligibility(input, rulesData) {
   }
   return {
     status: "notMatched",
-    label: "현재 데이터 불일치",
-    message: "자동 참고 확인: 현재 참고 데이터에서 eligible로 확인되지 않았습니다. 업종·subclass·신청 시점에 따라 달라질 수 있으므로 공식 기준을 확인하세요.",
+    label: "참고 데이터에서 확인되지 않음",
+    message: "자동 참고 확인: 현재 참고 데이터에서 자격을 갖춘 지역으로 확인되지 않았습니다. 업종·subclass·신청 시점에 따라 달라질 수 있으므로 공식 기준을 확인하세요.",
     sourceVersion,
     matchedRule: null,
     basis: "local WHV postcode data v" + sourceVersion
@@ -126,6 +126,7 @@ function collectWhvElements(root, form) {
     modeCards: Array.from(root.querySelectorAll(".whv-mode-card")),
     modePanels: Array.from(root.querySelectorAll("[data-mode-panel]")),
     addModeButtons: Array.from(root.querySelectorAll("[data-add-mode]")),
+    closeModeButtons: Array.from(root.querySelectorAll("[data-close-mode]")),
     inputStep: root.querySelector("#whv-input-step"),
     reviewStep: root.querySelector("#whv-review-step"),
     resultStep: root.querySelector("#whv-result-step"),
@@ -209,6 +210,9 @@ function bindWhvEvents(state, els) {
   els.addModeButtons.forEach(function(button) {
     button.addEventListener("click", function() { showExtraMode(state, els, button.dataset.addMode); });
   });
+  els.closeModeButtons.forEach(function(button) {
+    button.addEventListener("click", function() { closeExtraMode(state, els, button.dataset.closeMode); });
+  });
   els.goReview?.addEventListener("click", function() { goToReviewStep(state, els); });
   els.goResult?.addEventListener("click", function() { goToResultStep(state, els); });
   els.backTopFromInput?.addEventListener("click", function() { scrollToWhvSection(els.topBand); });
@@ -267,6 +271,11 @@ function updateModePanelVisibility(state, els) {
     const mode = button.dataset.addMode;
     button.hidden = visibleModes.has(mode);
   });
+  els.closeModeButtons.forEach(function(button) {
+    const mode = button.dataset.closeMode;
+    const isExtra = visibleModes.has(mode) && mode !== state.activeMode;
+    button.hidden = !isExtra;
+  });
 }
 
 function showExtraMode(state, els, mode) {
@@ -277,6 +286,20 @@ function showExtraMode(state, els, mode) {
   const targetPanel = els.modePanels.find(function(panel) { return panel.dataset.modePanel === mode; });
   showWhvFlowNotice(els, "보조 입력 영역을 추가로 열었습니다.", "good");
   scrollToWhvSection(targetPanel || els.inputStep);
+}
+
+function closeExtraMode(state, els, mode) {
+  if (!mode || mode === state.activeMode) return;
+  state.extraModes.delete(mode);
+  clearInputsForMode(mode, els);
+  updateModePanelVisibility(state, els);
+  showWhvFlowNotice(els, "보조 입력 영역을 닫았습니다. 추가 전 임시 입력값은 합계에 반영되지 않습니다.", "info");
+}
+
+function clearInputsForMode(mode, els) {
+  if (mode === "auto" && els.files) els.files.value = "";
+  if (mode === "hours") clearHoursInputs(els);
+  if (mode === "manual") clearManualInputs(els);
 }
 
 function updateInputPanelVisibility(state, els) {
@@ -545,7 +568,17 @@ function handleRecordAction(button, state, els) {
   if (action === "use-hours-estimate") {
     record.fields.allowHoursEstimate = true;
   }
+  if (action === "toggle-detail") {
+    const detail = document.getElementById(button.dataset.detailTarget || "");
+    if (detail) {
+      detail.open = !detail.open;
+      if (detail.open) scrollToWhvSection(detail);
+    }
+    return;
+  }
   if (action === "remove") {
+    const ok = typeof window === "undefined" || window.confirm("이 항목을 삭제할까요? 삭제하면 합계에서 즉시 제외됩니다.");
+    if (!ok) return;
     state.records = state.records.filter(function(item) { return item.id !== record.id; });
   }
   renderAll(state, els);
@@ -595,7 +628,7 @@ function renderRecordTable(state) {
     '<div class="whv-table-scroll whv-record-review-wrap" role="region" aria-label="인정 일수 확인 표" tabindex="0">',
     '<table class="whv-record-table whv-summary-table">',
     '<thead><tr>',
-    '<th>포함</th><th>파일명</th><th>고용주</th><th>기간</th><th>인정 일수</th><th>총 근무시간</th><th>지역</th><th>업종</th><th>상태</th><th>수정</th>',
+    '<th>포함</th><th>파일명</th><th>고용주</th><th>기간</th><th>인정 일수</th><th>시간</th><th>지역/업종</th><th>자격 지역</th><th>상태/액션</th>',
     '</tr></thead><tbody>', rows, '</tbody></table></div>'
   ].join("");
 }
@@ -614,27 +647,35 @@ function renderRecordRow(record, index, state) {
   const regionText = [record.fields.state, record.fields.postcode].filter(Boolean).join(" ") || "-";
   const hoursText = record.fields.hoursWorked ? formatNumber(record.fields.hoursWorked, 2).replace(/\.00$/, "") + "시간" : "-";
   const daysText = metrics.appliedDays ? metrics.appliedDays + "일" : "-";
-  const sourceText = metrics.source === "hours" ? '추정' : metrics.source === "manual" ? '직접 입력' : metrics.source === "period" ? 'Pay Period' : '검토 필요';
+  const sourceText = metrics.source === "hours" ? "추정" : metrics.source === "manual" ? "직접 입력" : metrics.source === "period" ? "기간 기준" : "검토 필요";
+  const detailId = "whv-detail-" + record.id;
   return [
     '<tr class="whv-payslip-card whv-record-summary" data-record-id="' + record.id + '">',
-    '<td data-label="포함">' + checkboxInputField('include', record.fields.include, '계산 포함') + '</td>',
+    '<td data-label="포함" class="whv-cell-center whv-include-cell">' + checkboxInputField('include', record.fields.include, '포함') + '</td>',
     '<td data-label="파일명"><strong class="whv-file-name">' + escapeHtml(record.fileName || ('항목 ' + (index + 1))) + '</strong><span class="whv-row-muted">' + escapeHtml(MODE_LABELS[record.sourceType] || record.method || '-') + '</span></td>',
-    '<td data-label="고용주">' + escapeHtml(record.fields.employerName || '-') + '</td>',
-    '<td data-label="기간">' + escapeHtml(periodText) + '</td>',
-    '<td data-label="인정 일수"><strong>' + escapeHtml(daysText) + '</strong><span class="whv-row-muted">' + escapeHtml(sourceText) + '</span></td>',
-    '<td data-label="총 근무시간">' + escapeHtml(hoursText) + '</td>',
-    '<td data-label="지역">' + escapeHtml(regionText) + '</td>',
-    '<td data-label="업종">' + escapeHtml(record.fields.industry || '-') + '</td>',
-    '<td data-label="상태"><strong class="decision-badge ' + status.tone + '">' + escapeHtml(status.label) + '</strong></td>',
-    '<td data-label="수정"><span class="whv-edit-hint">아래에서 상세 수정</span></td>',
+    '<td data-label="고용주" class="whv-wrap-cell">' + escapeHtml(record.fields.employerName || '-') + '</td>',
+    '<td data-label="기간" class="whv-period-cell">' + escapeHtml(periodText) + '</td>',
+    '<td data-label="인정 일수" class="whv-cell-center"><strong class="whv-days-value">' + escapeHtml(daysText) + '</strong><span class="whv-row-muted">' + escapeHtml(sourceText) + '</span></td>',
+    '<td data-label="시간" class="whv-cell-center">' + escapeHtml(hoursText) + '</td>',
+    '<td data-label="지역/업종" class="whv-wrap-cell"><strong>' + escapeHtml(regionText) + '</strong><span class="whv-row-muted">' + escapeHtml(record.fields.industry || '-') + '</span></td>',
+    '<td data-label="자격 지역"><span class="whv-postcode-chip ' + escapeHtml(postcode.status) + '">' + escapeHtml(getPostcodeDisplayLabel(postcode)) + '</span></td>',
+    '<td data-label="상태/액션"><div class="whv-action-cell"><strong class="decision-badge ' + status.tone + '">' + escapeHtml(status.label) + '</strong><button type="button" class="subtle-button" data-record-action="toggle-detail" data-detail-target="' + detailId + '">상세 수정</button><button type="button" class="subtle-button danger-light" data-record-action="remove">항목 삭제</button></div></td>',
     '</tr>',
     '<tr class="whv-record-detail" data-record-id="' + record.id + '">',
-    '<td colspan="10">' + renderRecordDetail(record, metrics, postcode) + '</td>',
+    '<td colspan="9">' + renderRecordDetail(record, metrics, postcode, detailId) + '</td>',
     '</tr>'
   ].join("");
 }
 
-function renderRecordDetail(record, metrics, postcode) {
+function getPostcodeDisplayLabel(postcode) {
+  if (!postcode || postcode.status === "unknown") return "입력값 부족";
+  if (postcode.status === "likelyEligible") return "자격을 갖춘 지역일 수 있음";
+  if (postcode.status === "notMatched") return "참고 데이터에서 확인 안 됨";
+  if (postcode.status === "needsOfficialCheck") return "공식 확인 필요";
+  return postcode.label || "공식 확인 필요";
+}
+
+function renderRecordDetail(record, metrics, postcode, detailId) {
   const cycleOptions = CYCLE_OPTIONS.map(function(cycle) {
     return '<option value="' + cycle + '" ' + (normalizeCycle(record.fields.payCycle) === cycle ? 'selected' : '') + '>' + cycle + '</option>';
   }).join("");
@@ -645,7 +686,7 @@ function renderRecordDetail(record, metrics, postcode) {
     renderRowAction(record, metrics)
   ].filter(Boolean).join("");
   return [
-    '<details class="whv-detail-accordion">',
+    '<details id="' + detailId + '" class="whv-detail-accordion">',
     '<summary>상세 수정</summary>',
     '<div class="whv-detail-grid">',
     textInputField('고용주', 'employerName', record.fields.employerName),
@@ -663,8 +704,8 @@ function renderRecordDetail(record, metrics, postcode) {
     textInputField('메모', 'note', record.note || ''),
     '</div>',
     '<div class="whv-detail-meta">',
-    '<div class="postcode-result ' + postcode.status + '"><strong>' + escapeHtml(postcode.label) + '</strong><p>' + escapeHtml(postcode.message) + '</p><span>' + escapeHtml(postcode.basis || postcode.sourceVersion || '-') + '</span></div>',
-    '<div class="whv-row-status">' + memoParts + '<button type="button" class="subtle-button" data-record-action="remove">항목 삭제</button></div>',
+    '<div class="postcode-result ' + postcode.status + '"><strong>' + escapeHtml(getPostcodeDisplayLabel(postcode)) + '</strong><p>' + escapeHtml(postcode.message) + '</p><span>' + escapeHtml(postcode.basis || postcode.sourceVersion || '-') + '</span></div>',
+    '<div class="whv-row-status">' + memoParts + '<button type="button" class="subtle-button danger-light" data-record-action="remove">항목 삭제</button></div>',
     '</div>',
     '</details>'
   ].join("");
@@ -725,7 +766,7 @@ function renderSummary(state, els) {
     ].join("");
   }
   if (els.resultOfficialLinks) {
-    els.resultOfficialLinks.innerHTML = '<p>Home Affairs는 eligible postcode와 specified work 기준을 변경할 수 있습니다. 자동 확인 결과는 참고용이며, 신청 전 공식 페이지에서 최신 기준을 확인하세요.</p><a href="https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/work-holiday-417/specified-work" target="_blank" rel="noopener">subclass 417 specified work</a><a href="https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/work-holiday-462/specified-462-work" target="_blank" rel="noopener">subclass 462 specified work</a><a href="https://immi.homeaffairs.gov.au/what-we-do/whm-program/latest-news" target="_blank" rel="noopener">WHM latest news</a>';
+    els.resultOfficialLinks.innerHTML = '<p>Home Affairs는 자격 지역과 specified work 기준을 변경할 수 있습니다. 자동 확인 결과는 참고용이며, 신청 전 공식 페이지에서 최신 기준을 확인하세요.</p><a href="https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/work-holiday-417/specified-work" target="_blank" rel="noopener">subclass 417 specified work</a><a href="https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/work-holiday-462/specified-462-work" target="_blank" rel="noopener">subclass 462 specified work</a><a href="https://immi.homeaffairs.gov.au/what-we-do/whm-program/latest-news" target="_blank" rel="noopener">WHM latest news</a><a href="https://immi.homeaffairs.gov.au/visas/working-in-australia/skill-occupation-list/regional-postcodes" target="_blank" rel="noopener noreferrer">자격을 갖춘 지역인지 확인하기</a>';
   }
 }
 

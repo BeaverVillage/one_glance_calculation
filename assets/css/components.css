@@ -3370,3 +3370,290 @@ html {
     padding: 14px;
   }
 }
+
+/* WHV v3: isolated input panels, clearer review table, card-based result summary */
+.whv-mode-panel[hidden],
+.whv-close-mode[hidden],
+.whv-extra-button-row .subtle-button[hidden] {
+  display: none !important;
+}
+
+.whv-panel-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.whv-panel-title-row h3 {
+  margin: 0;
+}
+
+.whv-panel-title-row .whv-close-mode {
+  width: auto;
+  min-height: 32px;
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.whv-upload-hint {
+  display: inline-flex;
+  margin-top: 6px;
+  padding: 6px 9px;
+  color: var(--green-dark);
+  background: rgba(31, 122, 101, 0.08);
+  border: 1px solid rgba(31, 122, 101, 0.16);
+  border-radius: 999px;
+  font-weight: 900;
+}
+
+.whv-summary-table {
+  min-width: 1120px;
+  table-layout: auto;
+}
+
+.whv-summary-table th,
+.whv-summary-table td {
+  vertical-align: middle;
+}
+
+.whv-summary-table td {
+  padding: 10px 11px;
+  white-space: nowrap;
+  max-width: none;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.whv-summary-table .whv-wrap-cell,
+.whv-summary-table td:nth-child(3),
+.whv-summary-table td:nth-child(7) {
+  min-width: 150px;
+  max-width: 230px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.whv-period-cell {
+  min-width: 206px;
+  white-space: nowrap !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.whv-cell-center {
+  text-align: center;
+}
+
+.whv-days-value {
+  display: block;
+  color: var(--green-dark);
+  font-size: 1rem;
+  line-height: 1.1;
+}
+
+.whv-include-cell label:has(input[type="checkbox"]),
+.whv-summary-table label:has(input[type="checkbox"]) {
+  justify-content: center;
+  min-width: 0;
+  gap: 6px;
+}
+
+.whv-postcode-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 170px;
+  min-height: 30px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 900;
+  line-height: 1.25;
+  white-space: normal;
+  text-align: center;
+}
+
+.whv-postcode-chip.likelyEligible {
+  color: var(--green-dark);
+  background: var(--green-soft);
+  border-color: rgba(31, 122, 101, 0.22);
+}
+
+.whv-postcode-chip.notMatched {
+  color: var(--amber);
+  background: var(--amber-soft);
+  border-color: rgba(196, 126, 24, 0.25);
+}
+
+.whv-postcode-chip.needsOfficialCheck,
+.whv-postcode-chip.unknown {
+  color: var(--muted);
+  background: #fff;
+}
+
+.whv-action-cell {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 188px;
+}
+
+.whv-action-cell .subtle-button,
+.whv-row-status .subtle-button {
+  width: auto;
+  min-height: 30px;
+  padding: 5px 8px;
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.subtle-button.danger-light {
+  color: #9a3412;
+  border-color: rgba(154, 52, 18, 0.22);
+  background: #fff7ed;
+}
+
+.whv-detail-accordion summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.whv-detail-grid {
+  grid-template-columns: repeat(3, minmax(150px, 1fr));
+  gap: 9px;
+}
+
+.whv-detail-grid .field label,
+.whv-detail-grid label.field {
+  line-height: 1.25;
+}
+
+.whv-detail-meta {
+  grid-template-columns: minmax(260px, 1fr) minmax(240px, 0.75fr);
+}
+
+.whv-result-dashboard-v2 {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.78fr) minmax(390px, 1.22fr);
+  gap: 16px;
+  padding: 18px;
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+}
+
+.whv-result-hero-card,
+.whv-result-highlight-card,
+.whv-result-mini-card {
+  box-shadow: 0 10px 24px rgba(24, 39, 75, 0.04);
+}
+
+.whv-result-card-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.whv-result-mini-card {
+  display: grid;
+  gap: 5px;
+  min-height: 82px;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.whv-result-mini-card span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.whv-result-mini-card strong {
+  color: var(--ink);
+  font-size: 1.08rem;
+  font-weight: 950;
+  line-height: 1.15;
+}
+
+.whv-guide-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.whv-guide-grid .info-block {
+  margin: 0;
+  background: #fff;
+}
+
+@media (max-width: 1020px) {
+  .whv-result-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 920px) {
+  .whv-result-dashboard-v2,
+  .whv-guide-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .whv-detail-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .whv-summary-table {
+    min-width: 0;
+  }
+
+  .whv-record-summary td {
+    align-items: center;
+  }
+
+  .whv-period-cell {
+    min-width: 0;
+    white-space: normal !important;
+  }
+
+  .whv-action-cell {
+    min-width: 0;
+  }
+
+  .whv-action-cell .decision-badge {
+    flex: 1 0 100%;
+    width: max-content;
+    max-width: 100%;
+  }
+
+  .whv-postcode-chip {
+    max-width: 100%;
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .whv-detail-grid,
+  .whv-detail-meta,
+  .whv-result-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .whv-panel-title-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .whv-panel-title-row .whv-close-mode {
+    width: 100%;
+  }
+}
