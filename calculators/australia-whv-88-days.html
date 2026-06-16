@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-D4SBV1Y07N"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-D4SBV1Y07N');
+    </script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="shortcut icon" href="/favicon.svg" type="image/svg+xml">
+    <meta name="theme-color" content="#146c5f">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6340743169950430" crossorigin="anonymous"></script>
+    <meta name="google-adsense-account" content="ca-pub-6340743169950430">
+    <meta name="msvalidate.01" content="71220435128A45EF179793784E9AFC3E">
+    <meta name="naver-site-verification" content="0f429adf1d8d3475017f3824ee96355074bcfd23">
+    <meta name="description" content="호주 워킹홀리데이 급여명세서 PDF 또는 이미지 파일을 읽어 Pay Period와 근무시간을 추출하고, 세컨비자·서드비자 specified work 인정 가능 일수를 참고용으로 계산합니다.">
+    <title>호주 워홀 세컨비자 88일 근무일 계산기 | 한눈계산</title>
+    <link rel="canonical" href="https://hannuncalc.com/calculators/australia-whv-88-days">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="ko_KR">
+    <meta property="og:site_name" content="한눈계산">
+    <meta property="og:title" content="호주 워홀 세컨비자 88일 근무일 계산기 | 한눈계산">
+    <meta property="og:description" content="호주 워킹홀리데이 급여명세서 PDF 또는 이미지 파일을 읽어 Pay Period와 근무시간을 추출하고, 세컨비자·서드비자 specified work 인정 가능 일수를 참고용으로 계산합니다.">
+    <meta property="og:url" content="https://hannuncalc.com/calculators/australia-whv-88-days">
+    <script type="application/ld+json" data-schema="webapplication">{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "호주 워홀 세컨비자 88일 근무일 계산기",
+  "url": "https://hannuncalc.com/calculators/australia-whv-88-days",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "Any",
+  "inLanguage": "ko-KR",
+  "description": "호주 워킹홀리데이 급여명세서 PDF 또는 이미지 파일을 읽어 Pay Period와 근무시간을 추출하고, 세컨비자·서드비자 specified work 인정 가능 일수를 참고용으로 계산합니다.",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "KRW" }
+}</script>
+    <script type="application/ld+json" data-schema="breadcrumb">{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "한눈계산", "item": "https://hannuncalc.com/" },
+    { "@type": "ListItem", "position": 2, "name": "호주 워홀 세컨비자 88일 근무일 계산기", "item": "https://hannuncalc.com/calculators/australia-whv-88-days" }
+  ]
+}</script>
+    <script type="application/ld+json" data-schema="faqpage">{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "급여명세서만 있으면 세컨비자 88일이 확정되나요?", "acceptedAnswer": { "@type": "Answer", "text": "아닙니다. 이 계산기는 Pay Period와 근무시간을 바탕으로 specified work 인정 가능 일수를 추정하는 참고용 도구이며, 실제 인정 여부는 업종, 지역, 고용 형태, 증빙자료, 비자 subclass와 공식 기준에 따라 달라질 수 있습니다." } },
+    { "@type": "Question", "name": "Pay Period 전체 날짜가 모두 인정되나요?", "acceptedAnswer": { "@type": "Answer", "text": "Pay Period 전체가 specified work 조건을 충족한다고 사용자가 확인한 경우에만 calendar day 방식으로 포함합니다. 실제 인정 방식은 공식 Home Affairs 안내를 확인해야 합니다." } },
+    { "@type": "Question", "name": "주급 payslip 하나는 무조건 7일로 인정되나요?", "acceptedAnswer": { "@type": "Answer", "text": "무조건은 아닙니다. 해당 기간의 업무와 근무지가 적격 조건에 해당하고 증빙이 충분한지 사용자가 직접 확인해야 합니다." } },
+    { "@type": "Question", "name": "근무시간만 있을 때는 어떻게 계산하나요?", "acceptedAnswer": { "@type": "Answer", "text": "Hours Worked를 하루 기준 근무시간으로 나누고 소수점은 내림 처리해 참고용 추정 일수를 표시합니다. 기본 하루 기준은 7.6시간이며 사용자가 수정할 수 있습니다." } },
+    { "@type": "Question", "name": "이미지 파일도 인식할 수 있나요?", "acceptedAnswer": { "@type": "Answer", "text": "JPG, PNG, WEBP 파일을 브라우저에서 canvas로 처리한 뒤 Tesseract.js OCR로 읽습니다. 사진 품질, 기울기, 그림자, 해상도에 따라 결과가 달라질 수 있습니다." } },
+    { "@type": "Question", "name": "영국 여권 소지자도 88일 계산이 필요한가요?", "acceptedAnswer": { "@type": "Answer", "text": "UK passport holder로 subclass 417 second 또는 third visa를 신청하는 경우 2024년 7월 1일 이후 specified work requirement가 면제될 수 있습니다. 공식 안내를 직접 확인하세요." } },
+    { "@type": "Question", "name": "지역 postcode는 자동으로 판단하나요?", "acceptedAnswer": { "@type": "Answer", "text": "이번 버전에서는 postcode 자동 판정 API를 사용하지 않습니다. Postcode, State, 지역명을 입력하고 공식 기준에서 eligible area인지 사용자가 직접 확인해야 합니다." } },
+    { "@type": "Question", "name": "이 계산 결과를 비자 신청서에 그대로 제출해도 되나요?", "acceptedAnswer": { "@type": "Answer", "text": "아닙니다. 결과는 참고용이며 비자 승인 가능성을 보장하지 않습니다. 최종 판단은 Australian Department of Home Affairs와 ImmiAccount 신청 기준을 확인해야 합니다." } }
+  ]
+}</script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <link rel="stylesheet" href="../assets/css/base.css">
+    <link rel="stylesheet" href="../assets/css/layout.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="../index.html" aria-label="한눈계산 홈">
+        <span class="brand-mark">한</span>
+        <span><strong>한눈계산</strong><small>생활 계산기</small></span>
+      </a>
+      <nav class="site-nav" aria-label="주요 메뉴">
+        <a href="../index.html#calculators" data-tool-drawer>다른 계산기</a>
+        <a href="australia-pay.html">호주 급여 환산</a>
+        <a href="../about.html">소개</a>
+        <a href="../contact.html">문의</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero-band">
+        <div class="container">
+          <div class="section-intro">
+            <p class="eyebrow">호주 워킹홀리데이</p>
+            <h1>호주 워홀 세컨비자 88일 근무일 계산기</h1>
+            <p class="lead">
+              급여명세서 PDF 또는 이미지 파일에서 Pay Period와 근무시간을 읽고, 세컨비자 88일 또는 서드비자 179일 기준의 specified work 인정 가능 일수를 참고용으로 계산합니다.
+            </p>
+            <div class="notice-box">
+              이 계산기는 법률·이민 자문이 아니라 참고용 도구입니다. 실제 second/third visa 신청 가능 여부를 보장하지 않으며, 최종 판단은 반드시 Australian Department of Home Affairs 공식 안내와 ImmiAccount 신청 기준을 확인해야 합니다.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <form id="whv-88-form">
+        <section class="content-band compact">
+          <div class="container calculator-section">
+            <section class="tool-panel whv-tool-panel" aria-label="호주 워홀 88일 근무일 계산기 입력">
+              <div class="input-panel">
+                <h2>비자와 specified work 정보</h2>
+                <div class="field-row">
+                  <div class="field">
+                    <label for="whv-subclass">비자 subclass</label>
+                    <select id="whv-subclass" name="subclass">
+                      <option value="417">417 Working Holiday</option>
+                      <option value="462">462 Work and Holiday</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="whv-target-visa">목표 비자</label>
+                    <select id="whv-target-visa" name="targetVisa">
+                      <option value="second">Second visa</option>
+                      <option value="third">Third visa</option>
+                    </select>
+                  </div>
+                </div>
+                <fieldset class="check-field">
+                  <legend>여권/국적 예외 확인</legend>
+                  <label><input id="whv-uk-passport" type="checkbox"> UK passport holder입니다</label>
+                  <p class="field-help">UK passport holder인 경우 subclass 417 second/third visa의 specified work requirement가 면제될 수 있습니다. 공식 안내를 확인하세요.</p>
+                </fieldset>
+
+                <div class="field">
+                  <label for="whv-industry">업종</label>
+                  <select id="whv-industry" name="industry">
+                    <option>Plant and animal cultivation</option>
+                    <option>Fishing and pearling</option>
+                    <option>Tree farming and felling</option>
+                    <option>Mining</option>
+                    <option>Construction</option>
+                    <option>Tourism and hospitality</option>
+                    <option>Bushfire recovery work</option>
+                    <option>Flood recovery work</option>
+                    <option>COVID-19 critical work</option>
+                    <option value="other">기타 / 직접 입력</option>
+                  </select>
+                </div>
+                <div id="whv-industry-other" class="field" hidden>
+                  <label for="whv-industry-other-input">업종 직접 입력</label>
+                  <input id="whv-industry-other-input" type="text" autocomplete="off">
+                </div>
+
+                <div class="field-row">
+                  <div class="field"><label for="whv-postcode">Postcode</label><input id="whv-postcode" type="text" inputmode="numeric" autocomplete="off"></div>
+                  <div class="field"><label for="whv-state">State/Territory</label><input id="whv-state" type="text" autocomplete="off" placeholder="예: SA, QLD"></div>
+                </div>
+                <div class="field">
+                  <label for="whv-location">지역명 또는 사업장 주소</label>
+                  <input id="whv-location" type="text" autocomplete="off">
+                </div>
+                <fieldset class="check-field">
+                  <legend>지역 확인</legend>
+                  <label><input id="whv-area-confirmed" type="checkbox"> 공식 Home Affairs 기준에서 이 지역이 eligible area인지 확인했습니다</label>
+                  <p class="field-help">이번 버전에서는 postcode 자동 판정 API를 사용하지 않습니다. 공식 기준에서 직접 확인해 주세요.</p>
+                </fieldset>
+
+                <div class="field-row">
+                  <div class="field">
+                    <label for="whv-employment-type">고용 형태</label>
+                    <select id="whv-employment-type">
+                      <option>Full-time</option>
+                      <option>Part-time</option>
+                      <option>Casual</option>
+                      <option>Piecework</option>
+                      <option>Volunteer</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="whv-day-hours">하루 기준 근무시간</label>
+                    <div class="input-suffix"><input id="whv-day-hours" type="number" min="1" step="0.1" value="7.6" inputmode="decimal"><span>시간</span></div>
+                    <p class="field-help">payslip에 실제 근무일수가 없고 Hours Worked만 있을 때 추정용입니다.</p>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="whv-week-days">주당 일반 근무일 기준</label>
+                  <div class="input-suffix"><input id="whv-week-days" type="number" min="1" max="7" step="1" value="5" inputmode="numeric"><span>일</span></div>
+                </div>
+              </div>
+
+              <aside class="result-panel">
+                <h2>결과 요약</h2>
+                <div class="report-summary">
+                  <span class="report-kicker">최종 적용 인정 가능 일수</span>
+                  <strong id="whv-final-days" class="result-number">0일</strong>
+                  <span id="whv-result-summary">payslip을 업로드하고 각 항목을 확인하면 결과가 표시됩니다.</span>
+                </div>
+                <div class="metric-grid whv-result-grid">
+                  <div><span>총 업로드 payslip</span><strong id="whv-total-files">0</strong></div>
+                  <div><span>계산 포함</span><strong id="whv-included-files">0</strong></div>
+                  <div><span>검토 필요</span><strong id="whv-review-files">0</strong></div>
+                  <div><span>중복 경고</span><strong id="whv-overlap-warnings">0</strong></div>
+                  <div><span>Calendar day 합계</span><strong id="whv-calendar-total">0일</strong></div>
+                  <div><span>Hours 추정 합계</span><strong id="whv-hours-total">0일</strong></div>
+                  <div><span>직접 입력 합계</span><strong id="whv-manual-total">0일</strong></div>
+                  <div><span>목표 기준</span><strong id="whv-target-days">88일</strong></div>
+                  <div><span>남은 일수</span><strong id="whv-remaining-days">88일</strong></div>
+                  <div><span>결과 상태</span><strong id="whv-result-status" class="decision-badge warn">아직 부족</strong></div>
+                </div>
+                <progress id="whv-progress-bar" class="whv-progress" max="100" value="0" aria-label="목표 달성률" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></progress>
+                <fieldset class="check-field">
+                  <legend>중복 기간 처리</legend>
+                  <label><input id="whv-dedupe-dates" type="checkbox"> 날짜가 겹치는 Pay Period는 한 번만 세기</label>
+                  <p class="field-help">직접 입력 인정 일수 또는 날짜가 없는 항목은 중복 제거 대상에서 제외됩니다.</p>
+                </fieldset>
+                <div class="notice-box">
+                  결과는 specified work 인정 가능 일수 추정입니다. 인정 업종, 인정 지역, 고용 형태, 근무 증빙, 여권 국가, 비자 subclass에 따라 달라질 수 있습니다.
+                </div>
+              </aside>
+            </section>
+          </div>
+        </section>
+
+        <section class="content-band muted">
+          <div class="container">
+            <div class="section-intro narrow">
+              <p class="eyebrow">Payslip OCR</p>
+              <h2>급여명세서 PDF 또는 이미지를 업로드하세요.</h2>
+              <p>여러 payslip PDF, JPG, PNG, WEBP 파일을 한 번에 선택할 수 있습니다. 파일은 서버에 저장하지 않고 브라우저에서 처리됩니다.</p>
+            </div>
+            <section class="tool-panel whv-upload-panel">
+              <div class="input-panel">
+                <div class="notice-box privacy-note">
+                  <strong>개인정보 보호 안내</strong>
+                  <p>PDF와 이미지 파일은 서버에 저장하지 않고 브라우저에서 처리됩니다. 이름, 주소, 직원번호, TFN, 은행 정보 등 민감정보는 가능한 한 가린 뒤 사용하세요. 사진 품질, 기울기, 그림자, 해상도에 따라 OCR 결과가 틀릴 수 있으므로 자동 추출값은 반드시 직접 확인한 뒤 계산하세요.</p>
+                </div>
+                <div class="field">
+                  <label for="whv-payslip-files">Payslip PDF 또는 이미지 파일</label>
+                  <input id="whv-payslip-files" type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp">
+                  <p class="field-help">PDF는 5MB 이하·3페이지 이하, 이미지는 5MB 이하를 권장합니다. 글자가 선명하고 그림자가 적으며 명세서 전체가 잘리지 않은 파일일수록 인식률이 높습니다.</p>
+                </div>
+                <div class="ocr-status-box" aria-live="polite">
+                  <span id="whv-ocr-status" data-tone="info">파일을 선택하면 PDF 분석 또는 이미지 OCR을 시작합니다.</span>
+                  <progress id="whv-ocr-progress" max="100" value="0" aria-label="파일 분석 진행률"></progress>
+                </div>
+              </div>
+              <aside class="result-panel">
+                <h3>인정 여부 필터</h3>
+                <p>각 payslip 카드에서 업종 확인, 지역 확인, Pay Period/Hours 확인, 계산 포함 체크가 모두 켜진 항목만 인정 가능 일수에 포함합니다.</p>
+                <p class="fine-print">Pay Period와 Hours Worked가 자동 추출되더라도 실제 증빙자료와 공식 기준에 맞는지는 사용자가 직접 확인해야 합니다.</p>
+              </aside>
+            </section>
+            <p id="whv-empty-state" class="notice-box">아직 업로드된 payslip이 없습니다.</p>
+            <div id="whv-payslip-cards" class="whv-payslip-list"></div>
+          </div>
+        </section>
+      </form>
+
+      <section class="content-band calculation-guide" data-quality-section="calculator">
+        <div class="container">
+          <div class="section-intro narrow">
+            <p class="eyebrow">계산 기준</p>
+            <h2>계산 전에 확인할 내용</h2>
+            <p>아래 내용은 호주 워킹홀리데이 specified work 일수를 해석할 때 필요한 기준과 주의사항입니다.</p>
+          </div>
+          <div class="guide-grid">
+            <article><h3>이 계산기는 무엇을 계산하나요?</h3><p>급여명세서에서 Pay Period, Pay Date, Pay Cycle, Hours Worked, Employer Name, ABN, Position 등을 읽고 사용자가 확인한 업종·지역 조건을 바탕으로 specified work 인정 가능 일수를 참고용으로 계산합니다.</p></article>
+            <article><h3>세컨비자 88일 기준이란?</h3><p>Second visa 신청을 준비할 때 일반적으로 specified work 88일 기준을 확인해야 하는 경우가 있습니다. 이 계산기는 입력된 payslip 기준으로 목표까지 남은 일수를 보여줍니다.</p></article>
+            <article><h3>서드비자 179일 기준이란?</h3><p>Third visa는 더 긴 specified work 기간이 요구될 수 있어 179일 기준으로 목표를 바꿔 계산할 수 있습니다.</p></article>
+            <article><h3>지급명세서에서 어떤 정보를 읽나요?</h3><p>Pay Period start/end, Pay Date, Pay Cycle, Hours Worked, Employer Name, ABN, Position, Employee Name을 우선 추출합니다.</p></article>
+            <article><h3>PDF와 이미지 파일은 어떻게 처리하나요?</h3><p>PDF는 PDF.js로 텍스트를 먼저 추출하고 부족하면 canvas 렌더링 후 Tesseract.js OCR을 실행합니다. 이미지는 브라우저 canvas에서 리사이즈와 전처리 후 OCR을 실행합니다.</p></article>
+            <article><h3>인정 일수 계산 방식</h3><p>Pay Period 시작일과 종료일이 있으면 양 끝 날짜를 포함한 calendar days를 계산합니다. 날짜가 부족하고 Hours Worked가 있으면 하루 기준 근무시간으로 나눈 값을 내림해 참고용 추정 일수를 보여줍니다. 직접 입력 인정 일수가 있으면 그 값을 우선 사용합니다.</p></article>
+            <article><h3>지역과 업종을 직접 확인해야 하는 이유</h3><p>이번 버전은 postcode 자동 판정 API를 사용하지 않습니다. 사용자가 공식 Home Affairs 기준에서 업종과 지역 적격성을 직접 확인했다는 체크를 해야 계산에 포함합니다.</p></article>
+            <article><h3>사용 시 주의사항</h3><p>실제 비자 신청 가능 여부를 보장하지 않습니다. 정책 변경, 여권 국가, subclass, 고용 형태, 증빙자료에 따라 결과가 달라질 수 있으므로 공식 안내와 전문가 확인이 필요할 수 있습니다.</p></article>
+          </div>
+          <p class="guide-updated">최종 업데이트 날짜: 2026-06-16</p>
+        </div>
+      </section>
+
+      <section class="content-band muted">
+        <div class="container faq-wrap">
+          <p class="eyebrow">자주 묻는 질문</p>
+          <h2>호주 워홀 88일 계산기 FAQ</h2>
+          <div class="faq-grid">
+            <details open><summary>급여명세서만 있으면 세컨비자 88일이 확정되나요?</summary><p>아닙니다. 이 계산기는 specified work 인정 가능 일수를 추정하는 참고용 도구입니다.</p></details>
+            <details><summary>Pay Period 전체 날짜가 모두 인정되나요?</summary><p>해당 기간 전체가 적격 업종과 적격 지역 조건을 충족한다고 사용자가 확인한 경우에만 계산에 포함합니다.</p></details>
+            <details><summary>주급 payslip 하나는 무조건 7일로 인정되나요?</summary><p>무조건은 아닙니다. 업무, 지역, 증빙자료, 실제 근무 조건을 공식 기준에 맞게 확인해야 합니다.</p></details>
+            <details><summary>근무시간만 있을 때는 어떻게 계산하나요?</summary><p>Hours Worked를 하루 기준 근무시간으로 나누고 소수점은 내림 처리합니다. 이 값은 참고용 추정입니다.</p></details>
+            <details><summary>이미지 파일도 인식할 수 있나요?</summary><p>JPG, PNG, WEBP 파일을 지원합니다. 사진이 선명할수록 OCR 결과가 좋아집니다.</p></details>
+            <details><summary>영국 여권 소지자도 88일 계산이 필요한가요?</summary><p>UK passport holder로 subclass 417 second/third visa를 신청하는 경우 specified work requirement가 면제될 수 있습니다. 공식 안내를 확인하세요.</p></details>
+            <details><summary>지역 postcode는 자동으로 판단하나요?</summary><p>아니요. 이번 버전에서는 자동 API를 붙이지 않았고, 사용자가 공식 기준에서 직접 확인해야 합니다.</p></details>
+            <details><summary>이 계산 결과를 비자 신청서에 그대로 제출해도 되나요?</summary><p>아닙니다. 결과는 참고용이며 공식 신청 판단과 증빙자료 확인을 대체하지 않습니다.</p></details>
+          </div>
+        </div>
+      </section>
+
+      <section class="content-band">
+        <div class="container two-column">
+          <section class="info-block">
+            <p class="eyebrow">공식 기준 확인하기</p>
+            <h2>최종 판단은 공식 안내를 확인하세요.</h2>
+            <ul class="plain-list">
+              <li><a href="https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/work-holiday-417/specified-work" target="_blank" rel="noopener">Specified work for Working Holiday visa subclass 417</a></li>
+              <li><a href="https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/work-holiday-462/specified-462-work" target="_blank" rel="noopener">Specified work for Work and Holiday visa subclass 462</a></li>
+              <li><a href="https://immi.homeaffairs.gov.au/what-we-do/whm-program/latest-news" target="_blank" rel="noopener">Working Holiday Maker latest news</a></li>
+              <li><a href="https://immi.homeaffairs.gov.au/what-we-do/whm-program/specified-work-conditions/6-month-work-limitation" target="_blank" rel="noopener">WHM 6 month work limitation / condition 8547</a></li>
+            </ul>
+          </section>
+          <section class="info-block">
+            <p class="eyebrow">면책 안내</p>
+            <h2>참고용 계산 결과입니다.</h2>
+            <p>이 계산기는 비자 승인 가능성을 보장하지 않습니다. 필요한 경우 등록된 migration agent 또는 관련 전문가에게 확인하세요. PDF와 이미지 파일은 서버에 저장하지 않고 브라우저에서 처리됩니다.</p>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-grid">
+        <div><strong>한눈계산</strong><p>복잡한 계산을 쉽게 확인하는 생활 계산기입니다.</p></div>
+        <nav aria-label="정책 메뉴">
+          <a href="../about.html">사이트 소개</a>
+          <a href="../privacy.html">개인정보 처리방침</a>
+          <a href="../contact.html">문의</a>
+          <a href="../disclaimer.html">이용 안내</a>
+        </nav>
+      </div>
+    </footer>
+    <script type="module" src="../assets/js/australia-whv-88-days.js?v=20260616-whv-88-days-7"></script>
+    <script type="module" src="../assets/js/app.js?v=20260616-whv-88-days-7"></script>
+  </body>
+</html>

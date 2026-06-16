@@ -19,14 +19,14 @@
     <meta name="google-adsense-account" content="ca-pub-6340743169950430">
     <meta name="msvalidate.01" content="71220435128A45EF179793784E9AFC3E">
     <meta name="naver-site-verification" content="0f429adf1d8d3475017f3824ee96355074bcfd23">
-    <meta name="description" content="호주 워킹홀리데이 월급명세서 PDF를 OCR로 읽어 Gross Pay, Net Pay, 세금, Superannuation을 추출하고 AUD/KRW 환율로 원화 실수령액을 계산합니다.">
+    <meta name="description" content="호주 급여명세서 PDF 또는 이미지 파일을 업로드하면 OCR로 텍스트를 읽고, 실수령액과 세금, Superannuation을 자동 추출해 원화로 환산합니다.">
     <title>호주 주급 명세서 자동 원화 환산 계산기 | 한눈계산</title>
     <link rel="canonical" href="https://hannuncalc.com/calculators/australia-pay.html">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="ko_KR">
     <meta property="og:site_name" content="한눈계산">
     <meta property="og:title" content="호주 주급 명세서 자동 원화 환산 계산기 | 한눈계산">
-    <meta property="og:description" content="호주 워킹홀리데이 월급명세서 PDF를 OCR로 읽어 Gross Pay, Net Pay, 세금, Superannuation을 추출하고 AUD/KRW 환율로 원화 실수령액을 계산합니다.">
+    <meta property="og:description" content="호주 급여명세서 PDF 또는 이미지 파일을 업로드하면 OCR로 텍스트를 읽고, 실수령액과 세금, Superannuation을 자동 추출해 원화로 환산합니다.">
     <meta property="og:url" content="https://hannuncalc.com/calculators/australia-pay.html">
     <script type="application/ld+json" data-schema="webapplication">{
   "@context": "https://schema.org",
@@ -36,7 +36,7 @@
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Any",
   "inLanguage": "ko-KR",
-  "description": "호주 워킹홀리데이 월급명세서 PDF를 OCR로 읽어 Gross Pay, Net Pay, 세금, Superannuation을 추출하고 AUD/KRW 환율로 원화 실수령액을 계산합니다.",
+  "description": "호주 급여명세서 PDF 또는 이미지 파일을 업로드하면 OCR로 텍스트를 읽고, 실수령액과 세금, Superannuation을 자동 추출해 원화로 환산합니다.",
   "offers": {
     "@type": "Offer",
     "price": "0",
@@ -49,10 +49,10 @@
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "PDF가 서버로 업로드되나요?",
+      "name": "PDF나 이미지 파일은 서버에 저장되나요?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "아니요. PDF 텍스트 추출과 OCR은 브라우저 안에서 처리합니다. 다만 민감정보는 가능하면 가린 뒤 사용하는 것을 권장합니다."
+        "text": "아니요. PDF 텍스트 추출과 이미지 OCR은 브라우저 안에서 처리합니다. 다만 민감정보는 가능하면 가린 뒤 사용하는 것을 권장합니다."
       }
     },
     {
@@ -121,18 +121,18 @@
             <form id="australia-pay-form" class="input-panel">
               <div class="notice-box privacy-note">
                 <strong>개인정보와 자동 인식 안내</strong>
-                <p>PDF 파일은 서버에 저장하지 않고 브라우저에서 처리됩니다. 이름, 주소, 직원번호, TFN, 은행 정보 등 민감정보는 가능한 한 가린 뒤 사용하세요.</p>
-                <p>OCR 결과는 명세서 양식, 스캔 상태, 이미지 품질에 따라 틀릴 수 있습니다. 자동으로 채워진 Gross Pay, Net Pay, Tax Withheld, Superannuation, Hours Worked 값은 계산 전에 직접 확인해 주세요.</p>
+                <p>PDF와 이미지 파일은 서버에 저장하지 않고 브라우저에서 처리됩니다. 이름, 주소, 직원번호, TFN, 은행 정보 등 민감정보는 가능한 한 가린 뒤 사용하세요.</p>
+                <p>사진 품질, 기울기, 그림자, 해상도와 명세서 양식에 따라 OCR 결과가 틀릴 수 있습니다. 자동 추출값은 반드시 직접 확인한 뒤 계산하세요. 자동으로 채워진 Gross Pay, Net Pay, Tax Withheld, Superannuation, Hours Worked 값은 계산 전에 직접 확인해 주세요.</p>
               </div>
 
               <div class="field">
-                <label for="au-pdf-file">월급명세서 PDF 업로드</label>
-                <input id="au-pdf-file" class="file-input" type="file" accept="application/pdf">
-                <p class="field-help">PDF만 지원하며, 파일 크기는 5MB 이하·페이지 수는 3페이지 이하로 제한합니다.</p>
+                <label for="au-pdf-file">월급명세서 PDF 또는 이미지 업로드</label>
+                <input id="au-pdf-file" class="file-input" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp">
+                <p class="field-help">PDF, JPG, PNG, WEBP 파일을 지원합니다. PDF와 이미지는 서버에 저장하지 않고 브라우저에서 처리됩니다. PDF는 5MB 이하·3페이지 이하, 이미지는 5MB 이하만 지원합니다. 사진은 글자가 선명하고 그림자가 적으며, 명세서 전체가 잘리지 않게 촬영한 파일을 사용하면 인식률이 높아집니다.</p>
               </div>
 
               <div class="ocr-status-box" aria-live="polite">
-                <span id="au-ocr-status" data-tone="info">PDF를 업로드하면 텍스트 추출을 먼저 시도하고, 필요할 때만 OCR을 실행합니다. 인식된 값은 직접 확인한 뒤 계산하세요.</span>
+                <span id="au-ocr-status" data-tone="info">PDF 또는 이미지를 업로드하면 파일 종류에 맞게 분석합니다. PDF는 텍스트 추출을 먼저 시도하고, 이미지는 OCR로 텍스트를 추출합니다. 추출된 값을 확인해 주세요.</span>
                 <progress id="au-ocr-progress" max="100" value="0" aria-label="PDF 분석 진행률"></progress>
               </div>
 
@@ -310,7 +310,7 @@
             <p class="eyebrow">개인정보와 계산 기준</p>
             <h2>민감정보는 줄이고, 입력값은 직접 수정할 수 있습니다.</h2>
             <ul class="plain-list">
-              <li>PDF 파일은 서버에 저장하지 않고 브라우저에서 처리됩니다.</li>
+              <li>PDF와 이미지 파일은 서버에 저장하지 않고 브라우저에서 처리됩니다.</li>
               <li>TFN, 은행 정보, 직원번호, 주소 같은 민감정보는 가능하면 가린 뒤 사용하세요.</li>
               <li>계산은 화면의 입력칸에 들어간 값을 기준으로 실행됩니다.</li>
               <li>실제 급여, 세금, 환율 판단은 명세서와 금융기관 기준을 확인해야 합니다.</li>
@@ -345,8 +345,8 @@
           <p class="eyebrow">자주 묻는 질문</p>
           <h2>호주 워홀 월급 환산 자주 묻는 질문</h2>
           <div class="faq-grid">
-            <details open><summary>PDF가 서버로 업로드되나요?</summary><p>아니요. PDF 텍스트 추출과 OCR은 브라우저 안에서 처리합니다. 다만 민감정보는 가능하면 가린 뒤 사용하는 것을 권장합니다.</p></details>
-            <details><summary>PDF 인식 결과가 틀릴 수 있나요?</summary><p>네. 명세서 양식, 스캔 품질, 글자 흐림 정도에 따라 결과가 달라질 수 있습니다. 입력칸에 들어간 값은 계산 전에 직접 수정할 수 있습니다.</p></details>
+            <details open><summary>PDF나 이미지 파일은 서버에 저장되나요?</summary><p>아니요. PDF 텍스트 추출과 이미지 OCR은 브라우저 안에서 처리합니다. 다만 민감정보는 가능하면 가린 뒤 사용하는 것을 권장합니다.</p></details>
+            <details><summary>PDF나 이미지 인식 결과가 틀릴 수 있나요?</summary><p>네. 명세서 양식, 스캔 품질, 글자 흐림 정도에 따라 결과가 달라질 수 있습니다. 입력칸에 들어간 값은 계산 전에 직접 수정할 수 있습니다.</p></details>
             <details><summary>Net Pay가 없으면 어떻게 계산하나요?</summary><p>Net Pay가 없고 Gross Pay와 Tax Withheld가 있으면 Gross Pay - Tax Withheld를 임시 실수령액으로 계산합니다.</p></details>
             <details><summary>환율은 어떤 기준을 사용하나요?</summary><p>환율 조회는 API 키가 필요 없는 공개 환율 API의 최신 AUD/KRW 환율을 사용하며, 조회 실패 시 최근 저장 환율 또는 사용자가 직접 입력한 환율을 사용할 수 있습니다.</p></details>
           </div>
@@ -365,7 +365,7 @@
         </nav>
       </div>
     </footer>
-    <script type="module" src="../assets/js/australia-pay.js?v=20260615-australia-parser"></script>
-    <script type="module" src="../assets/js/app.js?v=20260615-australia-parser"></script>
+    <script type="module" src="../assets/js/australia-pay.js?v=20260616-image-ocr-3"></script>
+    <script type="module" src="../assets/js/app.js?v=20260616-whv-88-days-7"></script>
   </body>
 </html>

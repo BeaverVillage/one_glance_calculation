@@ -1,4 +1,5 @@
 import { getFormNumber } from "./utils.js";
+import { extractTextFromPayslipFile } from "./payslip-ocr.js?v=20260616-image-ocr-3";
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
 const MAX_PAGES = 3;
@@ -136,7 +137,7 @@ export function initAustraliaPayCalculator(root = document) {
   els.pdfFile.addEventListener("change", async () => {
     const file = els.pdfFile.files?.[0];
     if (!file) return;
-    await analyzePdfFile(els, file);
+    await analyzePayslipFile(els, file);
   });
 
   els.analyzeTextButton.addEventListener("click", () => {
@@ -152,6 +153,37 @@ export function initAustraliaPayCalculator(root = document) {
     event.preventDefault();
     await calculateFromConfirmedValues(els);
   });
+}
+
+async function analyzePayslipFile(els, file) {
+  resetOcrState(els);
+
+  try {
+    const result = await extractTextFromPayslipFile(file, {
+      onStatus(message, tone) {
+        setStatus(els, message, tone);
+      },
+      onProgress(value) {
+        setProgress(els, value);
+      }
+    });
+
+    els.rawText.value = result.text.trim();
+
+    if (!els.rawText.value) {
+      setStatus(els, "자동 인식에 실패했습니다. 명세서 내용을 직접 붙여넣어 주세요.", "warn");
+      setProgress(els, 0);
+      return;
+    }
+
+    applyParsedFields(els, parsePayslipText(els.rawText.value));
+    setProgress(els, 100);
+    setStatus(els, `${result.method} 결과를 입력칸에 채웠습니다. 추출된 값을 확인해 주세요. 금액과 날짜를 확인한 뒤 “이 값으로 계산하기”를 눌러 주세요.`, "good");
+  } catch (error) {
+    console.error(error);
+    setProgress(els, 0);
+    setStatus(els, error?.userMessage || "자동 인식에 실패했습니다. 명세서 내용을 직접 붙여넣어 주세요.", "warn");
+  }
 }
 
 async function analyzePdfFile(els, file) {
@@ -397,10 +429,102 @@ export function parsePayslipText(text) {
     employeeName: pickTemplateText("employeeName", blocks, lines, meta)
   };
 
+  applyPlainLabelOverrides(parsed, oneLineText, lines, meta, debug);
   validateTemplateParsedValues(parsed, meta, debug);
   parsed.__meta = meta;
   parsed.__debug = debug;
   return parsed;
+}
+
+function applyPlainLabelOverrides(parsed, oneLineText, lines, meta, debug) {
+  const moneyFields = ["grossPay", "netPay", "taxWithheld", "superannuation"];
+  for (const fieldName of moneyFields) {
+    const value = pickPlainMoneyField(fieldName, oneLineText);
+    if (value === "") continue;
+    if (shouldPreferPlainMoney(fieldName, value, parsed)) {
+      parsed[fieldName] = value;
+      meta[fieldName] = { confidence: "normal", source: "plain-label" };
+      debug.fields[fieldName] = debug.fields[fieldName] || {};
+      debug.fields[fieldName].plainLabelOverride = value;
+    }
+  }
+
+  const hours = pickPlainNumberAfterLabels(oneLineText, FIELD_LABELS.hoursWorked);
+  if (hours !== "") parsed.hoursWorked = hours;
+
+  const employer = pickPlainTextAfterLabels(oneLineText, ["Employer Name", "Employer"], ["ABN", "Employee Name", "Employee", "Position", "Job Title", "Role", "Pay Period", "Pay Date", "Work Location", "Location"]);
+  if (isUsefulTextValue(employer, "employerName")) parsed.employerName = employer;
+  else if (!isUsefulTextValue(parsed.employerName, "employerName")) {
+    const companyLine = lines.find((line) => /\b(?:pty\s+ltd|services|group|co|operations|farm|hotel|mining|build|pearls)\b/i.test(line) && !/employee|position|location|pay period|pay date|abn/i.test(line));
+    parsed.employerName = companyLine ? cleanPlainTextValue(companyLine) : "";
+  }
+
+  const employee = pickPlainTextAfterLabels(oneLineText, ["Employee Name", "Employee"], ["Employee ID", "Employer Name", "Employer", "ABN", "Position", "Job Title", "Role", "Pay Date", "Pay Period", "Tax File", "TFN", "Currency", "Work Location", "Location"]);
+  if (isUsefulTextValue(employee, "employeeName")) parsed.employeeName = employee;
+  else if (!isUsefulTextValue(parsed.employeeName, "employeeName")) parsed.employeeName = "";
+}
+
+function pickPlainMoneyField(fieldName, text) {
+  const patterns = TEMPLATE_FIELD_PATTERNS[fieldName] || [];
+  for (const pattern of patterns) {
+    pattern.lastIndex = 0;
+    const match = pattern.exec(text);
+    if (!match) continue;
+    const value = parseNumeric(match[1]);
+    if (Number.isFinite(value)) return round(value, 2);
+  }
+  return "";
+}
+
+function pickPlainNumberAfterLabels(text, labels) {
+  for (const label of labels) {
+    const pattern = new RegExp(
+      String.raw`\b${escapeRegExp(label)}\b\s*:?\s*([0-9,]+(?:\.[0-9]{1,2})?)`,
+      "i"
+    );
+    const match = text.match(pattern);
+    if (!match) continue;
+    const value = parseNumeric(match[1]);
+    if (Number.isFinite(value)) return round(value, 2);
+  }
+  return "";
+}
+
+function pickPlainTextAfterLabels(text, labels, stopLabels) {
+  const stop = stopLabels.map(escapeRegExp).join("|");
+  for (const label of labels) {
+    const pattern = new RegExp(
+      String.raw`\b${escapeRegExp(label)}\b\s*:?\s*([A-Za-z0-9 &.,'\-\/]+?)(?=\s+(?:${stop})\b\s*:?|$)`,
+      "i"
+    );
+    const match = text.match(pattern);
+    if (match?.[1]) return cleanPlainTextValue(match[1]);
+  }
+  return "";
+}
+
+function shouldPreferPlainMoney(fieldName, value, parsed) {
+  const gross = Number(fieldName === "grossPay" ? value : parsed.grossPay);
+  if (fieldName === "taxWithheld" || fieldName === "superannuation") {
+    return value >= 0 && (!Number.isFinite(gross) || gross <= 0 || value < gross);
+  }
+  if (fieldName === "netPay") return value > 0 && (!Number.isFinite(gross) || gross <= 0 || value <= gross);
+  return value > 0;
+}
+
+function isUsefulTextValue(value, fieldName) {
+  const text = cleanPlainTextValue(value);
+  if (text.length < 2) return false;
+  if (!/[A-Za-z]/.test(text)) return false;
+  if (/^[,./\-:]+$/.test(text)) return false;
+  if (/^(abn|employer|employee|position|location)$/i.test(text)) return false;
+  if (fieldName === "employeeName" && /\b(?:employer|abn|position|location|pay period)\b/i.test(text)) return false;
+  if (fieldName === "employerName" && /\b(?:employee|position|pay period|pay date)\b/i.test(text)) return false;
+  return true;
+}
+
+function cleanPlainTextValue(value) {
+  return String(value || "").replace(/\s+/g, " ").replace(/^[:\-\s]+|[:\-\s]+$/g, "").trim();
 }
 
 const TEMPLATE_AMOUNT_PATTERN = String.raw`([\d,]+(?:\.\d{1,2})?)`;

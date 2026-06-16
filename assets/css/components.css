@@ -1829,6 +1829,149 @@ details p {
   font-weight: 800;
 }
 
+.whv-tool-panel,
+.whv-upload-panel {
+  align-items: start;
+}
+
+.whv-tool-panel .field-row,
+.whv-upload-panel .field-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+}
+
+.whv-tool-panel .field,
+.whv-upload-panel .field,
+.whv-payslip-card .field {
+  min-width: 0;
+}
+
+.whv-tool-panel select,
+.whv-tool-panel input[type="number"],
+.whv-tool-panel input[type="text"],
+.whv-upload-panel input[type="file"],
+.whv-payslip-card select,
+.whv-payslip-card input[type="number"],
+.whv-payslip-card input[type="text"],
+.whv-payslip-card input[type="date"] {
+  min-height: 42px;
+}
+
+.whv-result-grid {
+  margin: 14px 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.whv-result-grid strong,
+.whv-card-grid strong {
+  overflow-wrap: anywhere;
+}
+
+.whv-progress {
+  width: 100%;
+  height: 12px;
+  margin: 8px 0 14px;
+  overflow: hidden;
+  accent-color: var(--green);
+}
+
+.whv-payslip-list {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.whv-payslip-card {
+  padding: 16px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 26px rgba(24, 39, 75, 0.06);
+}
+
+.whv-payslip-card h3 {
+  margin-bottom: 12px;
+  overflow-wrap: anywhere;
+  font-size: 1.05rem;
+}
+
+.whv-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.whv-card-grid .field,
+.whv-card-grid > div:not(.field) {
+  padding: 10px;
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.whv-card-grid .field label,
+.whv-card-grid span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.whv-card-checks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 14px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.whv-card-checks label,
+.whv-tool-panel .check-field label,
+.whv-upload-panel .check-field label {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  line-height: 1.45;
+}
+
+.whv-card-checks input,
+.whv-tool-panel .check-field input,
+.whv-upload-panel .check-field input {
+  width: 18px;
+  min-width: 18px;
+  height: 18px;
+  margin-top: 2px;
+}
+
+.whv-payslip-card .notice-box {
+  margin-top: 12px;
+}
+
+#whv-ocr-status[data-tone="good"] {
+  color: var(--green);
+  font-weight: 800;
+}
+
+#whv-ocr-status[data-tone="warn"] {
+  color: var(--amber);
+  font-weight: 800;
+}
+
+#whv-ocr-progress {
+  width: 100%;
+  height: 10px;
+  overflow: hidden;
+  accent-color: var(--green);
+}
+
+@media (max-width: 920px) {
+  .whv-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 820px) {
   .tool-grid,
   .tool-panel,
@@ -1838,11 +1981,15 @@ details p {
     grid-template-columns: 1fr;
   }
 
-  .australia-pay-panel .field-row {
+  .australia-pay-panel .field-row,
+  .whv-tool-panel .field-row,
+  .whv-upload-panel .field-row {
     grid-template-columns: 1fr;
   }
 
-  .australia-pay-panel .field > label {
+  .australia-pay-panel .field > label,
+  .whv-tool-panel .field > label,
+  .whv-upload-panel .field > label {
     min-height: auto;
   }
 
@@ -1978,7 +2125,10 @@ details p {
     font-size: 0.62rem;
   }
 
-  .guide-grid {
+  .guide-grid,
+  .whv-result-grid,
+  .whv-card-grid,
+  .whv-card-checks {
     grid-template-columns: 1fr;
   }
 

@@ -3,7 +3,8 @@ import { initBmiCalculator } from "./bmi-calculator.js?v=20260614-cache-fix";
 import { initCaffeineSleepCalculator } from "./caffeine-sleep.js?v=20260614-cache-fix";
 import { initCigaretteCostCalculator } from "./cigarette-cost.js?v=20260614-cache-fix";
 import { initApplianceElectricityCalculator } from "./appliance-electricity.js?v=20260614-cache-fix";
-import { initAustraliaPayCalculator } from "./australia-pay.js?v=20260615-australia-parser";
+import { initAustraliaPayCalculator } from "./australia-pay.js?v=20260616-image-ocr-3";
+import { initAustraliaWhv88DaysCalculator } from "./australia-whv-88-days.js?v=20260616-whv-88-days-7";
 import { initLoanInterestCalculator } from "./loan-interest.js?v=20260614-cache-fix";
 import { initNetSalaryCalculator } from "./net-salary.js?v=20260614-cache-fix";
 import { initPercentileCalculator } from "./percentile.js?v=20260614-cache-fix";
@@ -29,11 +30,17 @@ const TOOL_GROUPS = [
     label: "돈·세금",
     tools: [
       ["월 실수령액 계산기", "calculators/net-salary.html"],
-      ["호주 주급 명세서 자동 원화 환산", "calculators/australia-pay.html"],
       ["대출 이자 계산기", "calculators/loan-interest.html"],
       ["주휴수당 계산기", "calculators/weekly-holiday-pay.html"],
       ["군적금 계산기", "calculators/military-savings.html"],
       ["담배 연간 비용 계산기", "calculators/cigarette-cost.html"]
+    ]
+  },
+  {
+    label: "해외·워킹홀리데이",
+    tools: [
+      ["호주 주급 명세서 자동 원화 환산", "calculators/australia-pay.html"],
+      ["호주 워홀 세컨비자 88일 근무일 계산기", "calculators/australia-whv-88-days.html"]
     ]
   },
   {
@@ -122,6 +129,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   initEvCostCalculator();
   initApplianceElectricityCalculator();
   initAustraliaPayCalculator();
+  initAustraliaWhv88DaysCalculator();
   initNetSalaryCalculator();
   initLoanInterestCalculator();
   initWeeklyHolidayPayCalculator();
