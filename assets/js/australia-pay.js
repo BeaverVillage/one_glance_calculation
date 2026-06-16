@@ -132,7 +132,10 @@ export function initAustraliaPayCalculator(root = document) {
 
   const requiredEls = { ...els };
   delete requiredEls.debugOutput;
+  delete requiredEls.rawText;
+  delete requiredEls.analyzeTextButton;
   if (Object.values(requiredEls).some((element) => !element)) return;
+  els.lastRawText = "";
 
   els.pdfFile.addEventListener("change", async () => {
     const file = els.pdfFile.files?.[0];
@@ -140,9 +143,10 @@ export function initAustraliaPayCalculator(root = document) {
     await analyzePayslipFile(els, file);
   });
 
-  els.analyzeTextButton.addEventListener("click", () => {
-    applyParsedFields(els, parsePayslipText(els.rawText.value));
-    setStatus(els, "붙여넣은 텍스트에서 값을 다시 찾았습니다. 필요하면 입력칸에서 수정한 뒤 계산해 주세요.", "good");
+  els.analyzeTextButton?.addEventListener("click", () => {
+    const text = getRawPayslipText(els);
+    applyParsedFields(els, parsePayslipText(text));
+    setStatus(els, "텍스트에서 값을 다시 찾았습니다. 필요하면 입력칸에서 수정한 뒤 계산해 주세요.", "good");
   });
 
   els.refreshRateButton.addEventListener("click", async () => {
@@ -168,21 +172,21 @@ async function analyzePayslipFile(els, file) {
       }
     });
 
-    els.rawText.value = result.text.trim();
+    setRawPayslipText(els, result.text.trim());
 
-    if (!els.rawText.value) {
-      setStatus(els, "자동 인식에 실패했습니다. 명세서 내용을 직접 붙여넣어 주세요.", "warn");
+    if (!getRawPayslipText(els)) {
+      setStatus(els, "자동 인식에 실패했습니다. 더 선명한 파일로 다시 시도해 주세요.", "warn");
       setProgress(els, 0);
       return;
     }
 
-    applyParsedFields(els, parsePayslipText(els.rawText.value));
+    applyParsedFields(els, parsePayslipText(getRawPayslipText(els)));
     setProgress(els, 100);
     setStatus(els, `${result.method} 결과를 입력칸에 채웠습니다. 추출된 값을 확인해 주세요. 금액과 날짜를 확인한 뒤 “이 값으로 계산하기”를 눌러 주세요.`, "good");
   } catch (error) {
     console.error(error);
     setProgress(els, 0);
-    setStatus(els, error?.userMessage || "자동 인식에 실패했습니다. 명세서 내용을 직접 붙여넣어 주세요.", "warn");
+    setStatus(els, error?.userMessage || "자동 인식에 실패했습니다. 더 선명한 파일로 다시 시도해 주세요.", "warn");
   }
 }
 
@@ -227,15 +231,15 @@ async function analyzePdfFile(els, file) {
     }
 
     await pdf.destroy?.();
-    els.rawText.value = text.trim();
+    setRawPayslipText(els, text.trim());
 
-    if (!els.rawText.value) {
-      setStatus(els, "자동 인식에 실패했습니다. 명세서 내용을 직접 붙여넣어 주세요.", "warn");
+    if (!getRawPayslipText(els)) {
+      setStatus(els, "자동 인식에 실패했습니다. 더 선명한 파일로 다시 시도해 주세요.", "warn");
       setProgress(els, 0);
       return;
     }
 
-    applyParsedFields(els, parsePayslipText(els.rawText.value));
+    applyParsedFields(els, parsePayslipText(getRawPayslipText(els)));
     setProgress(els, 100);
     setStatus(els, `${method} 결과를 입력칸에 채웠습니다. 금액과 날짜를 확인한 뒤 “이 값으로 계산하기”를 눌러 주세요.`, "good");
   } catch (error) {
@@ -244,7 +248,7 @@ async function analyzePdfFile(els, file) {
     if (String(error?.message || "").includes("라이브러리")) {
       setStatus(els, `${error.message} 인터넷 연결, 광고 차단, CDN 차단 여부를 확인한 뒤 다시 시도해 주세요.`, "warn");
     } else {
-      setStatus(els, "자동 인식에 실패했습니다. 명세서 내용을 직접 붙여넣어 주세요.", "warn");
+      setStatus(els, "자동 인식에 실패했습니다. 더 선명한 파일로 다시 시도해 주세요.", "warn");
     }
   }
 }
@@ -2303,8 +2307,17 @@ async function waitForGlobal(name) {
 }
 
 function resetOcrState(els) {
-  els.rawText.value = "";
+  setRawPayslipText(els, "");
   setProgress(els, 0);
+}
+
+function setRawPayslipText(els, text) {
+  els.lastRawText = String(text || "");
+  if (els.rawText) els.rawText.value = els.lastRawText;
+}
+
+function getRawPayslipText(els) {
+  return String(els.rawText?.value || els.lastRawText || "");
 }
 
 function setStatus(els, message, tone = "info") {

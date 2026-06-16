@@ -119,7 +119,7 @@
         <div class="container calculator-section">
           <section class="tool-panel australia-pay-panel" aria-label="호주 주급 명세서 자동 원화 환산 계산기">
             <form id="australia-pay-form" class="input-panel">
-              <div class="notice-box privacy-note">
+              <div class="notice-box privacy-note notice-compact">
                 <strong>개인정보와 자동 인식 안내</strong>
                 <p>PDF와 이미지 파일은 서버에 저장하지 않고 브라우저에서 처리됩니다. 이름, 주소, 직원번호, TFN, 은행 정보 등 민감정보는 가능한 한 가린 뒤 사용하세요.</p>
                 <p>사진 품질, 기울기, 그림자, 해상도와 명세서 양식에 따라 OCR 결과가 틀릴 수 있습니다. 자동 추출값은 반드시 직접 확인한 뒤 계산하세요. 자동으로 채워진 Gross Pay, Net Pay, Tax Withheld, Superannuation, Hours Worked 값은 계산 전에 직접 확인해 주세요.</p>
@@ -135,13 +135,6 @@
                 <span id="au-ocr-status" data-tone="info">PDF 또는 이미지를 업로드하면 파일 종류에 맞게 분석합니다. PDF는 텍스트 추출을 먼저 시도하고, 이미지는 OCR로 텍스트를 추출합니다. 추출된 값을 확인해 주세요.</span>
                 <progress id="au-ocr-progress" max="100" value="0" aria-label="PDF 분석 진행률"></progress>
               </div>
-
-              <details class="raw-text-box">
-                <summary>추출 원문 텍스트 보기 또는 직접 붙여넣기</summary>
-                <label class="sr-only" for="au-raw-text">추출 원문 텍스트</label>
-                <textarea id="au-raw-text" placeholder="자동 인식에 실패하면 월급명세서 내용을 여기에 직접 붙여넣고 다시 분석할 수 있습니다."></textarea>
-                <button id="au-analyze-text" class="subtle-button" type="button">붙여넣은 텍스트 분석</button>
-              </details>
 
 
               <div class="field-row">
@@ -257,7 +250,7 @@
                   <em id="au-super-krw">-</em>
                 </div>
               </div>
-              <div class="notice-box">
+              <div class="notice-box notice-compact">
                 <strong>계산 기준</strong>
                 <p>Superannuation은 실수령액에 포함하지 않고 별도로 표시합니다. 이 계산기는 참고용이며, 실제 급여·세금·환율 판단은 급여명세서, 고용계약서, 금융기관 기준을 확인해야 합니다.</p>
               </div>
@@ -276,7 +269,7 @@
           <div class="guide-grid au-context-grid">
             <article>
               <h3>명세서 PDF에서 주요 금액 정리</h3>
-              <p>Gross Pay, Net Pay, Tax Withheld/PAYG, Superannuation, Hours Worked처럼 계산에 필요한 항목을 입력칸에 모아 보여줍니다. PDF 인식이 어렵다면 원문 텍스트를 직접 붙여넣어 분석할 수도 있습니다.</p>
+              <p>Gross Pay, Net Pay, Tax Withheld/PAYG, Superannuation, Hours Worked처럼 계산에 필요한 항목을 입력칸에 모아 보여줍니다. 자동으로 채워진 값은 입력칸에서 바로 수정할 수 있습니다.</p>
             </article>
             <article>
               <h3>원화 실수령액과 연 환산액 확인</h3>
@@ -365,7 +358,7 @@
         </nav>
       </div>
     </footer>
-    <script type="module" src="../assets/js/australia-pay.js?v=20260616-image-ocr-4"></script>
+    <script type="module" src="../assets/js/australia-pay.js?v=20260616-compact-raw-ui-final"></script>
     <script type="module" src="../assets/js/app.js?v=20260616-whv-88-days-7"></script>
   </body>
 </html>

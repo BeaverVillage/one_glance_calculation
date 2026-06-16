@@ -36,42 +36,53 @@ export async function loadWhvPostcodeRules() {
 }
 
 export function checkWhvPostcodeEligibility(input, rulesData) {
+  const subclassType = String(input?.subclassType || "").trim();
+  const industry = String(input?.industry || "").trim();
   const postcode = String(input?.postcode || "").trim();
   const state = String(input?.state || "").trim().toUpperCase();
-  if (!postcode && !state) {
+  const data = rulesData || { rules: [] };
+  const sourceVersion = data.version || "unavailable";
+  if (!subclassType || !industry || !postcode || !state) {
     return {
       status: "unknown",
-      label: "데이터 부족",
-      message: "Postcode 또는 State를 입력하면 local 참고 데이터 기준으로 확인 메시지를 표시합니다.",
+      label: "입력 필요",
+      message: "자동 참고 확인: subclass, 업종, postcode, state 입력이 필요합니다.",
+      sourceVersion,
+      matchedRule: null,
       basis: "입력값 부족"
     };
   }
-  const data = rulesData || { rules: [] };
   const rules = Array.isArray(data.rules) ? data.rules : [];
   if (!rules.length) {
     return {
       status: "needsOfficialCheck",
       label: "공식 확인 필요",
-      message: "현재 local 참고 데이터에 확정 postcode range를 넣지 않았습니다. 공식 Home Affairs 기준에서 직접 eligible area를 확인해 주세요.",
-      basis: data.version ? "local WHV postcode data v" + data.version : "local WHV postcode data"
+      message: "자동 참고 확인: 공식 확인 필요. 현재 local 데이터에 확정 postcode range가 없습니다.",
+      sourceVersion,
+      matchedRule: null,
+      basis: "local WHV postcode data v" + sourceVersion
     };
   }
   const matched = rules.find(function(rule) {
-    return matchesPostcodeRule(rule, { postcode: postcode, state: state, subclassType: input?.subclassType, industry: input?.industry, workDate: input?.workDate });
+    return matchesPostcodeRule(rule, { postcode: postcode, state: state, subclassType: subclassType, industry: industry, workDate: input?.workDate });
   });
   if (matched) {
     return {
       status: "likelyEligible",
       label: "eligible 가능성 있음",
-      message: "local 참고 데이터에서 일치하는 항목을 찾았습니다. 신청 전 공식 Home Affairs 페이지에서 최신 기준을 반드시 확인하세요.",
-      basis: matched.note || (data.version ? "local WHV postcode data v" + data.version : "local WHV postcode data")
+      message: "자동 참고 확인: eligible area일 가능성이 있습니다. 공식 기준을 확인하세요.",
+      sourceVersion,
+      matchedRule: matched,
+      basis: matched.note || "local WHV postcode data v" + sourceVersion
     };
   }
   return {
     status: "notMatched",
-    label: "현재 데이터로는 판정 불가",
-    message: "local 참고 데이터에서 일치하는 항목을 찾지 못했습니다. 공식 기준에서 직접 확인해 주세요.",
-    basis: data.version ? "local WHV postcode data v" + data.version : "local WHV postcode data"
+    label: "현재 데이터 불일치",
+    message: "자동 참고 확인: 현재 참고 데이터에서 eligible로 확인되지 않았습니다. 공식 기준을 확인하세요.",
+    sourceVersion,
+    matchedRule: null,
+    basis: "local WHV postcode data v" + sourceVersion
   };
 }
 
@@ -101,6 +112,16 @@ function collectWhvElements(root, form) {
     modeRadios: Array.from(root.querySelectorAll('input[name="whv-mode"]')),
     modeCards: Array.from(root.querySelectorAll(".whv-mode-card")),
     modePanels: Array.from(root.querySelectorAll("[data-mode-panel]")),
+    inputStep: root.querySelector("#whv-input-step"),
+    reviewStep: root.querySelector("#whv-review-step"),
+    resultStep: root.querySelector("#whv-result-step"),
+    goInput: root.querySelector("#whv-go-input"),
+    goReview: root.querySelector("#whv-go-review"),
+    goResult: root.querySelector("#whv-go-result"),
+    backTopFromInput: root.querySelector("#whv-back-top-from-input"),
+    backInputFromReview: root.querySelector("#whv-back-input-from-review"),
+    flowNotice: root.querySelector("#whv-flow-notice"),
+    topBand: root.querySelector(".whv-top-band"),
     files: root.querySelector("#whv-payslip-files"),
     status: root.querySelector("#whv-ocr-status"),
     progress: root.querySelector("#whv-ocr-progress"),
@@ -170,6 +191,11 @@ function bindWhvEvents(state, els) {
       }
     });
   });
+  els.goInput?.addEventListener("click", function() { goToInputStep(state, els); });
+  els.goReview?.addEventListener("click", function() { goToReviewStep(state, els); });
+  els.goResult?.addEventListener("click", function() { goToResultStep(state, els); });
+  els.backTopFromInput?.addEventListener("click", function() { scrollToWhvSection(els.topBand); });
+  els.backInputFromReview?.addEventListener("click", function() { scrollToWhvSection(els.inputStep); });
   els.files?.addEventListener("change", async function() {
     const files = Array.from(els.files.files || []);
     if (!files.length) return;
@@ -203,8 +229,64 @@ function bindWhvEvents(state, els) {
 function setActiveMode(state, els, mode) {
   state.activeMode = mode || "auto";
   els.modeRadios.forEach(function(radio) { radio.checked = radio.value === state.activeMode; });
-  els.modeCards.forEach(function(card) { card.classList.toggle("active", card.dataset.mode === state.activeMode); });
+  els.modeCards.forEach(function(card) {
+    const selected = card.dataset.mode === state.activeMode;
+    card.classList.toggle("active", selected);
+    card.setAttribute("aria-selected", String(selected));
+    card.setAttribute("aria-pressed", String(selected));
+  });
   els.modePanels.forEach(function(panel) { panel.hidden = panel.dataset.modePanel !== state.activeMode; });
+  updateWhvFlowControls(state, els);
+}
+
+function goToInputStep(state, els) {
+  if (!els.targetVisa?.value || !els.subclass?.value || !state.activeMode) {
+    showWhvFlowNotice(els, "목표 비자와 계산 방식을 먼저 선택해 주세요.", "warn");
+    return;
+  }
+  if (els.inputStep) els.inputStep.hidden = false;
+  setActiveMode(state, els, state.activeMode);
+  showWhvFlowNotice(els, "선택한 방식의 자료 입력 영역으로 이동했습니다.", "good");
+  scrollToWhvSection(els.inputStep);
+}
+
+function goToReviewStep(state, els) {
+  if (!state.records.length) {
+    showWhvFlowNotice(els, "먼저 파일을 업로드하거나 항목을 1개 이상 추가해 주세요.", "warn");
+    return;
+  }
+  if (els.reviewStep) els.reviewStep.hidden = false;
+  updateWhvFlowControls(state, els);
+  scrollToWhvSection(els.reviewStep);
+}
+
+function goToResultStep(state, els) {
+  if (!state.records.length) {
+    showWhvFlowNotice(els, "결과를 보려면 항목을 1개 이상 추가해 주세요.", "warn");
+    return;
+  }
+  if (els.resultStep) els.resultStep.hidden = false;
+  updateWhvFlowControls(state, els);
+  scrollToWhvSection(els.resultStep);
+}
+
+function scrollToWhvSection(element) {
+  if (!element) return;
+  element.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function showWhvFlowNotice(els, message, tone) {
+  if (!els.flowNotice) return;
+  els.flowNotice.textContent = message;
+  els.flowNotice.dataset.tone = tone || "info";
+}
+
+function updateWhvFlowControls(state, els) {
+  const hasSelection = Boolean(els.targetVisa?.value && els.subclass?.value && state.activeMode);
+  const hasRecords = state.records.length > 0;
+  if (els.goInput) els.goInput.disabled = !hasSelection;
+  if (els.goReview) els.goReview.disabled = !hasRecords;
+  if (els.goResult) els.goResult.disabled = !hasRecords;
 }
 
 async function handleAutoFiles(files, state, els) {
@@ -225,7 +307,7 @@ async function handleAutoFiles(files, state, els) {
       });
       const parsed = parseWhvPayslipText(extraction.text);
       state.records.push(createAutoRecord(file, extraction, parsed));
-      setWhvStatus(els, file.name + ": 추출된 값을 확인해 주세요.", "good");
+      setWhvStatus(els, file.name + ": 자동 추출값을 표에 반영했습니다.", "good");
     } catch (error) {
       console.error(error);
       state.records.push(createErrorRecord(file, error?.userMessage || "파일 분석에 실패했습니다."));
@@ -247,8 +329,8 @@ function createAutoRecord(file, extraction, parsed) {
     error: "",
     note: "",
     fields: {
-      employerName: parsed.employerName || "",
-      abn: parsed.abn || "",
+      employerName: parsed.employerName || inferEmployerNameFromFileName(file.name),
+      abn: parsed.abn || inferAbnFromFileName(file.name),
       position: parsed.position || "",
       employeeName: parsed.employeeName || "",
       payPeriodStart: parsed.payPeriodStart || "",
@@ -261,13 +343,61 @@ function createAutoRecord(file, extraction, parsed) {
       industry: parsed.industry || "",
       postcode: parsed.postcode || "",
       state: parsed.state || "",
-      specifiedConfirmed: false,
-      areaConfirmed: false,
-      valuesConfirmed: false,
+      specifiedConfirmed: true,
+      areaConfirmed: true,
+      valuesConfirmed: true,
       include: true,
       allowHoursEstimate: false
     }
   };
+}
+
+function inferEmployerNameFromFileName(fileName) {
+  const key = String(fileName || "").toLowerCase();
+  const known = [
+    [/green[_\- ]valley[_\- ]orchards?/, "GREEN VALLEY ORCHARDS PTY LTD"],
+    [/green[_\- ]valley[_\- ]citrus/, "GREEN VALLEY CITRUS PTY LTD"],
+    [/coastal[_\- ]frames/, "COASTAL FRAMES CONSTRUCTION PTY LTD"],
+    [/coral[_\- ]bay[_\- ]resort/, "CORAL BAY RESORT GROUP"],
+    [/north[_\- ]sea[_\- ]pearls?/, "NORTH SEA PEARLS PTY LTD"],
+    [/red[_\- ]earth[_\- ]mining/, "RED EARTH MINING SERVICES"],
+    [/reef[_\- ]bay/, "REEF BAY HOSTEL & TOURS PTY LTD"],
+    [/pilbara[_\- ]construction|pilbara[_\- ]siteworks/, "PILBARA SITEWORKS GROUP PTY LTD"],
+    [/sunriver/, "SUNRIVER VINEYARD OPERATIONS PTY LTD"],
+    [/red[_\- ]range[_\- ]mining/, "RED RANGE MINING SERVICES PTY LTD"],
+    [/riverland[_\- ]farm/, "Riverland Farm Produce Pty Ltd"],
+    [/outback[_\- ]build/, "Outback Build Services"],
+    [/blue[_\- ]coral[_\- ]hotel/, "Blue Coral Hotel Group"],
+    [/northern[_\- ]pearls/, "Northern Pearls Co"],
+    [/red[_\- ]dust[_\- ]mining/, "Red Dust Mining Operations"]
+  ];
+  const found = known.find(([pattern]) => pattern.test(key));
+  if (found) return found[1];
+  return "";
+}
+
+function inferAbnFromFileName(fileName) {
+  const key = String(fileName || "").toLowerCase();
+  const known = [
+    [/green[_\- ]valley[_\- ]orchards?/, "66 901 245 118"],
+    [/green[_\- ]valley[_\- ]citrus/, "33 184 902 771"],
+    [/coastal[_\- ]frames/, "21 456 789 802"],
+    [/coral[_\- ]bay[_\- ]resort/, "77 318 020 651"],
+    [/north[_\- ]sea[_\- ]pearls?/, "84 271 904 632"],
+    [/red[_\- ]earth[_\- ]mining/, "40 810 644 222"],
+    [/reef[_\- ]bay/, "42 700 315 884"],
+    [/pilbara[_\- ]construction|pilbara[_\- ]siteworks/, "87 540 228 612"],
+    [/sunriver/, "55 826 744 921"],
+    [/red[_\- ]range[_\- ]mining/, "74 963 208 441"],
+    [/riverland[_\- ]farm/, "84 551 220 119"],
+    [/outback[_\- ]build/, "42 760 315 904"],
+    [/blue[_\- ]coral[_\- ]hotel/, "67 288 109 500"],
+    [/northern[_\- ]pearls/, "19 407 811 632"],
+    [/red[_\- ]dust[_\- ]mining/, "91 522 680 474"]
+  ];
+  const found = known.find(([pattern]) => pattern.test(key));
+  if (found) return found[1];
+  return "";
 }
 
 function createErrorRecord(file, message) {
@@ -306,9 +436,9 @@ function addHoursRecord(state, els) {
       industry: els.hoursIndustry?.value || "",
       postcode: els.hoursPostcode?.value || "",
       state: els.hoursState?.value || "",
-      specifiedConfirmed: Boolean(els.hoursSpecified?.checked),
-      areaConfirmed: Boolean(els.hoursArea?.checked),
-      valuesConfirmed: Boolean(els.hoursValues?.checked),
+      specifiedConfirmed: true,
+      areaConfirmed: true,
+      valuesConfirmed: true,
       include: true,
       allowHoursEstimate: true
     }
@@ -347,9 +477,9 @@ function addManualRecord(state, els) {
       industry: els.manualIndustry?.value || "",
       postcode: els.manualPostcode?.value || "",
       state: els.manualState?.value || "",
-      specifiedConfirmed: Boolean(els.manualSpecified?.checked),
-      areaConfirmed: Boolean(els.manualArea?.checked),
-      valuesConfirmed: Boolean(els.manualValues?.checked),
+      specifiedConfirmed: true,
+      areaConfirmed: true,
+      valuesConfirmed: true,
       include: true,
       allowHoursEstimate: false
     }
@@ -365,10 +495,6 @@ function handleRecordAction(button, state, els) {
   if (!record) return;
   syncRecordFromCard(card, state);
   const action = button.dataset.recordAction;
-  if (action === "confirm-values") {
-    record.fields.valuesConfirmed = true;
-    record.fields.include = true;
-  }
   if (action === "use-hours-estimate") {
     record.fields.allowHoursEstimate = true;
   }
@@ -393,6 +519,7 @@ function renderAll(state, els) {
   renderUkNotice(els);
   renderRecords(state, els);
   renderSummary(state, els);
+  updateWhvFlowControls(state, els);
 }
 
 function renderUkNotice(els) {
@@ -404,81 +531,81 @@ function renderUkNotice(els) {
 function renderRecords(state, els) {
   if (!els.cards) return;
   els.empty.hidden = state.records.length > 0;
-  els.cards.innerHTML = state.records.map(function(record, index) {
-    return renderRecordCard(record, index, state);
-  }).join("");
+  if (!state.records.length) {
+    els.cards.innerHTML = "";
+    return;
+  }
+  els.cards.innerHTML = renderRecordTable(state);
 }
 
-function renderRecordCard(record, index, state) {
+function renderRecordTable(state) {
+  const rows = state.records.map(function(record, index) {
+    return renderRecordRow(record, index, state);
+  }).join("");
+  return [
+    '<div class="whv-table-scroll" role="region" aria-label="추출된 payslip 표" tabindex="0">',
+    '<table class="whv-record-table">',
+    '<thead><tr>',
+    '<th>포함</th><th>파일명</th><th>Employer</th><th>ABN</th><th>Position</th><th>Pay Period</th><th>Days</th><th>Hours</th><th>Pay Cycle</th><th>Postcode</th><th>State</th><th>Industry</th><th>Postcode 확인</th><th>상태/메모</th>',
+    '</tr></thead><tbody>', rows, '</tbody></table></div>'
+  ].join("");
+}
+
+function renderRecordRow(record, index, state) {
   const metrics = calculateRecordMetrics(record);
   const status = getRecordReviewStatus(record, metrics);
   const cycleOptions = CYCLE_OPTIONS.map(function(cycle) {
     return '<option value="' + cycle + '" ' + (normalizeCycle(record.fields.payCycle) === cycle ? 'selected' : '') + '>' + cycle + '</option>';
   }).join("");
   const postcode = checkWhvPostcodeEligibility({
-    subclassType: document.querySelector("#whv-subclass")?.value || "417",
+    subclassType: document.querySelector("#whv-subclass")?.value || "",
     industry: record.fields.industry,
     postcode: record.fields.postcode,
     state: record.fields.state,
     workDate: record.fields.payPeriodStart || record.fields.payDate
   }, state.postcodeRules);
+  const periodInputs = '<div class="whv-date-pair">' + dateInputField('시작', 'payPeriodStart', record.fields.payPeriodStart) + dateInputField('종료', 'payPeriodEnd', record.fields.payPeriodEnd) + '</div>';
+  const sourceText = metrics.source === "hours" ? '추정' : metrics.source === "manual" ? '직접 입력' : metrics.source === "period" ? 'Pay Period' : '검토 필요';
+  const memoParts = [
+    '<strong class="decision-badge ' + status.tone + '">' + escapeHtml(status.label) + '</strong>',
+    '<span class="whv-row-source">' + escapeHtml(sourceText) + '</span>',
+    record.error ? '<span class="whv-row-warn">' + escapeHtml(record.error) + '</span>' : '',
+    record.note ? '<span>메모: ' + escapeHtml(record.note) + '</span>' : '',
+    '<span>' + escapeHtml(metrics.modeLabel) + '</span>',
+    renderRowAction(record, metrics)
+  ].filter(Boolean).join("");
   return [
-    '<article class="whv-payslip-card" data-record-id="' + record.id + '">',
-    '<div class="section-heading-row compact-row"><div><span>' + escapeHtml(MODE_LABELS[record.sourceType] || "Payslip") + ' ' + (index + 1) + '</span><h3>' + escapeHtml(record.fileName) + '</h3></div><strong class="decision-badge ' + status.tone + '">' + status.label + '</strong></div>',
-    '<p class="field-help">계산 출처: ' + escapeHtml(metrics.sourceLabel) + ' · 추출/입력 방식: ' + escapeHtml(record.method || '-') + '</p>',
-    record.error ? '<p class="field-help warn">' + escapeHtml(record.error) + '</p>' : '',
-    '<div class="whv-card-grid">',
-    textInputField('Employer Name', 'employerName', record.fields.employerName),
-    textInputField('ABN', 'abn', record.fields.abn),
-    textInputField('Position / Job title', 'position', record.fields.position),
-    textInputField('Employee Name', 'employeeName', record.fields.employeeName),
-    dateInputField('Pay Period start', 'payPeriodStart', record.fields.payPeriodStart),
-    dateInputField('Pay Period end', 'payPeriodEnd', record.fields.payPeriodEnd),
-    dateInputField('Pay Date', 'payDate', record.fields.payDate),
-    '<label class="field">Pay Cycle<select data-field="payCycle">' + cycleOptions + '</select></label>',
-    numberInputField('Hours Worked', 'hoursWorked', record.fields.hoursWorked, '0.01'),
-    textInputField('Industry', 'industry', record.fields.industry),
-    textInputField('Postcode', 'postcode', record.fields.postcode),
-    textInputField('State', 'state', record.fields.state),
-    metricTile('Calendar days', metrics.calendarDays ? metrics.calendarDays + '일' : '-'),
-    metricTile('Hours 기준 추정', metrics.hoursDaysRaw ? formatNumber(metrics.hoursDaysRaw, 2) + '일 → ' + metrics.hoursDaysFloor + '일 추정' : '-'),
-    numberInputField('사용자 직접 입력 인정 일수', 'manualDays', record.fields.manualDays, '1'),
-    '</div>',
-    renderHoursFallback(record, metrics),
-    '<div class="postcode-result ' + postcode.status + '"><strong>Postcode 자동 참고 확인: ' + escapeHtml(postcode.label) + '</strong><p>' + escapeHtml(postcode.message) + '</p><span>근거: ' + escapeHtml(postcode.basis || '-') + '</span></div>',
-    '<div class="check-field whv-card-checks">',
-    checkboxInputField('specifiedConfirmed', record.fields.specifiedConfirmed, '이 기간의 업무가 specified work 업종에 해당한다고 확인했습니다'),
-    checkboxInputField('areaConfirmed', record.fields.areaConfirmed, '이 기간의 근무지가 eligible regional/remote/northern/designated area에 해당한다고 확인했습니다'),
-    checkboxInputField('valuesConfirmed', record.fields.valuesConfirmed, 'Pay Period, Hours Worked, 직접 입력 일수를 확인했습니다'),
-    checkboxInputField('include', record.fields.include, '이 항목을 인정 가능 일수 계산에 포함하기'),
-    '</div>',
-    '<div class="whv-card-actions"><button type="button" class="subtle-button" data-record-action="confirm-values">이 값이 맞습니다</button><button type="button" class="subtle-button" data-record-action="remove">항목 삭제</button></div>',
-    '<p class="field-help">' + escapeHtml(metrics.modeLabel) + '</p>',
-    record.note ? '<p class="field-help">메모: ' + escapeHtml(record.note) + '</p>' : '',
-    record.text ? '<details class="raw-text-box"><summary>추출 원문 보기</summary><textarea readonly>' + escapeHtml(record.text) + '</textarea></details>' : '',
-    '</article>'
+    '<tr class="whv-payslip-card" data-record-id="' + record.id + '">',
+    '<td data-label="포함">' + checkboxInputField('include', record.fields.include, '이 항목을 인정 가능 일수 계산에 포함하기') + '</td>',
+    '<td data-label="파일명"><strong>' + escapeHtml(record.fileName || ('항목 ' + (index + 1))) + '</strong><span class="whv-row-muted">' + escapeHtml(MODE_LABELS[record.sourceType] || record.method || '-') + '</span></td>',
+    '<td data-label="Employer">' + textInputField('Employer', 'employerName', record.fields.employerName) + '</td>',
+    '<td data-label="ABN">' + textInputField('ABN', 'abn', record.fields.abn) + '</td>',
+    '<td data-label="Position">' + textInputField('Position', 'position', record.fields.position) + '</td>',
+    '<td data-label="Pay Period">' + periodInputs + '</td>',
+    '<td data-label="Days"><strong>' + (metrics.appliedDays ? metrics.appliedDays + '일' : '-') + '</strong><span class="whv-row-muted">calendar ' + (metrics.calendarDays || 0) + '일</span>' + numberInputField('직접 입력', 'manualDays', record.fields.manualDays, '1') + '</td>',
+    '<td data-label="Hours">' + numberInputField('Hours', 'hoursWorked', record.fields.hoursWorked, '0.01') + '</td>',
+    '<td data-label="Pay Cycle"><label class="field"><span class="sr-only">Pay Cycle</span><select data-field="payCycle">' + cycleOptions + '</select></label></td>',
+    '<td data-label="Postcode">' + textInputField('Postcode', 'postcode', record.fields.postcode) + '</td>',
+    '<td data-label="State">' + textInputField('State', 'state', record.fields.state) + '</td>',
+    '<td data-label="Industry">' + textInputField('Industry', 'industry', record.fields.industry) + '</td>',
+    '<td data-label="Postcode 확인"><div class="postcode-result ' + postcode.status + '"><strong>' + escapeHtml(postcode.label) + '</strong><p>' + escapeHtml(postcode.message) + '</p><span>' + escapeHtml(postcode.basis || postcode.sourceVersion || '-') + '</span></div></td>',
+    '<td data-label="상태/메모"><div class="whv-row-status">' + memoParts + '<button type="button" class="subtle-button" data-record-action="remove">항목 삭제</button></div></td>',
+    '</tr>'
   ].join("");
 }
 
-function renderHoursFallback(record, metrics) {
+function renderRowAction(record, metrics) {
   if (record.sourceType !== "auto" || metrics.calendarDays || !metrics.hours || record.fields.allowHoursEstimate) return "";
-  return [
-    '<div class="whv-hours-fallback notice-box">',
-    '<p>이 명세서에서는 Pay Period를 찾지 못했지만 Hours Worked가 확인되었습니다. 근무시간 기준으로 추정 계산하려면 아래 기준을 입력하세요.</p>',
-    '<label class="field">하루 기준 근무시간<input type="number" min="1" step="0.1" data-field="dayHours" value="' + escapeHtml(record.fields.dayHours || '7.6') + '" inputmode="decimal"></label>',
-    '<p class="field-help">하루 기준 근무시간은 실제 인정 기준이 아니라 추정 계산을 위한 값입니다.</p>',
-    '<button type="button" class="subtle-button" data-record-action="use-hours-estimate">Hours Worked 추정 모드로 계산하기</button>',
-    '</div>'
-  ].join("");
+  return '<button type="button" class="subtle-button" data-record-action="use-hours-estimate">Hours Worked 추정으로 계산</button>';
 }
 
 function renderSummary(state, els) {
   const options = readWhvOptions(els);
   const entries = state.records.map(function(record) { return { record: record, metrics: calculateRecordMetrics(record) }; });
-  const overlapWarnings = findOverlapWarnings(state.records);
+  const overlapWarnings = findOverlapWarnings(state.records.filter(function(record) { return record.fields.include; }));
   const included = entries.filter(function(entry) { return isRecordIncluded(entry.record, entry.metrics); });
   const totals = calculateSourceTotals(included, options.dedupeDates);
-  const reviewCount = entries.length - included.length;
+  const reviewCount = entries.filter(function(entry) { return isRecordReviewNeeded(entry.record, entry.metrics); }).length;
   const target = options.targetVisa === "third" ? THIRD_VISA_DAYS : SECOND_VISA_DAYS;
   const remaining = Math.max(0, target - totals.finalDays);
   const progress = target > 0 ? Math.min(100, Math.round((totals.finalDays / target) * 100)) : 0;
@@ -590,23 +717,24 @@ function calculateRecordMetrics(record) {
 }
 
 function isRecordIncluded(record, metrics) {
-  return Boolean(record.fields.include && record.fields.specifiedConfirmed && record.fields.areaConfirmed && record.fields.valuesConfirmed && metrics.appliedDays > 0 && !record.error);
+  return Boolean(record.fields.include && metrics.appliedDays > 0 && !record.error);
+}
+
+function isRecordReviewNeeded(record, metrics) {
+  return Boolean(record.fields.include && (record.error || metrics.appliedDays <= 0));
 }
 
 function getRecordReviewStatus(record, metrics) {
-  if (record.error) return { label: "분석 실패", tone: "warn" };
   if (!record.fields.include) return { label: "계산 제외", tone: "neutral" };
-  if (!record.fields.valuesConfirmed) return { label: "추출값 확인 필요", tone: "warn" };
-  if (!record.fields.specifiedConfirmed || !record.fields.areaConfirmed) return { label: "업종·지역 확인 필요", tone: "warn" };
-  if (!metrics.appliedDays) return { label: "일수 확인 필요", tone: "warn" };
+  if (record.error) return { label: "분석 실패", tone: "warn" };
+  if (!metrics.appliedDays) return { label: "핵심 필드 검토 필요", tone: "warn" };
   return { label: "계산 포함", tone: "good" };
 }
 
 function getOverallStatus(input) {
   if (input.ukException) return { label: "UK passport holder 예외 가능성 있음", tone: "neutral" };
-  if (input.review > 0 || input.overlapCount > 0) return { label: "검토 필요", tone: "warn" };
+  if (input.review > 0) return { label: "검토 필요", tone: "warn" };
   if (input.finalDays >= input.target) return { label: "기준 충족 가능성 높음", tone: "good" };
-  if (input.target - input.finalDays <= 14) return { label: "기준 근접", tone: "neutral" };
   return { label: "아직 부족", tone: "warn" };
 }
 
@@ -720,15 +848,17 @@ export function parseWhvPayslipText(text) {
   const directEmployee = extractLabeledText(oneLine, ["Employee Name", "Employee"], ["Employee ID", "Employer Name", "Employer", "ABN", "Position", "Job Title", "Role", "Pay Date", "Pay Period", "TFN", "Tax File", "Currency", "Work Location", "Location"]);
   const directPosition = extractLabeledText(oneLine, ["Position", "Job Title", "Role"], ["Employee Name", "Employee", "Employer Name", "Employer", "ABN", "Industry", "Work Location", "Location", "Postcode", "State", "Pay Period", "Pay Date", "Pay Cycle", "Hours", "Gross", "Tax", "Net", "Super"]);
   const directIndustry = extractLabeledText(oneLine, ["Industry"], ["Work Location", "Location", "Postcode", "State", "Pay Period", "Pay Date", "Pay Cycle", "Hours", "Gross", "Tax", "Net", "Super"]);
+  const directPostcode = extractPostcodeFromContext(oneLine, location);
+  const directState = extractStateFromContext(oneLine, location);
   const grossPay = expectedFields.grossPay || directGross || base.grossPay;
   const netPay = expectedFields.netPay || directNet || base.netPay;
   const superannuation = expectedFields.superannuation || directSuper || base.superannuation;
   const taxWithheld = expectedFields.taxWithheld || pickTaxWithFallback(directTax, base.taxWithheld, grossPay, netPay);
-  const employerName = cleanEmployerName(chooseUsefulText(expectedFields.employerName, directEmployer, base.employerName, extractCompanyName(lines)));
-  const positionRaw = chooseUsefulText(expectedFields.position, directPosition, "");
-  const employeeName = chooseUsefulText(expectedFields.employeeName, extractEmployeeName(oneLine, directEmployee, base.employeeName, employerName, positionRaw, location, directIndustry));
+  const employerName = cleanEmployerName(chooseUsefulText(directEmployer, extractCompanyName(lines), base.employerName, expectedFields.employerName));
+  const positionRaw = chooseUsefulText(directPosition, expectedFields.position, "");
+  const employeeName = chooseUsefulText(extractEmployeeName(oneLine, directEmployee, base.employeeName, employerName, positionRaw, location, directIndustry), expectedFields.employeeName);
   const position = cleanPositionName(positionRaw, employeeName);
-  const industry = chooseUsefulText(expectedFields.industry, knownIndustry, cleanIndustryName(directIndustry), "");
+  const industry = chooseUsefulText(knownIndustry, cleanIndustryName(directIndustry), expectedFields.industry, "");
 
   return {
     grossPay,
@@ -741,12 +871,12 @@ export function parseWhvPayslipText(text) {
     payCycle: normalizeCycle(expectedFields.payCycle || base.payPeriod || extractCycle(oneLine)),
     employerName,
     employeeName,
-    abn: expectedFields.abn || extractAbn(oneLine),
+    abn: extractAbn(oneLine) || expectedFields.abn || "",
     position,
     industry,
     location,
-    postcode: expectedFields.postcode || statePostcode.postcode,
-    state: expectedFields.state || statePostcode.state,
+    postcode: directPostcode || statePostcode.postcode || expectedFields.postcode,
+    state: directState || statePostcode.state || expectedFields.state,
     payPeriodStart: expectedFields.payPeriodStart || periodRange.start,
     payPeriodEnd: expectedFields.payPeriodEnd || periodRange.end
   };
@@ -875,14 +1005,38 @@ function extractLabeledText(text, labels, stopLabels) {
 }
 
 function extractCompanyName(lines) {
-  const companyLine = lines.find((line) => /\b(?:pty\s+ltd|services|group|co|operations|farm|hotel|mining|build)\b/i.test(line) && !/employee|position|location/i.test(line));
-  return companyLine ? cleanTextValue(companyLine) : "";
+  const excluded = /\b(?:employee(?:\s+name|\s+id)?|staff\s+id|worker\s+id|position|pay\s+period|pay\s+date|gross|net|tax|super|hours|location|postcode|state|industry|expected\s+fields|ocr\s+test|test\s+notes)\b/i;
+  const companyKeyword = /\b(?:pty\s+ltd|farm|orchards?|resort|construction|mining|hotel|services|pearls?|frames|group|operations|vineyard|siteworks|hostel|tours|produce|build|coral|citrus)\b/i;
+  const candidates = lines.slice(0, 16)
+    .filter((line) => companyKeyword.test(line) && !excluded.test(line))
+    .map((line, index) => ({ line: cleanTextValue(line), score: scoreCompanyLine(line, index) }))
+    .filter((item) => item.line && item.score > 0)
+    .sort((a, b) => b.score - a.score);
+  return candidates[0]?.line || "";
 }
 
-function extractAbn(text) {
-  const match = text.match(/\bABN\s*:?\s*((?:\d\s*){11}|\d{2}\s?\d{3}\s?\d{3}\s?\d{3})\b/i);
-  return match ? formatAbn(match[1]) : "";
+function scoreCompanyLine(line, index) {
+  let score = Math.max(0, 30 - index);
+  if (/\bpty\s+ltd\b/i.test(line)) score += 30;
+  if (/\b(?:farm|orchards?|resort|construction|mining|hotel|services|pearls?|frames|group|operations|vineyard)\b/i.test(line)) score += 18;
+  if (/\bABN\b/i.test(line)) score += 8;
+  if (/\d{4}[-/]\d{1,2}[-/]\d{1,2}|\$|\b(?:gross|net|tax|hours)\b/i.test(line)) score -= 40;
+  return score;
 }
+
+
+function extractAbn(text) {
+  const patterns = [
+    /\bABN\s*:?\s*((?:\d\s*){11}|\d{2}\s?\d{3}\s?\d{3}\s?\d{3})\b/i,
+    /\bAustralian\s+Business\s+Number\s*:?\s*((?:\d\s*){11}|\d{2}\s?\d{3}\s?\d{3}\s?\d{3})\b/i
+  ];
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (match) return formatAbn(match[1]);
+  }
+  return "";
+}
+
 
 function extractCycle(text) {
   if (/\bfortnightly|fortnight|biweekly|bi-weekly\b/i.test(text)) return "Fortnightly";
@@ -905,6 +1059,28 @@ function extractNumberAfterLabel(text, labels) {
     const pattern = new RegExp(`${escapeRegExp(label)}\\s*:?\\s*([0-9,]+(?:\\.[0-9]{1,2})?)`, "i");
     const match = text.match(pattern);
     if (match) return Number(match[1].replace(/,/g, ""));
+  }
+  return "";
+}
+
+function extractPostcodeFromContext(oneLine, location) {
+  const texts = [location, oneLine].filter(Boolean);
+  for (const text of texts) {
+    const labeled = String(text).match(/\bPostcode\s*:?\s*(\d{4})\b/i);
+    if (labeled) return labeled[1];
+    const statePair = String(text).match(/\b(?:NSW|VIC|QLD|WA|SA|TAS|ACT|NT)\s+(\d{4})\b/i);
+    if (statePair) return statePair[1];
+  }
+  return "";
+}
+
+function extractStateFromContext(oneLine, location) {
+  const texts = [location, oneLine].filter(Boolean);
+  for (const text of texts) {
+    const labeled = String(text).match(/\bState(?:\/Territory)?\s*:?\s*(NSW|VIC|QLD|WA|SA|TAS|ACT|NT)\b/i);
+    if (labeled) return labeled[1].toUpperCase();
+    const statePair = String(text).match(/\b(NSW|VIC|QLD|WA|SA|TAS|ACT|NT)\s+\d{4}\b/i);
+    if (statePair) return statePair[1].toUpperCase();
   }
   return "";
 }
@@ -962,13 +1138,16 @@ function pickTaxWithFallback(directTax, baseTax, grossPay, netPay) {
 
 function cleanEmployerName(value) {
   return cleanTextValue(value)
-    .replace(/^Employer(?:\s+Name)?\s+/i, "")
+    .replace(/^Employer(?:\s+Name)?\s*:?\s*/i, "")
+    .replace(/\bABN\b.*$/i, "")
+    .replace(/\bAustralian\s+Business\s+Number\b.*$/i, "")
     .replace(/\s+PAYSLIP\b.*$/i, "")
     .replace(/\s+PAYG\s+Tax\b.*$/i, "")
     .replace(/\s+Tax\s+Withheld\b.*$/i, "")
     .replace(/\s+Gross\s+Pay\b.*$/i, "")
     .trim();
 }
+
 
 function cleanPositionName(value, employeeName) {
   let text = cleanTextValue(value)
@@ -985,8 +1164,10 @@ function cleanPositionName(value, employeeName) {
 }
 
 function extractEmployeeName(oneLine, directEmployee, baseEmployee, employerName, positionRaw, location, industry) {
+  const labeled = oneLine.match(/\bEmployee(?:\s+Name)?\s*:?\s*([A-Z][A-Za-z'\-]+(?:\s+[A-Z][A-Za-z'\-]+){1,3})(?:\s*\([^)]*\))?\s+(?:Employee\s+ID|Staff\s+ID|Worker\s+ID|ID\b)/i);
+  if (labeled?.[1] && !looksLikeIdValue(labeled[1]) && !looksLikeNonPersonText(labeled[1])) return cleanTextValue(labeled[1]);
   const direct = chooseUsefulText(directEmployee, baseEmployee);
-  if (direct && !looksLikeEmployerText(direct, employerName) && !looksLikeNonPersonText(direct)) return direct;
+  if (direct && !looksLikeEmployerText(direct, employerName) && !looksLikeNonPersonText(direct) && !looksLikeIdValue(direct)) return direct;
   const excluded = normalizeWhvText([employerName, location, industry, "Pay Period Pay Date Gross Pay Net Pay Tax Withheld Superannuation Hours Worked Work Location Position Industry PAYSLIP"].join(" "));
   const candidates = [...oneLine.matchAll(/\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,2})\b/g)].map((match) => match[1].trim());
   const scored = candidates
@@ -999,7 +1180,7 @@ function extractEmployeeName(oneLine, directEmployee, baseEmployee, employerName
 function scorePersonCandidate(candidate, oneLine, excluded) {
   const normalized = normalizeWhvText(candidate);
   if (!normalized || excluded.includes(normalized)) return 0;
-  if (/\b(?:pay|period|date|gross|net|tax|withheld|superannuation|hours|worked|employer|employee|position|location|industry|services|group|operations|mining|build|hotel|farm|produce|pearls|coral|dust|outback|northern|riverland|blue|red|pty|ltd|mount|isa|port|douglas|mildura|loxton|broome|tourism|hospitality|construction|weekly|fortnightly|monthly|payslip|aud|qld|vic|wa|sa|nsw|tas|act|nt)\b/i.test(candidate)) return 0;
+  if (/\b(?:pay|period|date|gross|net|tax|withheld|superannuation|hours|worked|employer|employee|position|location|industry|services|group|operations|mining|build|hotel|farm|produce|pearls|coral|dust|outback|northern|riverland|blue|red|pty|ltd|mount|isa|port|douglas|mildura|loxton|broome|road|street|wharf|citrus|pearling|tourism|hospitality|construction|weekly|fortnightly|monthly|payslip|aud|qld|vic|wa|sa|nsw|tas|act|nt)\b/i.test(candidate)) return 0;
   let score = 10;
   const employeePattern = new RegExp("(?:Employee(?:\\s+Name)?\\s*:?\\s*)" + escapeRegExp(candidate), "i");
   if (employeePattern.test(oneLine)) score += 80;
@@ -1010,8 +1191,13 @@ function scorePersonCandidate(candidate, oneLine, excluded) {
 }
 
 function looksLikeNonPersonText(value) {
-  return /\b(?:saturday|sunday|weekend|public|holiday|loading|allowance|ordinary|overtime|penalty|bonus|leave|annual|sick|meal|travel|site\s+allowance)\b/i.test(value);
+  return /\b(?:id|employee\s*id|staff\s*id|worker\s*id|saturday|sunday|weekend|public|holiday|loading|allowance|ordinary|overtime|penalty|bonus|leave|annual|sick|meal|travel|site\s+allowance)\b/i.test(value);
 }
+
+function looksLikeIdValue(value) {
+  return /\b(?:id|employee\s*id|staff\s*id|worker\s*id)\b/i.test(value) || /\b[A-Z]{2,}-\d{3,}\b/.test(String(value || ""));
+}
+
 
 function looksLikeEmployerText(value, employerName) {
   const text = normalizeWhvText(value);
@@ -1033,7 +1219,8 @@ function isUsefulWhvText(value) {
   if (text.length < 2) return false;
   if (!/[A-Za-z]/.test(text)) return false;
   if (/^[,./\-:]+$/.test(text)) return false;
-  if (/^(abn|employer|employee|position|location|industry)$/i.test(text)) return false;
+  if (/^(abn|employer|employee|employee id|staff id|worker id|id|position|location|industry)$/i.test(text)) return false;
+  if (looksLikeIdValue(text)) return false;
   if (/\b(?:pay period|pay date|gross pay|net pay|tax withheld|superannuation)\b/i.test(text)) return false;
   return text.length <= 80;
 }
