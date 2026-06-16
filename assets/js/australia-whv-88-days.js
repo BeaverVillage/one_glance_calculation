@@ -658,9 +658,9 @@ function renderRecordRow(record, index, state) {
     '<td data-label="고용주" class="whv-wrap-cell">' + escapeHtml(record.fields.employerName || '-') + '</td>',
     '<td data-label="기간" class="whv-period-cell">' + escapeHtml(periodText) + '</td>',
     '<td data-label="인정 일수" class="whv-cell-center"><strong class="whv-days-value">' + escapeHtml(daysText) + '</strong>' + (sourceText ? '<span class="whv-row-muted">' + escapeHtml(sourceText) + '</span>' : '') + '</td>',
-    '<td data-label="시간" class="whv-cell-center">' + escapeHtml(hoursText) + '</td>',
+    '<td data-label="시간" class="whv-cell-center whv-hours-cell">' + escapeHtml(hoursText) + '</td>',
     '<td data-label="지역/업종" class="whv-wrap-cell"><strong>' + escapeHtml(regionText) + '</strong><span class="whv-row-muted">' + escapeHtml(record.fields.industry || '-') + '</span></td>',
-    '<td data-label="관리"><div class="whv-detail-bar"><button type="button" class="subtle-button whv-detail-button" data-record-action="toggle-detail" data-detail-target="' + detailId + '">상세 수정 ▼</button><button type="button" class="subtle-button danger-light whv-delete-button" data-record-action="remove">항목 삭제</button><span class="whv-postcode-chip ' + escapeHtml(postcode.status) + '">' + escapeHtml(getPostcodeDisplayLabel(postcode)) + '</span></div><div class="whv-action-status-row"><strong class="decision-badge ' + status.tone + '">' + escapeHtml(status.label) + '</strong></div></td>',
+    '<td data-label="관리"><div class="whv-detail-bar"><button type="button" class="subtle-button whv-detail-button" data-record-action="toggle-detail" data-detail-target="' + detailId + '">상세 수정 ▼</button><button type="button" class="subtle-button danger-light whv-delete-button" data-record-action="remove">항목 삭제</button><span class="whv-postcode-chip ' + escapeHtml(postcode.status) + '">' + escapeHtml(getPostcodeDisplayLabel(postcode)) + '</span></div>' + renderCompactStatus(status) + '</td>',
     '</tr>',
     '<tr class="whv-record-detail" data-record-id="' + record.id + '" hidden>',
     '<td colspan="8">' + renderRecordDetail(record, metrics, postcode, detailId) + '</td>',
@@ -676,12 +676,17 @@ function getPostcodeDisplayLabel(postcode) {
   return postcode.label || "공식 확인 필요";
 }
 
+function renderCompactStatus(status) {
+  if (!status || status.label === "계산 포함") return "";
+  return '<div class="whv-action-status-row"><strong class="decision-badge ' + status.tone + '">' + escapeHtml(status.label) + '</strong></div>';
+}
+
 function renderRecordDetail(record, metrics, postcode, detailId) {
   const cycleOptions = CYCLE_OPTIONS.map(function(cycle) {
     return '<option value="' + cycle + '" ' + (normalizeCycle(record.fields.payCycle) === cycle ? 'selected' : '') + '>' + cycle + '</option>';
   }).join("");
   const memoParts = [
-    '<strong class="decision-badge ' + getRecordReviewStatus(record, metrics).tone + '">' + escapeHtml(getRecordReviewStatus(record, metrics).label) + '</strong>',
+    renderCompactStatus(getRecordReviewStatus(record, metrics)),
     record.error ? '<span class="whv-row-warn">' + escapeHtml(record.error) + '</span>' : '',
     '<span>' + escapeHtml(metrics.modeLabel) + '</span>',
     renderRowAction(record, metrics)

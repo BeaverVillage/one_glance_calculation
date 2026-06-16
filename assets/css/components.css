@@ -4183,3 +4183,124 @@ html {
     grid-column: 1 / -1;
   }
 }
+
+
+/* WHV v6: final spacing, unit alignment, link visibility and table polish */
+.whv-goal-card .field-row.whv-compact-fields {
+  grid-template-columns: minmax(150px, 1fr) minmax(196px, 1.28fr);
+  gap: 10px;
+}
+
+.whv-goal-card select,
+#whv-target-visa,
+#whv-subclass {
+  min-height: 42px;
+  padding: 8px 44px 8px 10px;
+  font-size: 0.88rem;
+  line-height: 1.25;
+  text-overflow: clip;
+}
+
+#whv-target-visa {
+  min-width: 150px;
+}
+
+#whv-subclass {
+  min-width: 196px;
+}
+
+.input-with-unit {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(52px, auto);
+  align-items: stretch;
+  min-height: 42px;
+}
+
+.input-with-unit input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  line-height: 1.2;
+}
+
+.input-with-unit .unit {
+  min-width: 52px;
+  padding: 0 12px;
+  white-space: nowrap;
+  word-break: keep-all;
+  line-height: 1;
+}
+
+.whv-hours-cell {
+  min-width: 82px;
+  white-space: nowrap !important;
+  text-align: center;
+  word-break: keep-all;
+  overflow-wrap: normal;
+}
+
+.whv-summary-table th:nth-child(6),
+.whv-summary-table td:nth-child(6) {
+  width: 88px;
+  min-width: 82px;
+  white-space: nowrap !important;
+  text-align: center;
+}
+
+.whv-action-status-row:empty {
+  display: none;
+}
+
+.whv-detail-bar {
+  grid-template-columns: minmax(104px, 0.9fr) minmax(92px, 0.78fr) minmax(210px, 2.35fr);
+}
+
+.whv-summary-table td[data-label="관리"] .decision-badge.good {
+  display: none;
+}
+
+#whv-add-manual-record {
+  margin-top: 14px;
+}
+
+#official-guides .plain-list a {
+  color: var(--blue);
+  font-weight: 850;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 1100px) and (min-width: 921px) {
+  .whv-goal-card .field-row.whv-compact-fields {
+    grid-template-columns: 1fr;
+  }
+
+  #whv-target-visa,
+  #whv-subclass {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .whv-goal-card .field-row.whv-compact-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .whv-goal-card select,
+  #whv-target-visa,
+  #whv-subclass {
+    width: 100%;
+    min-width: 0;
+    font-size: 0.88rem;
+  }
+
+  .input-with-unit {
+    grid-template-columns: minmax(0, 1fr) minmax(52px, auto);
+  }
+
+  .whv-hours-cell {
+    min-width: 0;
+    white-space: nowrap !important;
+  }
+}
