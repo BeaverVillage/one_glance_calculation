@@ -3657,3 +3657,352 @@ html {
     width: 100%;
   }
 }
+
+/* WHV v4: final compact review table and overflow fixes */
+#whv-subclass {
+  min-width: 220px;
+  padding-right: 42px;
+}
+
+.whv-mode-card-wrap .whv-step-actions {
+  justify-content: center;
+}
+
+.whv-mode-card-wrap .whv-step-actions .primary-button {
+  display: flex;
+  width: 100%;
+  max-width: 520px;
+  justify-content: center;
+  margin-inline: auto;
+}
+
+.whv-mini-notice,
+.whv-small-official-note,
+.notice-box.notice-compact,
+.postcode-result,
+.whv-result-official-note {
+  border-radius: 12px;
+}
+
+.whv-upload-hint {
+  border-radius: 10px;
+  padding: 7px 10px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.whv-record-review-wrap {
+  overflow-x: visible !important;
+  width: 100%;
+  max-width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+.whv-record-review-wrap::before {
+  content: none !important;
+  display: none !important;
+}
+
+.whv-summary-table {
+  width: 100%;
+  min-width: 0 !important;
+  table-layout: auto;
+  border-collapse: collapse;
+}
+
+.whv-summary-table th,
+.whv-summary-table td {
+  vertical-align: middle;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.whv-summary-table th {
+  padding: 9px 8px;
+  font-size: 0.75rem;
+}
+
+.whv-summary-table td {
+  padding: 9px 8px;
+  max-width: none;
+  overflow-wrap: anywhere;
+}
+
+.whv-summary-table th:nth-child(1),
+.whv-summary-table td:nth-child(1) {
+  width: 64px;
+  text-align: center;
+}
+
+.whv-summary-table th:nth-child(2),
+.whv-summary-table td:nth-child(2) {
+  width: 18%;
+  min-width: 118px;
+}
+
+.whv-summary-table th:nth-child(4),
+.whv-summary-table td:nth-child(4) {
+  width: 172px;
+  min-width: 162px;
+}
+
+.whv-summary-table th:nth-child(5),
+.whv-summary-table td:nth-child(5),
+.whv-summary-table th:nth-child(6),
+.whv-summary-table td:nth-child(6) {
+  width: 74px;
+  text-align: center;
+}
+
+.whv-period-cell {
+  min-width: 162px;
+  white-space: nowrap !important;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.whv-summary-table .whv-file-name {
+  display: block;
+  max-width: none !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.25;
+}
+
+.whv-wrap-cell {
+  min-width: 0;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+}
+
+.whv-days-value {
+  display: inline-block;
+  color: var(--green-dark);
+  font-size: 1rem;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.whv-row-muted:empty {
+  display: none;
+}
+
+.whv-action-cell {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  max-width: 250px;
+}
+
+.whv-action-cell .subtle-button,
+.whv-action-cell .decision-badge,
+.whv-action-cell .whv-postcode-chip {
+  flex: 0 0 auto;
+}
+
+.whv-detail-button,
+.whv-delete-button,
+.whv-action-cell .subtle-button {
+  display: inline-flex;
+  width: auto !important;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 5px 8px;
+  font-size: 0.76rem;
+  white-space: nowrap;
+}
+
+.whv-postcode-chip {
+  max-width: 100%;
+  min-height: 28px;
+  padding: 5px 8px;
+  border-radius: 10px;
+  line-height: 1.25;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+  text-align: left;
+}
+
+.whv-detail-accordion summary {
+  width: fit-content;
+  padding: 9px 12px;
+  white-space: nowrap;
+}
+
+.whv-detail-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.whv-detail-grid .field,
+.whv-detail-meta,
+.postcode-result,
+.postcode-result p,
+.postcode-result span {
+  min-width: 0;
+}
+
+.postcode-result {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+}
+
+.postcode-result p,
+.postcode-result span,
+.postcode-result strong {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+  line-height: 1.45;
+}
+
+@media (max-width: 900px) {
+  #whv-subclass {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .whv-detail-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .whv-record-review-wrap {
+    border: 0;
+    background: transparent;
+  }
+
+  .whv-record-summary td {
+    grid-template-columns: 86px minmax(0, 1fr);
+  }
+
+  .whv-period-cell {
+    min-width: 0;
+    white-space: normal !important;
+  }
+
+  .whv-action-cell {
+    max-width: none;
+  }
+
+  .whv-postcode-chip {
+    max-width: 100%;
+  }
+
+  .whv-detail-grid,
+  .whv-detail-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .whv-mode-card-wrap .whv-step-actions .primary-button {
+    max-width: none;
+  }
+}
+
+@media (max-width: 1020px) {
+  .whv-record-review-wrap {
+    border: 0;
+    background: transparent;
+  }
+
+  .whv-summary-table,
+  .whv-summary-table thead,
+  .whv-summary-table tbody,
+  .whv-summary-table tr,
+  .whv-summary-table td {
+    display: block;
+    width: 100%;
+    min-width: 0 !important;
+  }
+
+  .whv-summary-table {
+    border-collapse: separate;
+    border-spacing: 0 10px;
+  }
+
+  .whv-summary-table thead {
+    display: none;
+  }
+
+  .whv-record-summary {
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 14px 14px 0 0;
+    background: #fff;
+  }
+
+  .whv-record-summary td {
+    display: grid;
+    grid-template-columns: 94px minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+    max-width: none;
+    padding: 6px 0;
+    border: 0;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  .whv-record-summary td::before {
+    content: attr(data-label);
+    color: var(--muted);
+    font-size: 0.74rem;
+    font-weight: 900;
+  }
+
+  .whv-record-detail {
+    margin-top: -10px;
+    border: 1px solid var(--line);
+    border-top: 0;
+    border-radius: 0 0 14px 14px;
+    background: #fff;
+  }
+
+  .whv-record-detail > td {
+    padding: 0 0 12px;
+    border: 0;
+  }
+
+  .whv-detail-accordion {
+    border: 0;
+    border-radius: 0 0 14px 14px;
+  }
+}
+
+/* WHV v4 notice shapes */
+.whv-mini-notice {
+  display: block;
+  width: fit-content;
+  max-width: 760px;
+  padding: 10px 13px;
+  border-radius: 12px !important;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+}
+
+.whv-result-highlight-card.emphasize,
+.notice-box,
+.whv-upload-hint,
+.postcode-result.notMatched,
+.postcode-result.needsOfficialCheck,
+.postcode-result.unknown {
+  border-radius: 12px !important;
+}

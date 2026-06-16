@@ -293,7 +293,7 @@ function closeExtraMode(state, els, mode) {
   state.extraModes.delete(mode);
   clearInputsForMode(mode, els);
   updateModePanelVisibility(state, els);
-  showWhvFlowNotice(els, "보조 입력 영역을 닫았습니다. 추가 전 임시 입력값은 합계에 반영되지 않습니다.", "info");
+
 }
 
 function clearInputsForMode(mode, els) {
@@ -572,6 +572,7 @@ function handleRecordAction(button, state, els) {
     const detail = document.getElementById(button.dataset.detailTarget || "");
     if (detail) {
       detail.open = !detail.open;
+      button.textContent = detail.open ? "상세 수정 ▲" : "상세 수정 ▼";
       if (detail.open) scrollToWhvSection(detail);
     }
     return;
@@ -625,10 +626,10 @@ function renderRecordTable(state) {
     return renderRecordRow(record, index, state);
   }).join("");
   return [
-    '<div class="whv-table-scroll whv-record-review-wrap" role="region" aria-label="인정 일수 확인 표" tabindex="0">',
+    '<div class="whv-record-review-wrap" aria-label="인정 일수 확인 표">',
     '<table class="whv-record-table whv-summary-table">',
     '<thead><tr>',
-    '<th>포함</th><th>파일명</th><th>고용주</th><th>기간</th><th>인정 일수</th><th>시간</th><th>지역/업종</th><th>자격 지역</th><th>상태/액션</th>',
+    '<th>포함</th><th>파일명</th><th>고용주</th><th>기간</th><th>인정 일수</th><th>시간</th><th>지역/업종</th><th>상태/액션</th>',
     '</tr></thead><tbody>', rows, '</tbody></table></div>'
   ].join("");
 }
@@ -647,7 +648,7 @@ function renderRecordRow(record, index, state) {
   const regionText = [record.fields.state, record.fields.postcode].filter(Boolean).join(" ") || "-";
   const hoursText = record.fields.hoursWorked ? formatNumber(record.fields.hoursWorked, 2).replace(/\.00$/, "") + "시간" : "-";
   const daysText = metrics.appliedDays ? metrics.appliedDays + "일" : "-";
-  const sourceText = metrics.source === "hours" ? "추정" : metrics.source === "manual" ? "직접 입력" : metrics.source === "period" ? "기간 기준" : "검토 필요";
+  const sourceText = metrics.source === "hours" ? "추정" : metrics.source === "manual" ? "직접 입력" : "";
   const detailId = "whv-detail-" + record.id;
   return [
     '<tr class="whv-payslip-card whv-record-summary" data-record-id="' + record.id + '">',
@@ -655,14 +656,13 @@ function renderRecordRow(record, index, state) {
     '<td data-label="파일명"><strong class="whv-file-name">' + escapeHtml(record.fileName || ('항목 ' + (index + 1))) + '</strong><span class="whv-row-muted">' + escapeHtml(MODE_LABELS[record.sourceType] || record.method || '-') + '</span></td>',
     '<td data-label="고용주" class="whv-wrap-cell">' + escapeHtml(record.fields.employerName || '-') + '</td>',
     '<td data-label="기간" class="whv-period-cell">' + escapeHtml(periodText) + '</td>',
-    '<td data-label="인정 일수" class="whv-cell-center"><strong class="whv-days-value">' + escapeHtml(daysText) + '</strong><span class="whv-row-muted">' + escapeHtml(sourceText) + '</span></td>',
+    '<td data-label="인정 일수" class="whv-cell-center"><strong class="whv-days-value">' + escapeHtml(daysText) + '</strong>' + (sourceText ? '<span class="whv-row-muted">' + escapeHtml(sourceText) + '</span>' : '') + '</td>',
     '<td data-label="시간" class="whv-cell-center">' + escapeHtml(hoursText) + '</td>',
     '<td data-label="지역/업종" class="whv-wrap-cell"><strong>' + escapeHtml(regionText) + '</strong><span class="whv-row-muted">' + escapeHtml(record.fields.industry || '-') + '</span></td>',
-    '<td data-label="자격 지역"><span class="whv-postcode-chip ' + escapeHtml(postcode.status) + '">' + escapeHtml(getPostcodeDisplayLabel(postcode)) + '</span></td>',
-    '<td data-label="상태/액션"><div class="whv-action-cell"><strong class="decision-badge ' + status.tone + '">' + escapeHtml(status.label) + '</strong><button type="button" class="subtle-button" data-record-action="toggle-detail" data-detail-target="' + detailId + '">상세 수정</button><button type="button" class="subtle-button danger-light" data-record-action="remove">항목 삭제</button></div></td>',
+    '<td data-label="상태/액션"><div class="whv-action-cell"><button type="button" class="subtle-button whv-detail-button" data-record-action="toggle-detail" data-detail-target="' + detailId + '">상세 수정 ▼</button><button type="button" class="subtle-button danger-light whv-delete-button" data-record-action="remove">항목 삭제</button><span class="whv-postcode-chip ' + escapeHtml(postcode.status) + '">' + escapeHtml(getPostcodeDisplayLabel(postcode)) + '</span><strong class="decision-badge ' + status.tone + '">' + escapeHtml(status.label) + '</strong></div></td>',
     '</tr>',
     '<tr class="whv-record-detail" data-record-id="' + record.id + '">',
-    '<td colspan="9">' + renderRecordDetail(record, metrics, postcode, detailId) + '</td>',
+    '<td colspan="8">' + renderRecordDetail(record, metrics, postcode, detailId) + '</td>',
     '</tr>'
   ].join("");
 }
@@ -687,7 +687,7 @@ function renderRecordDetail(record, metrics, postcode, detailId) {
   ].filter(Boolean).join("");
   return [
     '<details id="' + detailId + '" class="whv-detail-accordion">',
-    '<summary>상세 수정</summary>',
+    '<summary>상세 수정 ▲</summary>',
     '<div class="whv-detail-grid">',
     textInputField('고용주', 'employerName', record.fields.employerName),
     textInputField('ABN', 'abn', record.fields.abn),
@@ -766,7 +766,7 @@ function renderSummary(state, els) {
     ].join("");
   }
   if (els.resultOfficialLinks) {
-    els.resultOfficialLinks.innerHTML = '<p>Home Affairs는 자격 지역과 specified work 기준을 변경할 수 있습니다. 자동 확인 결과는 참고용이며, 신청 전 공식 페이지에서 최신 기준을 확인하세요.</p><a href="https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/work-holiday-417/specified-work" target="_blank" rel="noopener">subclass 417 specified work</a><a href="https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/work-holiday-462/specified-462-work" target="_blank" rel="noopener">subclass 462 specified work</a><a href="https://immi.homeaffairs.gov.au/what-we-do/whm-program/latest-news" target="_blank" rel="noopener">WHM latest news</a><a href="https://immi.homeaffairs.gov.au/visas/working-in-australia/skill-occupation-list/regional-postcodes" target="_blank" rel="noopener noreferrer">자격을 갖춘 지역인지 확인하기</a>';
+    els.resultOfficialLinks.innerHTML = '<p>Home Affairs는 자격 지역과 specified work 기준을 변경할 수 있습니다. 자동 확인 결과는 참고용이며, 신청 전 공식 페이지에서 최신 기준을 확인하세요.</p><a href="https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/work-holiday-417/specified-work" target="_blank" rel="noopener">subclass 417 specified work</a><a href="https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/work-holiday-462/specified-462-work" target="_blank" rel="noopener">subclass 462 specified work</a><a href="https://immi.homeaffairs.gov.au/what-we-do/whm-program/latest-news" target="_blank" rel="noopener">WHM latest news</a><a href="https://immi.homeaffairs.gov.au/visas/working-in-australia/skill-occupation-list/regional-postcodes" target="_blank" rel="noopener noreferrer"><strong><u>자격을 갖춘 지역인지 확인하기:</u></strong> 공식 postcode 안내</a>';
   }
 }
 
