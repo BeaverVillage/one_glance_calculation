@@ -2176,6 +2176,7 @@ function isValidAudKrwRate(value) {
 }
 
 export async function fetchAudKrwRate() {
+  // 공개 환율 API만 사용합니다. API 키를 프론트엔드에 저장하지 않으며, 사용자의 급여명세서 파일이나 OCR 텍스트를 환율 API로 보내지 않습니다.
   // 현재 버전은 Pay Date 기준 과거 환율을 조회하지 않고 최신 AUD/KRW 환율만 사용합니다.
   const providers = [
     {

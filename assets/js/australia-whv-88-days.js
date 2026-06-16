@@ -861,7 +861,7 @@ function getRecordReviewStatus(record, metrics) {
 function getOverallStatus(input) {
   if (input.ukException) return { label: "영국 국적자 예외 가능성 있음", tone: "neutral" };
   if (input.review > 0) return { label: "검토 필요", tone: "warn" };
-  if (input.finalDays >= input.target) return { label: "기준 충족 가능성 높음", tone: "good" };
+  if (input.finalDays >= input.target) return { label: "참고상 목표 일수 이상", tone: "good" };
   return { label: "아직 부족", tone: "warn" };
 }
 
@@ -874,9 +874,9 @@ function buildSummaryText(input) {
   if (input.review > 0) warnings.push(input.review + "건은 검토 필요 항목입니다.");
   if (input.overlapWarnings.length > 0) warnings.push(input.overlapWarnings.length + "건의 중복 또는 겹치는 기간 경고가 있습니다.");
   if (input.finalDays >= input.target) {
-    return "입력된 자료 기준으로 약 " + input.finalDays + "일의 specified work 인정 가능 기간이 계산되었습니다. " + targetLabel + " 기준 " + input.target + "일을 넘지만, 실제 인정 여부는 업종·지역·증빙자료에 따라 달라질 수 있습니다. " + warnings.join(" ");
+    return "입력된 자료 기준으로 약 " + input.finalDays + "일의 specified work 참고 일수가 계산되었습니다. " + targetLabel + " 기준 " + input.target + "일 이상으로 보이지만, 실제 인정 여부는 업종·지역·증빙자료와 신청 시점의 Home Affairs 기준에 따라 달라질 수 있습니다. " + warnings.join(" ");
   }
-  return "현재 확인된 인정 가능 일수는 " + input.finalDays + "일입니다. " + targetLabel + " 기준까지 약 " + input.remaining + "일이 더 필요할 수 있습니다. 실제 인정 여부는 공식 기준과 증빙자료를 확인해야 합니다. " + warnings.join(" ");
+  return "현재 입력값 기준 참고 일수는 " + input.finalDays + "일입니다. " + targetLabel + " 기준까지 약 " + input.remaining + "일이 더 필요할 수 있습니다. 실제 인정 여부는 공식 기준과 증빙자료를 확인해야 합니다. " + warnings.join(" ");
 }
 
 function findOverlapWarnings(records) {
