@@ -5140,3 +5140,523 @@ html {
     text-align: center;
   }
 }
+
+/* 2026-06-16 mobile exchange + WHV final polish */
+html,
+body {
+  max-width: 100%;
+}
+
+.container,
+.hero-band,
+.content-band,
+.tool-panel,
+.input-panel,
+.result-panel,
+.calculator-card,
+.whv-top-grid,
+.whv-step-panel,
+.whv-goal-card,
+.whv-mode-card-wrap,
+.whv-mode-card,
+.whv-mode-panel,
+.whv-record-review-wrap,
+.whv-summary-table,
+.exchange-rate-panel,
+.exchange-form-grid,
+.exchange-fee-options,
+.manual-rate-panel {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.whv-legal-note {
+  margin-top: 0;
+}
+
+.whv-guide-caution {
+  border-color: rgba(178, 106, 0, 0.2);
+  background: var(--amber-soft) !important;
+}
+
+.calculator-card .tool-badge,
+.calculator-card .badge {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 26px;
+  padding: 4px 9px;
+  color: var(--green);
+  background: var(--green-soft);
+  border: 1px solid #c6e7dc;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 0.76rem;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.exchange-rate-mode-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 14px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface-soft);
+}
+
+.exchange-rate-mode-grid legend {
+  grid-column: 1 / -1;
+  padding: 0 4px;
+  color: var(--ink);
+  font-size: 0.88rem;
+  font-weight: 950;
+}
+
+.exchange-rate-mode-card {
+  position: relative;
+  display: grid !important;
+  min-height: 94px;
+  align-content: start;
+  justify-content: stretch !important;
+  gap: 5px !important;
+  padding: 12px 34px 12px 12px !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 14px !important;
+  background: #fff !important;
+  color: var(--ink) !important;
+  text-align: left !important;
+  box-shadow: 0 8px 18px rgba(24, 39, 75, 0.035);
+  cursor: pointer;
+}
+
+.exchange-rate-mode-card input[type="radio"] {
+  position: absolute;
+  width: 1px !important;
+  height: 1px !important;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.exchange-rate-mode-card strong {
+  color: var(--ink);
+  font-size: 0.95rem;
+  font-weight: 950;
+  line-height: 1.25;
+}
+
+.exchange-rate-mode-card > span:not(.mode-check) {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 750;
+  line-height: 1.35;
+}
+
+.exchange-rate-mode-card .mode-check {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  color: transparent;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: #fff;
+  font-size: 0.78rem;
+  font-weight: 950;
+}
+
+.exchange-rate-mode-card.active,
+.exchange-rate-mode-card:has(input[type="radio"]:checked) {
+  border-color: rgba(31, 122, 101, 0.45) !important;
+  background: linear-gradient(180deg, #fff, var(--green-soft)) !important;
+}
+
+.exchange-rate-mode-card.active .mode-check,
+.exchange-rate-mode-card:has(input[type="radio"]:checked) .mode-check {
+  color: #fff;
+  border-color: var(--green);
+  background: var(--green);
+}
+
+.exchange-result-card > strong,
+#exchange-result {
+  color: var(--ink) !important;
+  font-weight: 850 !important;
+  letter-spacing: -0.02em;
+}
+
+.exchange-rate-metrics div {
+  min-width: 0;
+}
+
+.exchange-rate-metrics em {
+  color: var(--ink);
+  font-weight: 850;
+  overflow-wrap: anywhere;
+}
+
+#exchange-result-detail,
+#exchange-fee-summary,
+#exchange-rate-attribution {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.fee-checkbox-label,
+.checkbox-line.fee-checkbox-label {
+  display: inline-flex;
+  width: auto;
+  max-width: 100%;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 8px;
+  margin-bottom: 12px;
+  line-height: 1.45;
+}
+
+.fee-checkbox-label input[type="checkbox"] {
+  flex: 0 0 auto;
+  width: 18px !important;
+  height: 18px;
+  margin: 0.18em 0 0;
+}
+
+.fee-checkbox-label span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+}
+
+@media (max-width: 640px) {
+  body {
+    overflow-x: clip;
+  }
+
+  main,
+  .calculator-page {
+    padding-bottom: calc(140px + env(safe-area-inset-bottom));
+  }
+
+  .site-header {
+    overflow-x: visible;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 100%;
+    padding-inline: 12px;
+    margin-inline: auto;
+  }
+
+  .hero-band,
+  .content-band,
+  .content-band.compact {
+    overflow: clip;
+  }
+
+  .hero-band .container,
+  .content-band .container {
+    min-width: 0;
+  }
+
+  .whv-top-grid,
+  .whv-mode-grid,
+  .whv-goal-card .field-row.whv-compact-fields,
+  .whv-mode-card-wrap .whv-mode-grid,
+  .whv-guide-grid,
+  .exchange-rate-panel,
+  .exchange-form-grid,
+  .australia-pay-panel,
+  .field-row {
+    grid-template-columns: minmax(0, 1fr) !important;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .whv-top-grid {
+    gap: 10px;
+  }
+
+  .whv-step-panel,
+  .whv-goal-card,
+  .whv-mode-card-wrap,
+  .whv-mode-card,
+  .whv-mode-panel,
+  .tool-panel,
+  .input-panel,
+  .result-panel {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .whv-step-panel,
+  .whv-mode-panel,
+  .tool-panel,
+  .input-panel,
+  .result-panel {
+    padding: 12px;
+  }
+
+  .whv-goal-card select,
+  #whv-target-visa,
+  #whv-subclass,
+  .whv-step-card select,
+  .whv-step-card input,
+  .whv-step-card button,
+  .whv-mode-panel input,
+  .whv-mode-panel select,
+  .whv-mode-panel button {
+    width: 100%;
+    min-width: 0 !important;
+    max-width: 100%;
+    font-size: 16px;
+    padding-right: 42px;
+  }
+
+  .whv-mode-card {
+    min-height: 0;
+    padding: 9px 11px;
+    gap: 3px;
+  }
+
+  .whv-mode-card strong {
+    font-size: 0.94rem;
+    line-height: 1.23;
+  }
+
+  .whv-mode-card span {
+    font-size: 0.79rem;
+  }
+
+  .whv-step-actions,
+  .whv-step-actions .primary-button,
+  #whv-go-input {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .whv-mini-notice {
+    width: 100%;
+    max-width: 100%;
+    margin-top: 8px;
+    font-size: 0.82rem;
+  }
+
+  .whv-record-review-wrap {
+    overflow: visible !important;
+    border: 0;
+    background: transparent;
+  }
+
+  .whv-summary-table,
+  .whv-summary-table tbody,
+  .whv-summary-table tr,
+  .whv-summary-table td {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box;
+  }
+
+  .whv-summary-table thead {
+    display: none !important;
+  }
+
+  .whv-summary-table {
+    border-collapse: separate;
+    border-spacing: 0 10px;
+  }
+
+  .whv-record-summary {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 14px 14px 0 0;
+    background: #fff;
+  }
+
+  .whv-record-summary td {
+    display: grid !important;
+    grid-template-columns: 80px minmax(0, 1fr);
+    align-items: start;
+    gap: 8px;
+    padding: 4px 0 !important;
+    border: 0 !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
+  .whv-record-summary td::before {
+    content: attr(data-label);
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 900;
+    line-height: 1.35;
+  }
+
+  .whv-record-summary td[data-label="파일명"] {
+    display: block !important;
+  }
+
+  .whv-record-summary td[data-label="파일명"]::before {
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .whv-record-summary td[data-label="관리"] {
+    display: block !important;
+  }
+
+  .whv-record-summary td[data-label="관리"]::before {
+    display: none !important;
+  }
+
+  .whv-summary-table .whv-file-name,
+  .whv-wrap-cell,
+  .whv-period-cell,
+  .whv-row-muted {
+    max-width: 100% !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    overflow-wrap: anywhere;
+    word-break: keep-all;
+  }
+
+  .whv-summary-table .whv-file-name {
+    line-height: 1.28;
+  }
+
+  .whv-period-cell {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .whv-hours-cell,
+  .whv-summary-table td[data-label="시간"] {
+    white-space: nowrap !important;
+    word-break: keep-all;
+    overflow-wrap: normal;
+  }
+
+  .whv-days-value,
+  .whv-hours-cell {
+    display: inline-block;
+  }
+
+  .whv-detail-bar {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 7px;
+  }
+
+  .whv-detail-bar .whv-postcode-chip {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-width: 0;
+    justify-content: center;
+    text-align: center;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: keep-all;
+  }
+
+  .whv-detail-bar .subtle-button,
+  .whv-detail-bar .whv-detail-button,
+  .whv-detail-bar .whv-delete-button {
+    width: 100% !important;
+    min-width: 0;
+  }
+
+  .whv-record-detail {
+    border: 1px solid var(--line);
+    border-top: 0;
+    border-radius: 0 0 14px 14px;
+    background: #fff;
+  }
+
+  .whv-record-detail > td {
+    padding: 0 10px 12px !important;
+  }
+
+  .whv-detail-grid,
+  .whv-detail-meta {
+    grid-template-columns: minmax(0, 1fr) !important;
+    width: 100%;
+  }
+
+  .whv-detail-grid input,
+  .whv-detail-grid select,
+  .whv-detail-grid textarea,
+  .whv-detail-grid .field {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .exchange-rate-mode-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .exchange-rate-mode-card {
+    min-height: 0;
+    padding: 10px 34px 10px 11px !important;
+  }
+
+  .exchange-rate-mode-card strong {
+    font-size: 0.93rem;
+  }
+
+  .exchange-rate-mode-card > span:not(.mode-check) {
+    font-size: 0.78rem;
+  }
+
+  .quick-pair-row button {
+    min-width: 0;
+    white-space: normal;
+  }
+
+  .fee-checkbox-label,
+  .checkbox-line.fee-checkbox-label {
+    display: flex;
+    width: 100%;
+  }
+
+  .exchange-result-card > strong,
+  #exchange-result {
+    font-size: clamp(1.65rem, 8vw, 2.15rem) !important;
+    font-weight: 850 !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .container {
+    padding-inline: 10px;
+  }
+
+  .whv-record-summary td {
+    grid-template-columns: 72px minmax(0, 1fr);
+  }
+
+  .whv-detail-bar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .whv-detail-bar .whv-postcode-chip {
+    grid-column: auto;
+  }
+}

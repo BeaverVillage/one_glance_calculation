@@ -152,6 +152,9 @@ function bindEvents(els) {
 
 function updateModeVisibility(els) {
   const mode = getMode(els);
+  els.modeInputs.forEach((input) => {
+    input.closest(".exchange-rate-mode-card")?.classList.toggle("active", input.checked);
+  });
   els.manualPanel.hidden = mode !== "manual";
   els.refresh.disabled = mode === "manual";
 }
