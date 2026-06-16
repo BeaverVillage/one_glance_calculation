@@ -4329,3 +4329,162 @@ html {
   min-height: 28px;
   line-height: 1.35;
 }
+
+
+/* Exchange rate calculator */
+.exchange-rate-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.exchange-form-grid {
+  display: grid;
+  grid-template-columns: minmax(130px, 0.85fr) minmax(160px, 1fr) 52px minmax(160px, 1fr);
+  gap: 12px;
+  align-items: end;
+}
+
+.exchange-rate-panel .field label,
+.exchange-rate-panel legend {
+  display: block;
+  margin-bottom: 7px;
+  font-weight: 850;
+}
+
+.exchange-rate-panel input,
+.exchange-rate-panel select {
+  width: 100%;
+}
+
+.currency-swap-button {
+  display: inline-flex;
+  width: 52px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--green);
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.quick-pair-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.quick-pair-row button,
+.rate-mode-card label {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--blue);
+  font-weight: 800;
+}
+
+.rate-mode-card {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 14px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-soft);
+}
+
+.rate-mode-card legend {
+  padding: 0 4px;
+}
+
+.manual-rate-panel,
+.exchange-fee-options {
+  margin: 14px 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+.exchange-fee-options summary {
+  min-height: 36px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.checkbox-line {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  font-weight: 750;
+}
+
+.exchange-result-card > strong {
+  display: block;
+  margin: 6px 0 8px;
+  color: var(--green);
+  font-size: clamp(1.65rem, 4vw, 2.45rem);
+  line-height: 1.15;
+  word-break: keep-all;
+}
+
+.exchange-rate-metrics em {
+  font-size: 0.96rem;
+  word-break: break-word;
+}
+
+#exchange-status[data-tone="good"] {
+  color: var(--green);
+}
+
+#exchange-status[data-tone="warn"] {
+  color: var(--danger);
+}
+
+.exchange-related-link {
+  margin-top: 16px;
+}
+
+.exchange-related-link a,
+.exchange-result-card a {
+  color: var(--blue);
+  font-weight: 850;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 900px) {
+  .exchange-rate-panel,
+  .exchange-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .currency-swap-button {
+    justify-self: center;
+    transform: rotate(90deg);
+  }
+
+  .rate-mode-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .rate-mode-card label {
+    justify-content: flex-start;
+    border-radius: var(--radius);
+  }
+}

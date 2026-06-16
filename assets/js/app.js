@@ -5,6 +5,7 @@ import { initCigaretteCostCalculator } from "./cigarette-cost.js?v=20260614-cach
 import { initApplianceElectricityCalculator } from "./appliance-electricity.js?v=20260614-cache-fix";
 import { initAustraliaPayCalculator } from "./australia-pay.js?v=20260616-image-ocr-4";
 import { initAustraliaWhv88DaysCalculator } from "./australia-whv-88-days.js?v=20260616-whv-88-days-10";
+import { initExchangeRateCalculator } from "./exchange-rate.js?v=20260616-exchange-rate-1";
 import { initLoanInterestCalculator } from "./loan-interest.js?v=20260614-cache-fix";
 import { initNetSalaryCalculator } from "./net-salary.js?v=20260614-cache-fix";
 import { initPercentileCalculator } from "./percentile.js?v=20260614-cache-fix";
@@ -31,6 +32,7 @@ const TOOL_GROUPS = [
     tools: [
       ["월 실수령액 계산기", "calculators/net-salary.html"],
       ["대출 이자 계산기", "calculators/loan-interest.html"],
+      ["실시간 환율 계산기", "calculators/exchange-rate.html"],
       ["주휴수당 계산기", "calculators/weekly-holiday-pay.html"],
       ["군적금 계산기", "calculators/military-savings.html"],
       ["담배 연간 비용 계산기", "calculators/cigarette-cost.html"]
@@ -130,6 +132,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   initApplianceElectricityCalculator();
   initAustraliaPayCalculator();
   initAustraliaWhv88DaysCalculator();
+  initExchangeRateCalculator();
   initNetSalaryCalculator();
   initLoanInterestCalculator();
   initWeeklyHolidayPayCalculator();
