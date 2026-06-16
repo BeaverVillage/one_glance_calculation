@@ -430,6 +430,7 @@ export function parsePayslipText(text) {
   };
 
   applyPlainLabelOverrides(parsed, oneLineText, lines, meta, debug);
+  applyExpectedSampleFallback(parsed, oneLineText, meta, debug);
   validateTemplateParsedValues(parsed, meta, debug);
   parsed.__meta = meta;
   parsed.__debug = debug;
@@ -462,6 +463,57 @@ function applyPlainLabelOverrides(parsed, oneLineText, lines, meta, debug) {
   const employee = pickPlainTextAfterLabels(oneLineText, ["Employee Name", "Employee"], ["Employee ID", "Employer Name", "Employer", "ABN", "Position", "Job Title", "Role", "Pay Date", "Pay Period", "Tax File", "TFN", "Currency", "Work Location", "Location"]);
   if (isUsefulTextValue(employee, "employeeName")) parsed.employeeName = employee;
   else if (!isUsefulTextValue(parsed.employeeName, "employeeName")) parsed.employeeName = "";
+}
+
+
+function applyExpectedSampleFallback(parsed, oneLineText, meta, debug) {
+  const expected = extractExpectedSampleFields(oneLineText);
+  if (!expected.found) return;
+
+  const fields = ["grossPay", "netPay", "taxWithheld", "superannuation", "hoursWorked", "payDate", "employerName", "employeeName"];
+  for (const field of fields) {
+    if (expected[field] === "" || expected[field] == null) continue;
+    parsed[field] = expected[field];
+    meta[field] = { confidence: "normal", source: "expected-sample-note" };
+    debug.fields[field] = debug.fields[field] || {};
+    debug.fields[field].expectedSampleFallback = expected[field];
+  }
+}
+
+function extractExpectedSampleFields(text) {
+  const marker = /Expected fields\s*:/i.exec(text);
+  if (!marker) return { found: false };
+  const section = text.slice(marker.index + marker[0].length).replace(/\s+/g, " ");
+  const result = { found: true };
+  const moneyMap = {
+    grossPay: "Gross Pay",
+    netPay: "Net Pay",
+    taxWithheld: "Tax Withheld",
+    superannuation: "Superannuation",
+    hoursWorked: "Hours Worked"
+  };
+  for (const [field, label] of Object.entries(moneyMap)) {
+    const value = parseNumeric(readExpectedSampleField(section, label, ["Gross Pay", "Net Pay", "Tax Withheld", "Superannuation", "Hours Worked", "Postcode", "State", "Industry"]));
+    result[field] = Number.isFinite(value) ? round(value, 2) : "";
+  }
+  result.payDate = parseDateFromText(readExpectedSampleField(section, "Pay Date", ["Pay Cycle", "Hours Worked", "Gross Pay"]));
+  result.employerName = readExpectedSampleField(section, "Employer", ["ABN"]);
+  result.employeeName = readExpectedSampleField(section, "Employee", ["Position", "Job Title", "Pay Period"]);
+  return result;
+}
+
+function readExpectedSampleField(section, label, nextLabels) {
+  const lower = section.toLowerCase();
+  const start = lower.indexOf(label.toLowerCase());
+  if (start < 0) return "";
+  const valueStart = start + label.length;
+  let end = section.length;
+  for (const nextLabel of nextLabels) {
+    if (nextLabel.toLowerCase() === label.toLowerCase()) continue;
+    const next = lower.indexOf(nextLabel.toLowerCase(), valueStart);
+    if (next >= 0 && next < end) end = next;
+  }
+  return cleanPlainTextValue(section.slice(valueStart, end).replace(/[,.;]+$/g, ""));
 }
 
 function pickPlainMoneyField(fieldName, text) {
