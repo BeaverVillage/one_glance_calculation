@@ -833,7 +833,7 @@ function calculateRecordMetrics(record) {
     source = "hours";
     appliedDays = hoursDaysFloor;
     sourceLabel = "총 근무시간으로 추정 계산";
-    modeLabel = String(hours) + "시간 ÷ " + String(safeDayHours) + "시간 = 약 " + formatNumber(hoursDaysRaw, 2) + "일, 화면에는 내림한 " + hoursDaysFloor + "일 추정으로 표시합니다. 이 값은 실제 인정 일수가 아니라 근무시간 기준 참고용 추정값입니다.";
+    modeLabel = "총 근무시간 기준 " + hoursDaysFloor + "일 추정으로 계산합니다.";
   } else if (calendarDays > 0) {
     source = "period";
     appliedDays = calendarDays;

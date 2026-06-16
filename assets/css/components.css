@@ -4304,3 +4304,28 @@ html {
     white-space: nowrap !important;
   }
 }
+
+
+/* WHV small display fixes */
+.whv-goal-card .field-row.whv-compact-fields {
+  grid-template-columns: minmax(168px, 1.06fr) minmax(196px, 1.22fr);
+}
+
+.whv-goal-card select,
+#whv-target-visa,
+#whv-subclass {
+  padding-right: 30px;
+  background-position: right 9px center;
+  text-overflow: clip;
+}
+
+#whv-target-visa {
+  min-width: 168px;
+}
+
+.whv-row-status > span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  line-height: 1.35;
+}
