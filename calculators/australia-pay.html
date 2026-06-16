@@ -137,14 +137,7 @@
               </div>
 
 
-              <div class="field-row">
-                <div class="field">
-                  <label for="au-gross-pay">Gross Pay(세전급여)</label>
-                  <div class="input-suffix">
-                    <input id="au-gross-pay" name="grossPay" type="number" min="0" step="0.01" inputmode="decimal">
-                    <span>AUD</span>
-                  </div>
-                </div>
+              <div class="field-row au-core-fields">
                 <div class="field">
                   <label for="au-net-pay">Net Pay(세후급여)</label>
                   <div class="input-suffix">
@@ -152,40 +145,6 @@
                     <span>AUD</span>
                   </div>
                 </div>
-              </div>
-
-              <div class="field-row">
-                <div class="field">
-                  <label for="au-tax-withheld">Tax Withheld / PAYG(원천징수)</label>
-                  <div class="input-suffix">
-                    <input id="au-tax-withheld" name="taxWithheld" type="number" min="0" step="0.01" inputmode="decimal">
-                    <span>AUD</span>
-                  </div>
-                </div>
-                <div class="field">
-                  <label for="au-superannuation">Superannuation(퇴직연금)</label>
-                  <div class="input-suffix">
-                    <input id="au-superannuation" name="superannuation" type="number" min="0" step="0.01" inputmode="decimal">
-                    <span>AUD</span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="field-row">
-                <div class="field">
-                  <label for="au-hours-worked">Hours Worked(근무시간)</label>
-                  <div class="input-suffix">
-                    <input id="au-hours-worked" name="hoursWorked" type="number" min="0" step="0.01" inputmode="decimal">
-                    <span>시간</span>
-                  </div>
-                </div>
-                <div class="field">
-                  <label for="au-pay-date">Pay Date(지급일)</label>
-                  <input id="au-pay-date" name="payDate" type="date">
-                </div>
-              </div>
-
-              <div class="field-row">
                 <div class="field">
                   <label for="au-pay-period">Pay Period</label>
                   <select id="au-pay-period" name="payPeriod">
@@ -194,6 +153,9 @@
                     <option value="monthly">월급</option>
                   </select>
                 </div>
+              </div>
+
+              <div class="field-row au-core-fields">
                 <div class="field exchange-rate-field">
                   <label for="au-exchange-rate">AUD/KRW 환율</label>
                   <div class="exchange-rate-control">
@@ -204,18 +166,57 @@
                     <button id="au-refresh-rate" class="subtle-button" type="button">환율 조회</button>
                   </div>
                 </div>
+                <div class="field">
+                  <label for="au-hours-worked">Hours Worked(근무시간)</label>
+                  <div class="input-suffix">
+                    <input id="au-hours-worked" name="hoursWorked" type="number" min="0" step="0.01" inputmode="decimal">
+                    <span>시간</span>
+                  </div>
+                </div>
               </div>
 
-              <div class="field-row">
-                <div class="field">
-                  <label for="au-employer-name">Employer Name(고용주 이름)</label>
-                  <input id="au-employer-name" name="employerName" type="text" autocomplete="off">
+              <details class="au-optional-fields" open>
+                <summary>추가 입력 접기/펼치기</summary>
+                <div class="field-row">
+                  <div class="field">
+                    <label for="au-gross-pay">Gross Pay(세전급여)</label>
+                    <div class="input-suffix">
+                      <input id="au-gross-pay" name="grossPay" type="number" min="0" step="0.01" inputmode="decimal">
+                      <span>AUD</span>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label for="au-tax-withheld">Tax Withheld / PAYG(원천징수)</label>
+                    <div class="input-suffix">
+                      <input id="au-tax-withheld" name="taxWithheld" type="number" min="0" step="0.01" inputmode="decimal">
+                      <span>AUD</span>
+                    </div>
+                  </div>
                 </div>
-                <div class="field">
-                  <label for="au-employee-name">Employee Name(직원 이름)</label>
-                  <input id="au-employee-name" name="employeeName" type="text" autocomplete="off">
+                <div class="field-row">
+                  <div class="field">
+                    <label for="au-superannuation">Superannuation(퇴직연금)</label>
+                    <div class="input-suffix">
+                      <input id="au-superannuation" name="superannuation" type="number" min="0" step="0.01" inputmode="decimal">
+                      <span>AUD</span>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label for="au-pay-date">Pay Date(지급일)</label>
+                    <input id="au-pay-date" name="payDate" type="date">
+                  </div>
                 </div>
-              </div>
+                <div class="field-row">
+                  <div class="field">
+                    <label for="au-employer-name">Employer Name(고용주 이름)</label>
+                    <input id="au-employer-name" name="employerName" type="text" autocomplete="off">
+                  </div>
+                  <div class="field">
+                    <label for="au-employee-name">Employee Name(직원 이름)</label>
+                    <input id="au-employee-name" name="employeeName" type="text" autocomplete="off">
+                  </div>
+                </div>
+              </details>
 
               <p id="au-rate-meta" class="fine-print">환율 정보는 공개 환율 API를 통해 조회한 참고용 시세입니다. 실제 송금 환율, 카드사 환율, 은행 환전 환율과 다를 수 있으며, 중요한 거래 전에는 금융기관의 고시 환율을 확인해야 합니다. 사용 환율 데이터 제공자: ExchangeRate-API Open Access, @fawazahmed0/currency-api(jsDelivr 및 Cloudflare Pages 미러).</p>
               <div class="button-row">
@@ -360,7 +361,7 @@
         </nav>
       </div>
     </footer>
-    <script type="module" src="../assets/js/australia-pay.js?v=20260616-compact-raw-ui-final"></script>
-    <script type="module" src="../assets/js/app.js?v=20260616-whv-88-days-7"></script>
+    <script type="module" src="../assets/js/australia-pay.js?v=20260616-mobile-ui-final"></script>
+    <script type="module" src="../assets/js/app.js?v=20260616-mobile-ui-final"></script>
   </body>
 </html>

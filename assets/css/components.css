@@ -4488,3 +4488,655 @@ html {
     border-radius: var(--radius);
   }
 }
+
+/* Mobile UI final responsive pass: WHV, Australia Pay, Exchange Rate */
+.calculator-card,
+.tool-panel,
+.input-panel,
+.result-panel,
+.notice-box,
+.field,
+.field-row,
+.input-suffix,
+.input-with-unit,
+.metric-grid,
+.exchange-form-grid,
+.whv-top-grid,
+.whv-mode-panel,
+.whv-record-review-wrap,
+.whv-summary-table,
+.whv-result-dashboard {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.input-panel input,
+.input-panel select,
+.input-panel textarea,
+.input-panel button,
+.result-panel input,
+.result-panel select,
+.result-panel textarea,
+.result-panel button {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.input-suffix,
+.input-with-unit {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.input-suffix input,
+.input-with-unit input {
+  min-width: 0;
+}
+
+.input-suffix span,
+.input-with-unit .unit {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  word-break: keep-all;
+}
+
+/* Australia Pay: core fields first, optional fields collapsible on mobile */
+.au-optional-fields {
+  margin: 10px 0 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+.au-optional-fields summary {
+  display: flex;
+  min-height: 38px;
+  align-items: center;
+  color: var(--green);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.au-optional-fields .field-row:last-child .field {
+  margin-bottom: 0;
+}
+
+/* Exchange rate: keep the result close to the basic conversion form */
+.exchange-rate-panel .button-row .primary-button,
+.exchange-rate-panel .button-row .subtle-button,
+.australia-pay-panel .button-row .primary-button,
+.australia-pay-panel .button-row .subtle-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.2;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  main,
+  .calculator-page {
+    padding-bottom: calc(128px + env(safe-area-inset-bottom));
+  }
+
+  .container {
+    width: min(100% - 20px, 1180px);
+  }
+
+  .hero-band {
+    padding: 26px 0 30px;
+  }
+
+  .content-band,
+  .content-band.compact {
+    padding: 28px 0;
+  }
+
+  .tool-panel,
+  .input-panel,
+  .result-panel {
+    padding: 13px;
+    border-radius: 10px;
+  }
+
+  .field {
+    gap: 5px;
+    margin-bottom: 11px;
+  }
+
+  .field label,
+  fieldset legend {
+    font-size: 0.82rem;
+    line-height: 1.25;
+  }
+
+  select,
+  input[type="number"],
+  input[type="text"],
+  input[type="date"],
+  input[type="time"],
+  input[type="search"],
+  input[type="file"] {
+    min-height: 42px;
+    padding: 8px 10px;
+    font-size: 16px;
+    line-height: 1.25;
+  }
+
+  select {
+    padding-right: 40px;
+    background-position: right 11px center;
+  }
+
+  .field-row,
+  .australia-pay-panel .field-row,
+  .exchange-rate-panel .field-row,
+  .whv-compact-fields,
+  .whv-mode-panel,
+  .tool-panel,
+  .metric-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .button-row {
+    grid-template-columns: 1fr;
+  }
+
+  .primary-button,
+  .subtle-button {
+    min-height: 42px;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.2;
+  }
+
+  .input-suffix,
+  .input-with-unit {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(50px, auto);
+    align-items: stretch;
+    overflow: hidden;
+  }
+
+  .input-suffix input,
+  .input-with-unit input {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+  }
+
+  .input-suffix span,
+  .input-with-unit .unit {
+    min-width: 50px;
+    padding: 0 10px;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    word-break: keep-all;
+    line-height: 1;
+  }
+
+  /* WHV 88-day mobile */
+  .whv-hero-compact .lead,
+  .whv-mini-notice,
+  .whv-legal-note {
+    max-width: 100%;
+  }
+
+  .whv-top-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .whv-top-grid .input-panel {
+    padding: 13px;
+  }
+
+  .whv-step-panel h2,
+  .whv-mode-panel h3 {
+    margin-bottom: 8px;
+    font-size: 1.18rem;
+  }
+
+  .whv-goal-card .field-row.whv-compact-fields {
+    grid-template-columns: 1fr !important;
+    gap: 8px;
+  }
+
+  .whv-goal-card select,
+  #whv-target-visa,
+  #whv-subclass {
+    width: 100%;
+    min-width: 0 !important;
+    min-height: 42px;
+    padding: 8px 42px 8px 10px;
+    font-size: 16px;
+    line-height: 1.25;
+    text-overflow: clip;
+  }
+
+  .whv-uk-compact {
+    margin-top: 6px;
+  }
+
+  .whv-mode-card-wrap .whv-mode-grid,
+  .whv-mode-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px;
+  }
+
+  .whv-mode-card {
+    min-height: 0;
+    gap: 4px;
+    padding: 10px 12px;
+  }
+
+  .whv-mode-card strong {
+    padding-right: 28px;
+    font-size: 0.95rem;
+    line-height: 1.25;
+  }
+
+  .whv-mode-card span {
+    font-size: 0.8rem;
+    line-height: 1.35;
+  }
+
+  .whv-mode-card input {
+    width: 16px;
+    height: 16px;
+  }
+
+  .whv-step-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .whv-step-actions .primary-button,
+  #whv-go-input {
+    width: 100%;
+    max-width: none;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #whv-input-step .section-intro p,
+  .compact-intro p {
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+
+  .whv-mode-panel {
+    gap: 12px;
+    margin-top: 12px;
+    padding: 12px;
+  }
+
+  .whv-panel-title-row {
+    gap: 8px;
+    align-items: center;
+  }
+
+  .whv-extra-mode-actions,
+  .whv-side-note,
+  .whv-callout-mini,
+  .ocr-status-box {
+    padding: 10px;
+    font-size: 0.84rem;
+  }
+
+  .whv-extra-button-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 7px;
+  }
+
+  .whv-record-review-wrap {
+    overflow: visible;
+  }
+
+  .whv-summary-table,
+  .whv-summary-table tbody,
+  .whv-summary-table tr,
+  .whv-summary-table td {
+    display: block;
+    width: 100%;
+    min-width: 0 !important;
+    max-width: 100%;
+  }
+
+  .whv-summary-table {
+    border-spacing: 0 10px;
+    table-layout: auto;
+  }
+
+  .whv-record-summary {
+    padding: 11px 12px;
+    border-radius: 14px 14px 0 0;
+  }
+
+  .whv-record-summary td {
+    display: grid;
+    grid-template-columns: 78px minmax(0, 1fr);
+    gap: 7px;
+    align-items: start;
+    padding: 5px 0;
+    border: 0;
+    white-space: normal !important;
+  }
+
+  .whv-record-summary td::before {
+    color: var(--muted);
+    font-size: 0.72rem;
+    line-height: 1.35;
+    font-weight: 900;
+  }
+
+  .whv-record-summary td[data-label="파일명"] {
+    display: block;
+  }
+
+  .whv-record-summary td[data-label="파일명"]::before {
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .whv-summary-table .whv-file-name,
+  .whv-wrap-cell,
+  .whv-period-cell {
+    white-space: normal !important;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+    word-break: keep-all;
+  }
+
+  .whv-period-cell {
+    font-size: 0.9rem;
+  }
+
+  .whv-hours-cell,
+  .whv-summary-table td:nth-child(6) {
+    min-width: 0 !important;
+    text-align: left;
+    white-space: nowrap !important;
+    word-break: keep-all;
+  }
+
+  .whv-days-value {
+    font-size: 1.05rem;
+  }
+
+  .whv-detail-bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 7px;
+    width: 100%;
+  }
+
+  .whv-detail-bar .whv-postcode-chip {
+    grid-column: 1 / -1;
+    justify-content: center;
+    text-align: center;
+    overflow-wrap: anywhere;
+    word-break: keep-all;
+  }
+
+  .whv-detail-bar .subtle-button,
+  .whv-detail-bar .whv-detail-button,
+  .whv-detail-bar .whv-delete-button {
+    min-height: 34px;
+    font-size: 0.78rem;
+  }
+
+  .whv-action-status-row {
+    margin-top: 6px;
+  }
+
+  .whv-detail-grid,
+  .whv-detail-meta {
+    grid-template-columns: 1fr !important;
+  }
+
+  .whv-record-detail > td {
+    padding: 0 10px 12px;
+  }
+
+  .postcode-result,
+  .postcode-result p,
+  .postcode-result span,
+  .postcode-result strong {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: keep-all;
+  }
+
+  .whv-result-dashboard,
+  .whv-result-card-grid,
+  .whv-result-highlight-grid,
+  .whv-result-metric-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .whv-bottom-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  /* Australia pay mobile */
+  .australia-pay-panel {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .australia-pay-panel .notice-compact {
+    padding: 10px 11px;
+    font-size: 0.82rem;
+  }
+
+  .australia-pay-panel .field-row {
+    grid-template-columns: 1fr !important;
+    gap: 9px;
+  }
+
+  .australia-pay-panel .field > label {
+    min-height: auto;
+    align-items: flex-start;
+  }
+
+  .australia-pay-panel input[type="date"],
+  .australia-pay-panel input[type="number"],
+  .australia-pay-panel input[type="text"],
+  .australia-pay-panel select {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    font-size: 16px;
+  }
+
+  .australia-pay-panel .input-suffix span {
+    min-width: 50px;
+    white-space: nowrap;
+  }
+
+  .australia-pay-panel .exchange-rate-control {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .australia-pay-panel .exchange-rate-control .subtle-button {
+    width: 100%;
+    min-height: 42px;
+  }
+
+  .au-optional-fields {
+    margin-top: 8px;
+    padding: 10px;
+  }
+
+  .au-optional-fields summary {
+    min-height: 36px;
+    font-size: 0.88rem;
+  }
+
+  .australia-pay-metrics {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Exchange rate mobile */
+  .exchange-rate-panel {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .exchange-form-grid {
+    grid-template-columns: 1fr;
+    gap: 9px;
+  }
+
+  .currency-swap-button {
+    width: 46px;
+    height: 38px;
+    justify-self: center;
+    transform: rotate(90deg);
+  }
+
+  .quick-pair-row {
+    gap: 7px;
+    margin: 10px 0;
+  }
+
+  .quick-pair-row button {
+    flex: 1 1 calc(50% - 7px);
+    min-height: 34px;
+    padding: 6px 8px;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    white-space: nowrap;
+  }
+
+  .rate-mode-card {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    padding: 9px;
+    margin-bottom: 10px;
+  }
+
+  .rate-mode-card legend {
+    grid-column: 1 / -1;
+    margin-bottom: 2px;
+    font-size: 0.82rem;
+  }
+
+  .rate-mode-card label {
+    min-height: 38px;
+    justify-content: center;
+    padding: 6px;
+    border-radius: 10px;
+    font-size: 0.76rem;
+    line-height: 1.25;
+    text-align: center;
+  }
+
+  .manual-rate-panel,
+  .exchange-fee-options {
+    margin: 10px 0;
+    padding: 11px;
+  }
+
+  .exchange-fee-options summary {
+    min-height: 34px;
+  }
+
+  .exchange-result-card {
+    order: 2;
+  }
+
+  .exchange-result-card > strong {
+    font-size: clamp(1.55rem, 9vw, 2.05rem);
+    overflow-wrap: anywhere;
+  }
+
+  .exchange-rate-metrics {
+    grid-template-columns: 1fr !important;
+  }
+
+  #exchange-refresh-rate {
+    min-height: 40px;
+  }
+}
+
+@media (max-width: 390px) {
+  .container {
+    width: min(100% - 16px, 1180px);
+  }
+
+  .tool-panel,
+  .input-panel,
+  .result-panel {
+    padding: 11px;
+  }
+
+  .whv-record-summary td {
+    grid-template-columns: 72px minmax(0, 1fr);
+  }
+
+  .quick-pair-row button {
+    flex-basis: 100%;
+  }
+
+  .rate-mode-card {
+    grid-template-columns: 1fr;
+  }
+
+  .rate-mode-card label {
+    justify-content: flex-start;
+    text-align: left;
+  }
+}
+
+@media (max-width: 640px) {
+  .site-header {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 10px 10px;
+  }
+
+  .brand {
+    width: 100%;
+    min-width: 0;
+    justify-content: center;
+  }
+
+  .site-nav {
+    width: 100%;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .site-nav a,
+  .site-nav button {
+    flex: 1 1 calc(50% - 6px);
+    min-width: 0;
+    max-width: 100%;
+    min-height: 34px;
+    padding: 6px 8px;
+    border-radius: 10px;
+    font-size: 0.84rem;
+    line-height: 1.2;
+    white-space: normal;
+    text-align: center;
+  }
+}

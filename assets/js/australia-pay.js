@@ -137,6 +137,11 @@ export function initAustraliaPayCalculator(root = document) {
   if (Object.values(requiredEls).some((element) => !element)) return;
   els.lastRawText = "";
 
+  const optionalFields = root.querySelector(".au-optional-fields");
+  if (optionalFields && typeof window !== "undefined" && window.matchMedia("(max-width: 640px)").matches) {
+    optionalFields.open = false;
+  }
+
   els.pdfFile.addEventListener("change", async () => {
     const file = els.pdfFile.files?.[0];
     if (!file) return;
