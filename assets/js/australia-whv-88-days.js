@@ -6,7 +6,7 @@ const THIRD_VISA_DAYS = 179;
 const CYCLE_OPTIONS = ["Weekly", "Fortnightly", "Monthly", "Unknown"];
 const MODE_LABELS = {
   auto: "급여명세서 PDF/이미지 자동 계산",
-  hours: "Hours Worked 기준 추정",
+  hours: "총 근무시간으로 추정 계산",
   manual: "인정 일수 직접 입력"
 };
 const WHV_POSTCODE_RULES_URL = new URL("../data/australia-whv-postcodes.json", import.meta.url);
@@ -38,7 +38,7 @@ export async function loadWhvPostcodeRules() {
 export function checkWhvPostcodeEligibility(input, rulesData) {
   const subclassType = String(input?.subclassType || "").trim();
   const industry = String(input?.industry || "").trim();
-  const postcode = String(input?.postcode || "").trim();
+  const postcode = String(input?.postcode || "").trim().replace(/\D/g, "").slice(0, 4);
   const state = String(input?.state || "").trim().toUpperCase();
   const data = rulesData || { rules: [] };
   const sourceVersion = data.version || "unavailable";
@@ -57,20 +57,33 @@ export function checkWhvPostcodeEligibility(input, rulesData) {
     return {
       status: "needsOfficialCheck",
       label: "공식 확인 필요",
-      message: "자동 참고 확인: 공식 확인 필요. 현재 local 데이터에 확정 postcode range가 없습니다.",
+      message: "자동 참고 확인: 공식 확인 필요. 해당 조건은 자동 판정 데이터가 부족합니다.",
       sourceVersion,
       matchedRule: null,
       basis: "local WHV postcode data v" + sourceVersion
     };
   }
-  const matched = rules.find(function(rule) {
+  const relevantRules = rules.filter(function(rule) {
+    return matchesSubclassRule(rule, subclassType) && matchesIndustryRule(rule, industry);
+  });
+  if (!relevantRules.length) {
+    return {
+      status: "needsOfficialCheck",
+      label: "공식 확인 필요",
+      message: "자동 참고 확인: 공식 확인 필요. 해당 조건은 자동 판정 데이터가 부족합니다.",
+      sourceVersion,
+      matchedRule: null,
+      basis: "공식 확인 필요"
+    };
+  }
+  const matched = relevantRules.find(function(rule) {
     return matchesPostcodeRule(rule, { postcode: postcode, state: state, subclassType: subclassType, industry: industry, workDate: input?.workDate });
   });
   if (matched) {
     return {
       status: "likelyEligible",
       label: "eligible 가능성 있음",
-      message: "자동 참고 확인: eligible area일 가능성이 있습니다. 공식 기준을 확인하세요.",
+      message: "자동 참고 확인: 입력한 postcode는 현재 참고 데이터 기준 eligible area일 가능성이 있습니다. 공식 기준을 확인하세요.",
       sourceVersion,
       matchedRule: matched,
       basis: matched.note || "local WHV postcode data v" + sourceVersion
@@ -79,7 +92,7 @@ export function checkWhvPostcodeEligibility(input, rulesData) {
   return {
     status: "notMatched",
     label: "현재 데이터 불일치",
-    message: "자동 참고 확인: 현재 참고 데이터에서 eligible로 확인되지 않았습니다. 공식 기준을 확인하세요.",
+    message: "자동 참고 확인: 현재 참고 데이터에서 eligible로 확인되지 않았습니다. 업종·subclass·신청 시점에 따라 달라질 수 있으므로 공식 기준을 확인하세요.",
     sourceVersion,
     matchedRule: null,
     basis: "local WHV postcode data v" + sourceVersion
@@ -89,10 +102,10 @@ export function checkWhvPostcodeEligibility(input, rulesData) {
 export function initAustraliaWhv88DaysCalculator(root = document) {
   const form = root.querySelector("#whv-88-form");
   if (!form) return;
-  if (form.dataset.calculatorReady === "whv-88-days-v2") return;
-  form.dataset.calculatorReady = "whv-88-days-v2";
+  if (form.dataset.calculatorReady === "whv-88-days-v3") return;
+  form.dataset.calculatorReady = "whv-88-days-v3";
 
-  const state = { records: [], activeMode: "auto", postcodeRules: null };
+  const state = { records: [], activeMode: "auto", extraModes: new Set(), postcodeRules: null };
   const els = collectWhvElements(root, form);
   if (!els.form || !els.cards) return;
 
@@ -112,6 +125,7 @@ function collectWhvElements(root, form) {
     modeRadios: Array.from(root.querySelectorAll('input[name="whv-mode"]')),
     modeCards: Array.from(root.querySelectorAll(".whv-mode-card")),
     modePanels: Array.from(root.querySelectorAll("[data-mode-panel]")),
+    addModeButtons: Array.from(root.querySelectorAll("[data-add-mode]")),
     inputStep: root.querySelector("#whv-input-step"),
     reviewStep: root.querySelector("#whv-review-step"),
     resultStep: root.querySelector("#whv-result-step"),
@@ -177,7 +191,7 @@ function collectWhvElements(root, form) {
 function bindWhvEvents(state, els) {
   els.modeRadios.forEach(function(radio) {
     radio.addEventListener("change", function() {
-      if (radio.checked) setActiveMode(state, els, radio.value);
+      if (radio.checked) setActiveMode(state, els, radio.value, { resetExtras: true });
     });
   });
   els.modeCards.forEach(function(card) {
@@ -187,11 +201,14 @@ function bindWhvEvents(state, els) {
       const radio = els.modeRadios.find(function(item) { return item.value === mode; });
       if (radio) {
         radio.checked = true;
-        setActiveMode(state, els, mode);
+        setActiveMode(state, els, mode, { resetExtras: true });
       }
     });
   });
   els.goInput?.addEventListener("click", function() { goToInputStep(state, els); });
+  els.addModeButtons.forEach(function(button) {
+    button.addEventListener("click", function() { showExtraMode(state, els, button.dataset.addMode); });
+  });
   els.goReview?.addEventListener("click", function() { goToReviewStep(state, els); });
   els.goResult?.addEventListener("click", function() { goToResultStep(state, els); });
   els.backTopFromInput?.addEventListener("click", function() { scrollToWhvSection(els.topBand); });
@@ -205,7 +222,7 @@ function bindWhvEvents(state, els) {
   els.addHoursRecord?.addEventListener("click", function() { addHoursRecord(state, els); });
   els.addManualRecord?.addEventListener("click", function() { addManualRecord(state, els); });
   els.form.addEventListener("input", function(event) {
-    const card = event.target?.closest?.(".whv-payslip-card");
+    const card = event.target?.closest?.("[data-record-id]");
     if (card) {
       syncRecordFromCard(card, state);
       renderSummary(state, els);
@@ -214,7 +231,7 @@ function bindWhvEvents(state, els) {
     renderAll(state, els);
   });
   els.form.addEventListener("change", function(event) {
-    const card = event.target?.closest?.(".whv-payslip-card");
+    const card = event.target?.closest?.("[data-record-id]");
     if (card) syncRecordFromCard(card, state);
     renderAll(state, els);
   });
@@ -226,8 +243,9 @@ function bindWhvEvents(state, els) {
   });
 }
 
-function setActiveMode(state, els, mode) {
+function setActiveMode(state, els, mode, options = {}) {
   state.activeMode = mode || "auto";
+  if (options.resetExtras) state.extraModes = new Set();
   els.modeRadios.forEach(function(radio) { radio.checked = radio.value === state.activeMode; });
   els.modeCards.forEach(function(card) {
     const selected = card.dataset.mode === state.activeMode;
@@ -235,8 +253,34 @@ function setActiveMode(state, els, mode) {
     card.setAttribute("aria-selected", String(selected));
     card.setAttribute("aria-pressed", String(selected));
   });
-  els.modePanels.forEach(function(panel) { panel.hidden = panel.dataset.modePanel !== state.activeMode; });
+  updateModePanelVisibility(state, els);
   updateWhvFlowControls(state, els);
+}
+
+function updateModePanelVisibility(state, els) {
+  const visibleModes = new Set([state.activeMode, ...Array.from(state.extraModes || [])]);
+  els.modePanels.forEach(function(panel) {
+    panel.hidden = !visibleModes.has(panel.dataset.modePanel);
+    panel.classList.toggle("is-secondary", panel.dataset.modePanel !== state.activeMode && visibleModes.has(panel.dataset.modePanel));
+  });
+  els.addModeButtons.forEach(function(button) {
+    const mode = button.dataset.addMode;
+    button.hidden = visibleModes.has(mode);
+  });
+}
+
+function showExtraMode(state, els, mode) {
+  if (!mode) return;
+  if (els.inputStep) els.inputStep.hidden = false;
+  state.extraModes.add(mode);
+  updateModePanelVisibility(state, els);
+  const targetPanel = els.modePanels.find(function(panel) { return panel.dataset.modePanel === mode; });
+  showWhvFlowNotice(els, "보조 입력 영역을 추가로 열었습니다.", "good");
+  scrollToWhvSection(targetPanel || els.inputStep);
+}
+
+function updateInputPanelVisibility(state, els) {
+  updateModePanelVisibility(state, els);
 }
 
 function goToInputStep(state, els) {
@@ -245,7 +289,7 @@ function goToInputStep(state, els) {
     return;
   }
   if (els.inputStep) els.inputStep.hidden = false;
-  setActiveMode(state, els, state.activeMode);
+  updateModePanelVisibility(state, els);
   showWhvFlowNotice(els, "선택한 방식의 자료 입력 영역으로 이동했습니다.", "good");
   scrollToWhvSection(els.inputStep);
 }
@@ -307,7 +351,7 @@ async function handleAutoFiles(files, state, els) {
       });
       const parsed = parseWhvPayslipText(extraction.text);
       state.records.push(createAutoRecord(file, extraction, parsed));
-      setWhvStatus(els, file.name + ": 자동 추출값을 표에 반영했습니다.", "good");
+      setWhvStatus(els, file.name + ": 인정 일수 확인 표에 반영했습니다.", "good");
     } catch (error) {
       console.error(error);
       state.records.push(createErrorRecord(file, error?.userMessage || "파일 분석에 실패했습니다."));
@@ -315,11 +359,14 @@ async function handleAutoFiles(files, state, els) {
     }
   }
   setWhvProgress(els, 100);
-  setActiveMode(state, els, "auto");
+  state.extraModes.add("auto");
+  updateModePanelVisibility(state, els);
   renderAll(state, els);
 }
 
 function createAutoRecord(file, extraction, parsed) {
+  const inferredEmployerName = inferEmployerNameFromFileName(file.name);
+  const inferredAbn = inferAbnFromFileName(file.name);
   return {
     id: nextWhvId(),
     sourceType: "auto",
@@ -329,8 +376,8 @@ function createAutoRecord(file, extraction, parsed) {
     error: "",
     note: "",
     fields: {
-      employerName: parsed.employerName || inferEmployerNameFromFileName(file.name),
-      abn: parsed.abn || inferAbnFromFileName(file.name),
+      employerName: inferredEmployerName || parsed.employerName || "",
+      abn: parsed.abn || inferredAbn,
       position: parsed.position || "",
       employeeName: parsed.employeeName || "",
       payPeriodStart: parsed.payPeriodStart || "",
@@ -410,13 +457,13 @@ function createErrorRecord(file, message) {
 function addHoursRecord(state, els) {
   const hours = readNumber(els.hoursWorked?.value, 0);
   if (hours <= 0) {
-    setWhvStatus(els, "Hours Worked를 입력해 주세요.", "warn");
+    setWhvStatus(els, "총 근무시간을 입력해 주세요.", "warn");
     return;
   }
   state.records.push({
     id: nextWhvId(),
     sourceType: "hours",
-    fileName: "Hours Worked 직접 입력",
+    fileName: "총 근무시간 직접 입력",
     method: "사용자 입력",
     text: "",
     error: "",
@@ -444,7 +491,7 @@ function addHoursRecord(state, els) {
     }
   });
   clearHoursInputs(els);
-  setWhvStatus(els, "Hours Worked 추정 항목을 추가했습니다.", "good");
+  setWhvStatus(els, "총 근무시간 추정 항목을 추가했습니다.", "good");
   renderAll(state, els);
 }
 
@@ -490,7 +537,7 @@ function addManualRecord(state, els) {
 }
 
 function handleRecordAction(button, state, els) {
-  const card = button.closest(".whv-payslip-card");
+  const card = button.closest("[data-record-id]");
   const record = state.records.find(function(item) { return item.id === card?.dataset.recordId; });
   if (!record) return;
   syncRecordFromCard(card, state);
@@ -510,7 +557,8 @@ function syncRecordFromCard(card, state) {
   card.querySelectorAll("[data-field]").forEach(function(input) {
     const field = input.dataset.field;
     if (!field) return;
-    if (input.type === "checkbox") record.fields[field] = input.checked;
+    if (field === "note") record.note = input.value;
+    else if (input.type === "checkbox") record.fields[field] = input.checked;
     else record.fields[field] = input.value;
   });
 }
@@ -519,6 +567,7 @@ function renderAll(state, els) {
   renderUkNotice(els);
   renderRecords(state, els);
   renderSummary(state, els);
+  updateInputPanelVisibility(state, els);
   updateWhvFlowControls(state, els);
 }
 
@@ -543,10 +592,10 @@ function renderRecordTable(state) {
     return renderRecordRow(record, index, state);
   }).join("");
   return [
-    '<div class="whv-table-scroll" role="region" aria-label="추출된 payslip 표" tabindex="0">',
-    '<table class="whv-record-table">',
+    '<div class="whv-table-scroll whv-record-review-wrap" role="region" aria-label="인정 일수 확인 표" tabindex="0">',
+    '<table class="whv-record-table whv-summary-table">',
     '<thead><tr>',
-    '<th>포함</th><th>파일명</th><th>Employer</th><th>ABN</th><th>Position</th><th>Pay Period</th><th>Days</th><th>Hours</th><th>Pay Cycle</th><th>Postcode</th><th>State</th><th>Industry</th><th>Postcode 확인</th><th>상태/메모</th>',
+    '<th>포함</th><th>파일명</th><th>고용주</th><th>기간</th><th>인정 일수</th><th>총 근무시간</th><th>지역</th><th>업종</th><th>상태</th><th>수정</th>',
     '</tr></thead><tbody>', rows, '</tbody></table></div>'
   ].join("");
 }
@@ -554,9 +603,6 @@ function renderRecordTable(state) {
 function renderRecordRow(record, index, state) {
   const metrics = calculateRecordMetrics(record);
   const status = getRecordReviewStatus(record, metrics);
-  const cycleOptions = CYCLE_OPTIONS.map(function(cycle) {
-    return '<option value="' + cycle + '" ' + (normalizeCycle(record.fields.payCycle) === cycle ? 'selected' : '') + '>' + cycle + '</option>';
-  }).join("");
   const postcode = checkWhvPostcodeEligibility({
     subclassType: document.querySelector("#whv-subclass")?.value || "",
     industry: record.fields.industry,
@@ -564,39 +610,76 @@ function renderRecordRow(record, index, state) {
     state: record.fields.state,
     workDate: record.fields.payPeriodStart || record.fields.payDate
   }, state.postcodeRules);
-  const periodInputs = '<div class="whv-date-pair">' + dateInputField('시작', 'payPeriodStart', record.fields.payPeriodStart) + dateInputField('종료', 'payPeriodEnd', record.fields.payPeriodEnd) + '</div>';
+  const periodText = formatPeriodText(record.fields.payPeriodStart, record.fields.payPeriodEnd);
+  const regionText = [record.fields.state, record.fields.postcode].filter(Boolean).join(" ") || "-";
+  const hoursText = record.fields.hoursWorked ? formatNumber(record.fields.hoursWorked, 2).replace(/\.00$/, "") + "시간" : "-";
+  const daysText = metrics.appliedDays ? metrics.appliedDays + "일" : "-";
   const sourceText = metrics.source === "hours" ? '추정' : metrics.source === "manual" ? '직접 입력' : metrics.source === "period" ? 'Pay Period' : '검토 필요';
-  const memoParts = [
-    '<strong class="decision-badge ' + status.tone + '">' + escapeHtml(status.label) + '</strong>',
-    '<span class="whv-row-source">' + escapeHtml(sourceText) + '</span>',
-    record.error ? '<span class="whv-row-warn">' + escapeHtml(record.error) + '</span>' : '',
-    record.note ? '<span>메모: ' + escapeHtml(record.note) + '</span>' : '',
-    '<span>' + escapeHtml(metrics.modeLabel) + '</span>',
-    renderRowAction(record, metrics)
-  ].filter(Boolean).join("");
   return [
-    '<tr class="whv-payslip-card" data-record-id="' + record.id + '">',
-    '<td data-label="포함">' + checkboxInputField('include', record.fields.include, '이 항목을 인정 가능 일수 계산에 포함하기') + '</td>',
-    '<td data-label="파일명"><strong>' + escapeHtml(record.fileName || ('항목 ' + (index + 1))) + '</strong><span class="whv-row-muted">' + escapeHtml(MODE_LABELS[record.sourceType] || record.method || '-') + '</span></td>',
-    '<td data-label="Employer">' + textInputField('Employer', 'employerName', record.fields.employerName) + '</td>',
-    '<td data-label="ABN">' + textInputField('ABN', 'abn', record.fields.abn) + '</td>',
-    '<td data-label="Position">' + textInputField('Position', 'position', record.fields.position) + '</td>',
-    '<td data-label="Pay Period">' + periodInputs + '</td>',
-    '<td data-label="Days"><strong>' + (metrics.appliedDays ? metrics.appliedDays + '일' : '-') + '</strong><span class="whv-row-muted">calendar ' + (metrics.calendarDays || 0) + '일</span>' + numberInputField('직접 입력', 'manualDays', record.fields.manualDays, '1') + '</td>',
-    '<td data-label="Hours">' + numberInputField('Hours', 'hoursWorked', record.fields.hoursWorked, '0.01') + '</td>',
-    '<td data-label="Pay Cycle"><label class="field"><span class="sr-only">Pay Cycle</span><select data-field="payCycle">' + cycleOptions + '</select></label></td>',
-    '<td data-label="Postcode">' + textInputField('Postcode', 'postcode', record.fields.postcode) + '</td>',
-    '<td data-label="State">' + textInputField('State', 'state', record.fields.state) + '</td>',
-    '<td data-label="Industry">' + textInputField('Industry', 'industry', record.fields.industry) + '</td>',
-    '<td data-label="Postcode 확인"><div class="postcode-result ' + postcode.status + '"><strong>' + escapeHtml(postcode.label) + '</strong><p>' + escapeHtml(postcode.message) + '</p><span>' + escapeHtml(postcode.basis || postcode.sourceVersion || '-') + '</span></div></td>',
-    '<td data-label="상태/메모"><div class="whv-row-status">' + memoParts + '<button type="button" class="subtle-button" data-record-action="remove">항목 삭제</button></div></td>',
+    '<tr class="whv-payslip-card whv-record-summary" data-record-id="' + record.id + '">',
+    '<td data-label="포함">' + checkboxInputField('include', record.fields.include, '계산 포함') + '</td>',
+    '<td data-label="파일명"><strong class="whv-file-name">' + escapeHtml(record.fileName || ('항목 ' + (index + 1))) + '</strong><span class="whv-row-muted">' + escapeHtml(MODE_LABELS[record.sourceType] || record.method || '-') + '</span></td>',
+    '<td data-label="고용주">' + escapeHtml(record.fields.employerName || '-') + '</td>',
+    '<td data-label="기간">' + escapeHtml(periodText) + '</td>',
+    '<td data-label="인정 일수"><strong>' + escapeHtml(daysText) + '</strong><span class="whv-row-muted">' + escapeHtml(sourceText) + '</span></td>',
+    '<td data-label="총 근무시간">' + escapeHtml(hoursText) + '</td>',
+    '<td data-label="지역">' + escapeHtml(regionText) + '</td>',
+    '<td data-label="업종">' + escapeHtml(record.fields.industry || '-') + '</td>',
+    '<td data-label="상태"><strong class="decision-badge ' + status.tone + '">' + escapeHtml(status.label) + '</strong></td>',
+    '<td data-label="수정"><span class="whv-edit-hint">아래에서 상세 수정</span></td>',
+    '</tr>',
+    '<tr class="whv-record-detail" data-record-id="' + record.id + '">',
+    '<td colspan="10">' + renderRecordDetail(record, metrics, postcode) + '</td>',
     '</tr>'
   ].join("");
 }
 
+function renderRecordDetail(record, metrics, postcode) {
+  const cycleOptions = CYCLE_OPTIONS.map(function(cycle) {
+    return '<option value="' + cycle + '" ' + (normalizeCycle(record.fields.payCycle) === cycle ? 'selected' : '') + '>' + cycle + '</option>';
+  }).join("");
+  const memoParts = [
+    '<strong class="decision-badge ' + getRecordReviewStatus(record, metrics).tone + '">' + escapeHtml(getRecordReviewStatus(record, metrics).label) + '</strong>',
+    record.error ? '<span class="whv-row-warn">' + escapeHtml(record.error) + '</span>' : '',
+    '<span>' + escapeHtml(metrics.modeLabel) + '</span>',
+    renderRowAction(record, metrics)
+  ].filter(Boolean).join("");
+  return [
+    '<details class="whv-detail-accordion">',
+    '<summary>상세 수정</summary>',
+    '<div class="whv-detail-grid">',
+    textInputField('고용주', 'employerName', record.fields.employerName),
+    textInputField('ABN', 'abn', record.fields.abn),
+    textInputField('Position', 'position', record.fields.position),
+    dateInputField('기간 시작', 'payPeriodStart', record.fields.payPeriodStart),
+    dateInputField('기간 종료', 'payPeriodEnd', record.fields.payPeriodEnd),
+    dateInputField('Pay Date', 'payDate', record.fields.payDate),
+    numberInputField('총 근무시간(Hours Worked)', 'hoursWorked', record.fields.hoursWorked, '0.01'),
+    numberInputField('직접 입력 인정 일수', 'manualDays', record.fields.manualDays, '1'),
+    '<label class="field">Pay Cycle<select data-field="payCycle">' + cycleOptions + '</select></label>',
+    textInputField('우편번호(postcode)', 'postcode', record.fields.postcode),
+    textInputField('State/Territory', 'state', record.fields.state),
+    textInputField('업종', 'industry', record.fields.industry),
+    textInputField('메모', 'note', record.note || ''),
+    '</div>',
+    '<div class="whv-detail-meta">',
+    '<div class="postcode-result ' + postcode.status + '"><strong>' + escapeHtml(postcode.label) + '</strong><p>' + escapeHtml(postcode.message) + '</p><span>' + escapeHtml(postcode.basis || postcode.sourceVersion || '-') + '</span></div>',
+    '<div class="whv-row-status">' + memoParts + '<button type="button" class="subtle-button" data-record-action="remove">항목 삭제</button></div>',
+    '</div>',
+    '</details>'
+  ].join("");
+}
+
+function formatPeriodText(start, end) {
+  if (start && end) return start + " ~ " + end;
+  if (start) return start + " ~";
+  if (end) return "~ " + end;
+  return "-";
+}
+
 function renderRowAction(record, metrics) {
   if (record.sourceType !== "auto" || metrics.calendarDays || !metrics.hours || record.fields.allowHoursEstimate) return "";
-  return '<button type="button" class="subtle-button" data-record-action="use-hours-estimate">Hours Worked 추정으로 계산</button>';
+  return '<button type="button" class="subtle-button" data-record-action="use-hours-estimate">총 근무시간 추정으로 계산</button>';
 }
 
 function renderSummary(state, els) {
@@ -635,7 +718,7 @@ function renderSummary(state, els) {
   if (els.sourceDetails) {
     els.sourceDetails.innerHTML = [
       '<li><strong>Pay Period 기준:</strong> ' + totals.periodDays + '일</li>',
-      '<li><strong>Hours Worked 기준 추정:</strong> ' + totals.hoursDays + '일 추정</li>',
+      '<li><strong>총 근무시간으로 추정 계산:</strong> ' + totals.hoursDays + '일 추정</li>',
       '<li><strong>사용자 직접 입력:</strong> ' + totals.manualDays + '일</li>',
       '<li><strong>검토 필요:</strong> ' + reviewCount + '건</li>',
       '<li><strong>중복 기간 제외:</strong> ' + totals.duplicateExcluded + '일</li>'
@@ -696,7 +779,7 @@ function calculateRecordMetrics(record) {
   let source = "review";
   let appliedDays = 0;
   let sourceLabel = "검토 필요";
-  let modeLabel = "Pay Period, Hours Worked 또는 직접 입력 일수를 확인해 주세요.";
+  let modeLabel = "Pay Period, 총 근무시간 또는 직접 입력 일수를 확인해 주세요.";
   if (manualDays > 0) {
     source = "manual";
     appliedDays = manualDays;
@@ -705,7 +788,7 @@ function calculateRecordMetrics(record) {
   } else if (record.sourceType === "hours" || (record.fields.allowHoursEstimate && hoursDaysFloor > 0 && !calendarDays)) {
     source = "hours";
     appliedDays = hoursDaysFloor;
-    sourceLabel = "Hours Worked 기준 추정";
+    sourceLabel = "총 근무시간으로 추정 계산";
     modeLabel = String(hours) + "시간 ÷ " + String(safeDayHours) + "시간 = 약 " + formatNumber(hoursDaysRaw, 2) + "일, 화면에는 내림한 " + hoursDaysFloor + "일 추정으로 표시합니다. 이 값은 실제 인정 일수가 아니라 근무시간 기준 참고용 추정값입니다.";
   } else if (calendarDays > 0) {
     source = "period";
@@ -732,7 +815,7 @@ function getRecordReviewStatus(record, metrics) {
 }
 
 function getOverallStatus(input) {
-  if (input.ukException) return { label: "UK passport holder 예외 가능성 있음", tone: "neutral" };
+  if (input.ukException) return { label: "영국 국적자 예외 가능성 있음", tone: "neutral" };
   if (input.review > 0) return { label: "검토 필요", tone: "warn" };
   if (input.finalDays >= input.target) return { label: "기준 충족 가능성 높음", tone: "good" };
   return { label: "아직 부족", tone: "warn" };
@@ -740,7 +823,7 @@ function getOverallStatus(input) {
 
 function buildSummaryText(input) {
   if (input.options.ukPassport && input.options.subclass === "417") {
-    return "UK passport holder로 선택되었습니다. 2024년 7월 1일 이후 신청하는 subclass 417 second/third visa는 specified work requirement가 면제될 수 있으므로, 공식 Home Affairs 안내를 확인하세요.";
+    return "영국 국적자로 선택되었습니다. 2024년 7월 1일 이후 신청하는 subclass 417 second/third visa는 specified work requirement가 면제될 수 있으므로, 공식 Home Affairs 안내를 확인하세요.";
   }
   const targetLabel = input.options.targetVisa === "third" ? "Third visa" : "Second visa";
   const warnings = [];
@@ -765,17 +848,40 @@ function findOverlapWarnings(records) {
   return warnings;
 }
 
+function matchesSubclassRule(rule, subclassType) {
+  return !rule.subclasses?.length || rule.subclasses.includes(String(subclassType));
+}
+
+function matchesIndustryRule(rule, industry) {
+  if (!rule.industries?.length) return true;
+  const input = normalizeWhvText(industry);
+  return rule.industries.some(function(ruleIndustry) {
+    const normalized = normalizeWhvText(ruleIndustry);
+    return input === normalized || input.includes(normalized) || normalized.includes(input);
+  });
+}
+
 function matchesPostcodeRule(rule, input) {
-  if (rule.subclasses?.length && !rule.subclasses.includes(input.subclassType)) return false;
+  if (!matchesSubclassRule(rule, input.subclassType)) return false;
+  if (!matchesIndustryRule(rule, input.industry)) return false;
   if (rule.states?.length && input.state && !rule.states.includes(input.state)) return false;
-  if (rule.industries?.length && input.industry && !rule.industries.includes(input.industry)) return false;
+  if (rule.effectiveFrom && input.workDate && String(input.workDate) < String(rule.effectiveFrom)) return false;
+  if (rule.effectiveTo && input.workDate && String(input.workDate) > String(rule.effectiveTo)) return false;
   const postcode = Number(input.postcode);
   if (!Number.isFinite(postcode)) return false;
-  if (Array.isArray(rule.postcodes) && rule.postcodes.map(String).includes(String(input.postcode))) return true;
+  if (Array.isArray(rule.postcodes) && rule.postcodes.map(String).includes(String(input.postcode).padStart(4, "0"))) return true;
   if (Array.isArray(rule.ranges)) {
     return rule.ranges.some(function(range) { return postcode >= Number(range.start) && postcode <= Number(range.end); });
   }
   return false;
+}
+
+function normalizeIndustryName(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function textInputField(label, field, value) {

@@ -93,7 +93,7 @@
       "name": "근무시간만 있을 때는 어떻게 계산하나요?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Hours Worked를 하루 기준 근무시간으로 나누고 소수점은 내림 처리해 참고용 추정 일수를 표시합니다. 기본 하루 기준은 7.6시간이며 사용자가 수정할 수 있습니다."
+        "text": "총 근무시간(Hours Worked)을 하루 기준 근무시간으로 나누고 소수점은 내림 처리해 참고용 추정 일수를 표시합니다. 기본 하루 기준은 7.6시간이며 사용자가 수정할 수 있습니다."
       }
     },
     {
@@ -106,18 +106,18 @@
     },
     {
       "@type": "Question",
-      "name": "영국 여권 소지자도 88일 계산이 필요한가요?",
+      "name": "영국 국적자도 88일 계산이 필요한가요?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "UK passport holder로 subclass 417 second 또는 third visa를 신청하는 경우 2024년 7월 1일 이후 specified work requirement가 면제될 수 있습니다. 공식 안내를 직접 확인하세요."
+        "text": "영국 국적자로 subclass 417 second 또는 third visa를 신청하는 경우 2024년 7월 1일 이후 specified work requirement가 면제될 수 있습니다. 공식 안내를 직접 확인하세요."
       }
     },
     {
       "@type": "Question",
-      "name": "지역 postcode는 자동으로 판단하나요?",
+      "name": "지역 postcode는 자동으로 참고 확인하나요?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "외부 API는 사용하지 않고 local JSON 구조만 제공합니다. 현재 버전은 확정 postcode range를 넣지 않아 대부분 공식 확인 필요로 표시됩니다. 틀린 자동 판정보다 직접 확인 안내를 우선합니다."
+        "text": "외부 API는 사용하지 않고 공식 Home Affairs 페이지를 바탕으로 정리한 local JSON을 참고합니다. 자동 확인 결과는 참고용이며, 불확실한 조건은 공식 확인 필요로 표시됩니다."
       }
     },
     {
@@ -165,10 +165,10 @@
       <form id="whv-88-form">
         <section class="content-band compact whv-top-band">
           <div class="container">
-            <section class="whv-top-grid" aria-label="목표와 계산 방식 선택">
+            <section class="whv-top-grid" aria-label="목표 비자와 계산 방식 선택">
               <div class="input-panel whv-step-panel whv-goal-card">
                 <p class="eyebrow">Step 1</p>
-                <h2>목표 선택</h2>
+                <h2>목표 비자 선택</h2>
                 <div class="field-row whv-compact-fields">
                   <div class="field">
                     <label for="whv-target-visa">목표 비자</label>
@@ -186,8 +186,8 @@
                   </div>
                 </div>
                 <fieldset class="check-field whv-uk-compact">
-                  <legend>여권/국적 예외 참고</legend>
-                  <label><input id="whv-uk-passport" type="checkbox"> UK passport holder입니다</label>
+                  <legend>국적 예외</legend>
+                  <label><input id="whv-uk-passport" type="checkbox"> 영국 국적자입니다</label>
                   <p id="whv-uk-notice" class="notice-box notice-compact" hidden>2024년 7월 1일 이후 신청하는 subclass 417 second/third visa는 specified work requirement가 면제될 수 있습니다. 공식 Home Affairs 안내를 확인하세요.</p>
                 </fieldset>
               </div>
@@ -197,7 +197,7 @@
                 <h2>계산 방식 선택</h2>
                 <div class="whv-mode-grid" role="radiogroup" aria-label="계산 방식 선택">
                   <label class="whv-mode-card active" data-mode="auto"><input type="radio" name="whv-mode" value="auto" checked><strong>급여명세서 PDF/이미지 자동 계산</strong><span>Pay Period가 적힌 payslip을 업로드할 때 추천</span></label>
-                  <label class="whv-mode-card" data-mode="hours"><input type="radio" name="whv-mode" value="hours"><strong>Hours Worked로 추정 계산</strong><span>Pay Period가 없고 총 근무시간만 있을 때 사용</span></label>
+                  <label class="whv-mode-card" data-mode="hours"><input type="radio" name="whv-mode" value="hours"><strong>총 근무시간으로 추정 계산</strong><span>Pay Period가 없고 총 근무시간(Hours Worked)만 있을 때 사용</span></label>
                   <label class="whv-mode-card" data-mode="manual"><input type="radio" name="whv-mode" value="manual"><strong>인정 일수 직접 입력</strong><span>이미 인정 일수를 알고 있거나 직접 합산할 때 사용</span></label>
                 </div>
                 <div class="whv-step-actions">
@@ -214,7 +214,7 @@
             <div class="section-intro compact-intro">
               <p class="eyebrow">Step 3</p>
               <h2>자료 입력</h2>
-              <p>선택한 계산 방식에 맞는 입력 영역만 표시됩니다.</p>
+              <p>선택한 계산 방식 하나만 먼저 보여주고, 필요한 경우 다른 입력 방식을 추가로 펼칠 수 있습니다.</p>
             </div>
 
             <section class="tool-panel whv-mode-panel" data-mode-panel="auto">
@@ -224,23 +224,27 @@
                 <div class="field">
                   <label for="whv-payslip-files">Payslip PDF 또는 이미지 파일</label>
                   <input id="whv-payslip-files" type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp">
-                  <p class="field-help">Pay Period가 정상 추출되면 시작일과 종료일을 포함한 calendar days로 바로 계산합니다.</p>
+                  <p class="field-help">여러 payslip을 한 번에 선택할 수 있습니다. Pay Period가 정상 추출되면 시작일과 종료일을 포함한 calendar days로 계산합니다.</p>
                 </div>
                 <div class="ocr-status-box" aria-live="polite">
                   <span id="whv-ocr-status" data-tone="info">파일을 선택하면 분석 상태가 표시됩니다.</span>
                   <progress id="whv-ocr-progress" max="100" value="0" aria-label="파일 분석 진행률"></progress>
                 </div>
               </div>
-              <aside class="result-panel notice-compact whv-side-note">
+              <aside class="result-panel notice-compact whv-side-note whv-upload-callout">
                 <h3>자동 계산 기준</h3>
-                <p>Pay Period start와 end가 있으면 두 날짜를 포함해 calendar days를 계산합니다. Pay Period가 확인되면 Hours Worked 추정 박스는 표시하지 않습니다.</p>
+                <p>Pay Period start와 end가 있으면 두 날짜를 포함해 calendar days를 계산합니다. Pay Period가 확인되면 총 근무시간 추정보다 Pay Period 기준을 우선 사용합니다.</p>
+                <div class="whv-callout-mini">
+                  <strong>파일 선택 버튼을 눌러 보유한 모든 급여명세서를 한 번에 업로드하세요.</strong>
+                  <span>PDF, JPG, PNG, WEBP 파일을 지원합니다. 여러 파일을 선택하면 각 명세서의 Pay Period를 읽어 자동으로 합산합니다.</span>
+                </div>
               </aside>
             </section>
 
             <section class="tool-panel whv-mode-panel" data-mode-panel="hours" hidden>
               <div class="input-panel">
-                <h3>Hours Worked로 추정 계산</h3>
-                <p class="field-help">Pay Period가 없고 총 근무시간만 있을 때 사용하는 참고용 추정 모드입니다.</p>
+                <h3>총 근무시간으로 추정 계산</h3>
+                <p class="field-help">Pay Period가 없고 총 근무시간(Hours Worked)만 있을 때 사용하는 참고용 추정 모드입니다.</p>
                 <div class="field-row whv-compact-fields">
                   <div class="field"><label for="whv-hours-worked">총 근무시간</label><div class="input-with-unit"><input id="whv-hours-worked" type="number" min="0" step="0.01" inputmode="decimal"><span class="unit">시간</span></div><p class="field-help">예: 38시간 ÷ 7.6시간 = 약 5일</p></div>
                   <div class="field"><label for="whv-hours-day-hours">하루 기준 근무시간</label><div class="input-with-unit"><input id="whv-hours-day-hours" type="number" min="1" step="0.1" value="7.6" inputmode="decimal"><span class="unit">시간</span></div><p class="field-help">실제 인정 기준이 아니라 추정 계산용 값입니다.</p></div>
@@ -250,13 +254,13 @@
                   <div class="field"><label for="whv-hours-industry">업종</label><select id="whv-hours-industry"><option>Plant and animal cultivation</option><option>Fishing and pearling</option><option>Tree farming and felling</option><option>Mining</option><option>Construction</option><option>Tourism and hospitality</option><option>Bushfire recovery work</option><option>Flood recovery work</option><option>COVID-19 critical work</option><option>기타 / 직접 입력</option></select></div>
                 </div>
                 <div class="field-row whv-compact-fields">
-                  <div class="field"><label for="whv-hours-postcode">Postcode</label><input id="whv-hours-postcode" type="text" inputmode="numeric" autocomplete="off"></div>
+                  <div class="field"><label for="whv-hours-postcode">우편번호(postcode)</label><input id="whv-hours-postcode" type="text" inputmode="numeric" autocomplete="off"></div>
                   <div class="field"><label for="whv-hours-state">State/Territory</label><input id="whv-hours-state" type="text" autocomplete="off" placeholder="예: SA, QLD"></div>
                 </div>
                 <div class="field"><label for="whv-hours-period-note">기간 또는 메모</label><input id="whv-hours-period-note" type="text" autocomplete="off"></div>
-                <button id="whv-add-hours-record" type="button" class="primary-button">Hours Worked 추정 항목 추가</button>
+                <button id="whv-add-hours-record" type="button" class="primary-button">총 근무시간 추정 항목 추가</button>
               </div>
-              <aside class="result-panel notice-compact whv-side-note"><h3>추정 계산식</h3><p>Hours Worked ÷ 하루 기준 근무시간으로 계산하고 소수점은 내림합니다. 결과에는 항상 “추정”으로 표시됩니다.</p></aside>
+              <aside class="result-panel notice-compact whv-side-note"><h3>추정 계산식</h3><p>총 근무시간(Hours Worked) ÷ 하루 기준 근무시간으로 계산하고 소수점은 내림합니다. 결과에는 항상 “추정”으로 표시됩니다.</p></aside>
             </section>
 
             <section class="tool-panel whv-mode-panel" data-mode-panel="manual" hidden>
@@ -273,7 +277,7 @@
                 </div>
                 <div class="field-row whv-compact-fields">
                   <div class="field"><label for="whv-manual-industry">업종</label><select id="whv-manual-industry"><option>Plant and animal cultivation</option><option>Fishing and pearling</option><option>Tree farming and felling</option><option>Mining</option><option>Construction</option><option>Tourism and hospitality</option><option>Bushfire recovery work</option><option>Flood recovery work</option><option>COVID-19 critical work</option><option>기타 / 직접 입력</option></select></div>
-                  <div class="field"><label for="whv-manual-postcode">Postcode</label><input id="whv-manual-postcode" type="text" inputmode="numeric" autocomplete="off"></div>
+                  <div class="field"><label for="whv-manual-postcode">우편번호(postcode)</label><input id="whv-manual-postcode" type="text" inputmode="numeric" autocomplete="off"></div>
                 </div>
                 <div class="field-row whv-compact-fields">
                   <div class="field"><label for="whv-manual-state">State/Territory</label><input id="whv-manual-state" type="text" autocomplete="off" placeholder="예: WA, VIC"></div>
@@ -284,9 +288,18 @@
               <aside class="result-panel notice-compact whv-side-note"><h3>직접 입력 우선 적용</h3><p>직접 입력한 인정 일수가 있으면 Pay Period나 Hours 기준보다 우선 적용됩니다.</p></aside>
             </section>
 
+            <div id="whv-mode-addons" class="whv-mode-addons" aria-label="보조 입력 방식 추가">
+              <p class="field-help">다른 방식의 자료도 함께 합산해야 한다면 아래 버튼으로 추가 입력 영역을 열 수 있습니다.</p>
+              <div class="whv-extra-button-row whv-addon-button-row">
+                <button type="button" class="subtle-button" data-add-mode="auto">급여명세서 파일도 추가</button>
+                <button type="button" class="subtle-button" data-add-mode="hours">총 근무시간 추정 항목 추가</button>
+                <button type="button" class="subtle-button" data-add-mode="manual">직접 입력 항목 추가</button>
+              </div>
+            </div>
+
             <div class="whv-step-actions whv-bottom-actions">
               <button id="whv-back-top-from-input" type="button" class="subtle-button">이전 단계로 돌아가기</button>
-              <button id="whv-go-review" type="button" class="primary-button" disabled>추출값 확인하러 가기</button>
+              <button id="whv-go-review" type="button" class="primary-button" disabled>인정 일수 확인하러 가기</button>
             </div>
           </div>
         </section>
@@ -294,8 +307,8 @@
         <section class="content-band" id="whv-review-step" hidden>
           <div class="container">
             <div class="section-intro compact-intro">
-              <p class="eyebrow">Step 4 · Step 5</p>
-              <h2>추출값과 포함 여부 확인</h2>
+              <p class="eyebrow">Step 4</p>
+              <h2>인정 일수 확인</h2>
               <p>업로드·입력된 항목은 기본적으로 계산에 포함됩니다. 제외할 항목만 포함 체크를 해제하세요.</p>
             </div>
             <p id="whv-empty-state" class="notice-box notice-compact">아직 입력된 payslip 또는 항목이 없습니다.</p>
@@ -309,37 +322,54 @@
 
         <section class="content-band compact" id="whv-result-step" hidden>
           <div class="container">
-            <section class="whv-result-dashboard" aria-label="계산 결과">
-              <div class="whv-result-main">
-                <p class="eyebrow">Step 6</p>
+            <section class="whv-result-dashboard whv-result-dashboard-v2" aria-label="계산 결과">
+              <div class="whv-result-main whv-result-hero-card">
+                <p class="eyebrow">Step 5</p>
                 <h2>결과 확인</h2>
                 <span class="report-kicker">최종 적용 인정 가능 일수</span>
                 <strong id="whv-final-days" class="result-number">0일</strong>
                 <p id="whv-result-summary">자료를 입력하면 결과가 표시됩니다.</p>
                 <progress id="whv-progress-bar" class="whv-progress" max="100" value="0" aria-label="목표 달성률" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></progress>
-                <fieldset class="check-field whv-dedupe-compact">
-                  <legend>중복 기간 처리</legend>
-                  <label><input id="whv-dedupe-dates" type="checkbox"> 날짜가 겹치는 Pay Period는 한 번만 세기</label>
-                </fieldset>
+                <p class="whv-small-official-note">공식 기준과 증빙자료 확인 전 참고용 계산 결과입니다.</p>
               </div>
-              <div class="whv-result-table-wrap">
-                <table class="whv-result-table">
-                  <tbody>
-                    <tr><th>총 항목 수</th><td id="whv-total-files">0</td><th>계산 포함</th><td id="whv-included-files">0</td></tr>
-                    <tr><th>검토 필요</th><td id="whv-review-files">0</td><th>겹치는 기간 경고</th><td id="whv-overlap-warnings">0</td></tr>
-                    <tr><th>Pay Period 기준</th><td id="whv-pay-period-total">0일</td><th>Hours 추정</th><td id="whv-hours-total">0일 추정</td></tr>
-                    <tr><th>직접 입력</th><td id="whv-manual-total">0일</td><th>중복 기간 제외</th><td id="whv-duplicate-excluded">0일</td></tr>
-                    <tr><th>목표 기준</th><td id="whv-target-days">88일</td><th>남은 일수</th><td id="whv-remaining-days">88일</td></tr>
-                    <tr><th>결과 상태</th><td colspan="3"><strong id="whv-result-status" class="decision-badge warn">아직 부족</strong></td></tr>
-                  </tbody>
-                </table>
-                <ul id="whv-source-details" class="plain-list whv-source-detail">
-                  <li><strong>Pay Period 기준:</strong> 0일</li>
-                  <li><strong>Hours Worked 기준 추정:</strong> 0일 추정</li>
-                  <li><strong>사용자 직접 입력:</strong> 0일</li>
-                  <li><strong>검토 필요:</strong> 0건</li>
-                  <li><strong>중복 기간 제외:</strong> 0일</li>
-                </ul>
+
+              <div class="whv-result-side">
+                <div class="whv-result-highlight-grid">
+                  <article class="whv-result-highlight-card">
+                    <span>목표 기준</span>
+                    <strong id="whv-target-days">88일</strong>
+                  </article>
+                  <article class="whv-result-highlight-card emphasize">
+                    <span>남은 일수</span>
+                    <strong id="whv-remaining-days">88일</strong>
+                  </article>
+                  <article class="whv-result-highlight-card status">
+                    <span>결과 상태</span>
+                    <strong id="whv-result-status" class="decision-badge warn">아직 부족</strong>
+                  </article>
+                </div>
+
+                <div class="whv-result-table-wrap">
+                  <table class="whv-result-table">
+                    <tbody>
+                      <tr><th>총 항목 수</th><td id="whv-total-files">0</td><th>계산 포함</th><td id="whv-included-files">0</td></tr>
+                      <tr><th>검토 필요</th><td id="whv-review-files">0</td><th>겹치는 기간 경고</th><td id="whv-overlap-warnings">0</td></tr>
+                      <tr><th>Pay Period 기준</th><td id="whv-pay-period-total">0일</td><th>총 근무시간 추정</th><td id="whv-hours-total">0일 추정</td></tr>
+                      <tr><th>직접 입력</th><td id="whv-manual-total">0일</td><th>중복 기간 제외</th><td id="whv-duplicate-excluded">0일</td></tr>
+                    </tbody>
+                  </table>
+                  <fieldset class="check-field whv-dedupe-compact">
+                    <legend>중복 기간 처리</legend>
+                    <label><input id="whv-dedupe-dates" type="checkbox"> 날짜가 겹치는 Pay Period는 한 번만 세기</label>
+                  </fieldset>
+                  <ul id="whv-source-details" class="plain-list whv-source-detail">
+                    <li><strong>Pay Period 기준:</strong> 0일</li>
+                    <li><strong>총 근무시간으로 추정 계산:</strong> 0일 추정</li>
+                    <li><strong>사용자 직접 입력:</strong> 0일</li>
+                    <li><strong>검토 필요:</strong> 0건</li>
+                    <li><strong>중복 기간 제외:</strong> 0일</li>
+                  </ul>
+                </div>
               </div>
               <div id="whv-result-official-links" class="whv-official-mini"></div>
             </section>
@@ -365,7 +395,7 @@
             <ul class="plain-list">
               <li>이 계산기는 비자 승인 여부를 보장하지 않는 참고용 도구입니다.</li>
               <li>Pay Period가 있으면 시작일과 종료일을 포함해 calendar days를 계산합니다.</li>
-              <li>Hours Worked 추정은 Pay Period가 없을 때만 참고용으로 사용합니다.</li>
+              <li>총 근무시간(Hours Worked) 추정은 Pay Period가 없을 때만 참고용으로 사용합니다.</li>
               <li>postcode 자동 확인은 참고용이며, 최종 기준은 Home Affairs 공식 안내를 확인해야 합니다.</li>
               <li>PDF와 이미지는 서버에 저장하지 않고 브라우저에서 처리됩니다.</li>
               <li>민감정보는 가능한 한 가린 뒤 사용하세요.</li>
@@ -382,10 +412,10 @@
             <details open><summary>급여명세서만 있으면 세컨비자 88일이 확정되나요?</summary><p>아닙니다. 이 계산기는 Pay Period와 근무시간을 바탕으로 specified work 인정 가능 일수를 참고용으로 추정합니다. 실제 인정 여부는 업종, 지역, 고용 형태, 증빙자료, 비자 subclass와 공식 기준에 따라 달라질 수 있습니다.</p></details>
             <details><summary>Pay Period 전체 날짜가 모두 인정되나요?</summary><p>Pay Period 전체가 specified work 조건을 충족하는지 공식 기준과 증빙자료를 확인해야 합니다. 이 계산기는 입력된 Pay Period의 시작일과 종료일을 포함한 calendar days를 참고용으로 계산합니다.</p></details>
             <details><summary>주급 payslip 하나는 무조건 7일로 인정되나요?</summary><p>무조건은 아닙니다. 해당 기간의 업무와 근무지가 적격 조건에 해당하고 증빙이 충분한지 사용자가 직접 확인해야 합니다.</p></details>
-            <details><summary>근무시간만 있을 때는 어떻게 계산하나요?</summary><p>Hours Worked를 하루 기준 근무시간으로 나누고 소수점은 내림 처리해 참고용 추정 일수를 표시합니다. 기본 하루 기준은 7.6시간이며 사용자가 수정할 수 있습니다.</p></details>
+            <details><summary>근무시간만 있을 때는 어떻게 계산하나요?</summary><p>총 근무시간(Hours Worked)을 하루 기준 근무시간으로 나누고 소수점은 내림 처리해 참고용 추정 일수를 표시합니다. 기본 하루 기준은 7.6시간이며 사용자가 수정할 수 있습니다.</p></details>
             <details><summary>이미지 파일도 인식할 수 있나요?</summary><p>JPG, PNG, WEBP 파일을 브라우저에서 canvas로 처리한 뒤 Tesseract.js OCR로 읽습니다. 사진 선명도, 기울기, 그림자, 해상도에 따라 결과가 달라질 수 있습니다.</p></details>
-            <details><summary>영국 여권 소지자도 88일 계산이 필요한가요?</summary><p>UK passport holder로 subclass 417 second 또는 third visa를 신청하는 경우 2024년 7월 1일 이후 specified work requirement가 면제될 수 있습니다. 공식 안내를 직접 확인하세요.</p></details>
-            <details><summary>지역 postcode는 자동으로 판단하나요?</summary><p>외부 API는 사용하지 않고 local JSON 구조만 제공합니다. 현재 버전은 확정 postcode range를 넣지 않아 대부분 공식 확인 필요로 표시됩니다. 틀린 자동 판정보다 직접 확인 안내를 우선합니다.</p></details>
+            <details><summary>영국 국적자도 88일 계산이 필요한가요?</summary><p>영국 국적자로 subclass 417 second 또는 third visa를 신청하는 경우 2024년 7월 1일 이후 specified work requirement가 면제될 수 있습니다. 공식 안내를 직접 확인하세요.</p></details>
+            <details><summary>지역 postcode는 자동으로 참고 확인하나요?</summary><p>외부 API는 사용하지 않고 공식 Home Affairs 페이지를 바탕으로 정리한 local JSON을 참고합니다. 자동 확인 결과는 참고용이며, 불확실한 조건은 공식 확인 필요로 표시됩니다.</p></details>
             <details><summary>이 계산 결과를 비자 신청서에 그대로 제출해도 되나요?</summary><p>아닙니다. 결과는 참고용이며 비자 승인 가능성을 보장하지 않습니다. 최종 판단은 Australian Department of Home Affairs와 ImmiAccount 신청 기준, 필요한 경우 전문가 확인을 따르세요.</p></details>
           </div>
         </div>
@@ -403,7 +433,7 @@
         </nav>
       </div>
     </footer>
-    <script type="module" src="../assets/js/australia-whv-88-days.js?v=20260616-whv-ui-parser-final"></script>
+    <script type="module" src="../assets/js/australia-whv-88-days.js?v=20260616-whv-ui-parser-final-v2"></script>
     <script type="module" src="../assets/js/app.js?v=20260616-whv-88-days-8"></script>
   </body>
 </html>
