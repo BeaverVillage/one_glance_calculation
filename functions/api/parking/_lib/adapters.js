@@ -1,49 +1,86 @@
 import { distanceKm } from './distance.js';
+import { parkingLots as sampleParkingLots } from './mock-data.js';
 
 const DEFAULT_SEOUL_BASE = 'http://openapi.seoul.go.kr:8088';
 const DEFAULT_SEOUL_PARK_INFO_SERVICE = 'GetParkInfo';
 const DEFAULT_SEOUL_REALTIME_SERVICE = 'GetParkingInfo';
+const MAX_DATASET_RETURN = 80;
 
 export async function resolveParkingLotDataset({ env = {}, destination = null, radius = 3000, query = '' } = {}) {
+  const radiusMeters = normalizeRadiusMeters(radius);
   const sources = [];
   const errors = [];
-  const lots = [];
+  const externalLots = [];
+  const adapterQuery = destination ? '' : query;
 
-  const seoul = await safeFetch('seoul-open-data', () => fetchSeoulParkingLots(env, { query }));
-  if (seoul.ok && seoul.lots.length) {
-    lots.push(...seoul.lots);
-    sources.push(seoul.source);
-  } else if (!seoul.ok) {
+  const seoul = await safeFetch('seoul-open-data', () => fetchSeoulParkingLots(env, { query: adapterQuery }));
+  if (seoul.ok) {
+    if (seoul.source) sources.push(seoul.source);
+    if (seoul.lots.length) externalLots.push(...seoul.lots);
+  } else {
     errors.push(seoul.error);
   }
 
-  const publicData = await safeFetch('public-data-portal', () => fetchPublicParkingLots(env, { query }));
-  if (publicData.ok && publicData.lots.length) {
-    lots.push(...publicData.lots);
-    sources.push(publicData.source);
-  } else if (!publicData.ok) {
+  const publicData = await safeFetch('public-data-portal', () => fetchPublicParkingLots(env, { query: adapterQuery }));
+  if (publicData.ok) {
+    if (publicData.source) sources.push(publicData.source);
+    if (publicData.lots.length) externalLots.push(...publicData.lots);
+  } else {
     errors.push(publicData.error);
   }
 
-  const deduped = dedupeLots(lots);
-  const withDistance = destination
-    ? deduped
-        .filter((lot) => Number.isFinite(Number(lot.lat)) && Number.isFinite(Number(lot.lng)))
-        .map((lot) => ({ ...lot, distanceFromDestinationKm: distanceKm(destination, lot) }))
-        .sort((a, b) => a.distanceFromDestinationKm - b.distanceFromDestinationKm)
-    : deduped;
-  const nearby = destination ? withDistance.filter((lot) => lot.distanceFromDestinationKm * 1000 <= radius) : withDistance;
+  const dedupedExternal = dedupeLots(externalLots);
+  const externalWithDistance = addDistances(dedupedExternal, destination);
+  const externalNearby = filterByRadius(externalWithDistance, radiusMeters);
+  const sampleWithDistance = addDistances(sampleParkingLots, destination);
+  const sampleNearby = filterByRadius(sampleWithDistance, radiusMeters);
+
+  let selectedLots = externalNearby;
+  let mode = externalNearby.length ? 'public-adapter' : 'public-adapter-empty';
+  let fallbackReason = '';
+
+  if (externalNearby.length < 3 && sampleNearby.length) {
+    selectedLots = dedupeLots([...externalNearby, ...sampleNearby]);
+    mode = externalNearby.length ? 'hybrid-public-sample' : 'sample-fallback';
+    fallbackReason = externalNearby.length
+      ? '공공데이터 반경 후보가 적어 로컬 샘플 후보를 함께 사용했습니다.'
+      : externalWithDistance.length
+        ? '공공데이터는 조회됐지만 현재 반경 내 주차장이 없어 로컬 샘플 후보를 사용했습니다.'
+        : '연동 가능한 공공데이터 후보가 없어 로컬 샘플 후보를 사용했습니다.';
+  } else if (!externalNearby.length) {
+    fallbackReason = externalWithDistance.length
+      ? '공공데이터는 조회됐지만 현재 반경 내 주차장이 없습니다.'
+      : '연동 가능한 공공데이터 후보가 없습니다.';
+  }
+
+  selectedLots = filterByRadius(addDistances(selectedLots, destination), radiusMeters)
+    .sort((a, b) => valueOrMax(a.distanceFromDestinationKm) - valueOrMax(b.distanceFromDestinationKm))
+    .slice(0, MAX_DATASET_RETURN);
+
+  const stats = buildDatasetStats({
+    sources,
+    externalLots,
+    dedupedExternal,
+    externalWithDistance,
+    externalNearby,
+    sampleNearby,
+    selectedLots
+  });
 
   return {
-    lots: (nearby.length ? nearby : withDistance).slice(0, 80),
+    lots: selectedLots,
     meta: {
-      mode: deduped.length ? 'external' : 'sample',
+      mode,
       sourceCount: sources.length,
       sources,
       errors,
-      note: deduped.length
-        ? '공공/개방 데이터 어댑터에서 읽은 후보를 우선 사용했습니다.'
-        : '연동 가능한 공공데이터 키나 endpoint가 없어 샘플 데이터를 사용합니다.'
+      stats,
+      fallbackReason,
+      note: selectedLots.length
+        ? mode === 'public-adapter'
+          ? '공공/개방 데이터 어댑터에서 읽은 반경 내 후보를 사용했습니다.'
+          : fallbackReason
+        : fallbackReason || '조건에 맞는 주차장 후보가 없습니다.'
     }
   };
 }
@@ -76,6 +113,45 @@ export async function resolveRealtimeStatuses({ env = {}, lots = [] } = {}) {
   };
 }
 
+function normalizeRadiusMeters(radius) {
+  const value = Number(radius);
+  if (!Number.isFinite(value) || value <= 0) return 1500;
+  return Math.min(20000, Math.max(300, Math.round(value)));
+}
+
+function addDistances(lots, destination) {
+  const validLots = lots.filter((lot) => Number.isFinite(Number(lot.lat)) && Number.isFinite(Number(lot.lng)));
+  if (!destination || !Number.isFinite(Number(destination.lat)) || !Number.isFinite(Number(destination.lng))) return validLots;
+  return validLots.map((lot) => ({
+    ...lot,
+    distanceFromDestinationKm: roundDistance(distanceKm(destination, lot)),
+    distanceKm: roundDistance(distanceKm(destination, lot))
+  }));
+}
+
+function filterByRadius(lots, radiusMeters) {
+  return lots.filter((lot) => {
+    if (lot.distanceFromDestinationKm == null) return true;
+    return Number(lot.distanceFromDestinationKm) * 1000 <= radiusMeters;
+  });
+}
+
+function buildDatasetStats({ sources, externalLots, dedupedExternal, externalWithDistance, externalNearby, sampleNearby, selectedLots }) {
+  const sourceById = new Map(sources.filter(Boolean).map((source) => [source.id, source]));
+  const seoul = sourceById.get('seoul-open-data') || {};
+  const publicData = sourceById.get('public-data-parking') || {};
+  return {
+    seoulFetchedCount: Number(seoul.count || 0),
+    publicFetchedCount: Number(publicData.fetchedCount || publicData.count || 0),
+    normalizedCount: externalLots.length,
+    dedupedCount: dedupedExternal.length,
+    withCoordinateCount: externalWithDistance.length,
+    nearbyCount: externalNearby.length,
+    sampleNearbyCount: sampleNearby.length,
+    returnedCount: selectedLots.length
+  };
+}
+
 async function safeFetch(name, task) {
   try {
     return await task();
@@ -95,10 +171,11 @@ async function fetchSeoulParkingLots(env, { query = '' } = {}) {
   if (!res.ok) throw new Error(`서울 열린데이터 ${service} 호출 실패: ${res.status}`);
   const data = await res.json();
   const rows = data?.[service]?.row || data?.GetParkInfo?.row || data?.GetParkingInfo?.row || data?.getParkInfo?.row || data?.row || [];
+  const lots = rows.map(normalizeSeoulParkInfoRow).filter(Boolean);
   return {
     ok: true,
-    source: { id: 'seoul-open-data', name: '서울시 공영주차장 안내 정보', service, count: rows.length },
-    lots: rows.map(normalizeSeoulParkInfoRow).filter(Boolean)
+    source: { id: 'seoul-open-data', name: '서울시 공영주차장 안내 정보', service, count: rows.length, normalizedCount: lots.length },
+    lots
   };
 }
 
@@ -143,7 +220,7 @@ async function fetchPublicParkingLots(env, { query = '' } = {}) {
 
   return {
     ok: true,
-    source: { id: 'public-data-parking', name: '공공데이터포털 전국주차장정보표준데이터', service: 'tn_pubr_prkplce_info_api', count: filtered.length, fetchedCount: rows.length },
+    source: { id: 'public-data-parking', name: '공공데이터포털 전국주차장정보표준데이터', service: 'tn_pubr_prkplce_info_api', count: filtered.length, fetchedCount: rows.length, normalizedCount: normalized.length },
     lots: filtered
   };
 }
@@ -152,8 +229,6 @@ async function parseMaybeJsonOrXml(text) {
   const trimmed = String(text || '').trim();
   if (!trimmed) return {};
   if (trimmed.startsWith('{') || trimmed.startsWith('[')) return JSON.parse(trimmed);
-  // Cloudflare Pages Functions 런타임에는 DOMParser가 없을 수 있으므로
-  // 전국주차장정보표준데이터는 JSON(type=json)을 우선 요청하고, XML은 안전하게 비워 둡니다.
   return { response: { body: { items: [] } }, rawPrefix: trimmed.slice(0, 120) };
 }
 
@@ -167,7 +242,7 @@ function normalizeSeoulParkInfoRow(row) {
   const name = pick(row, ['PARKING_NAME', 'PKLT_NM', 'parkingName', 'name']);
   const lat = toNumber(pick(row, ['LAT', 'Y', 'lat']));
   const lng = toNumber(pick(row, ['LNG', 'LOT', 'X', 'lng']));
-  if (!name || !Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  if (!name || !isValidLatLng(lat, lng)) return null;
   const parkingCode = pick(row, ['PARKING_CODE', 'PKLT_CD']);
   const payName = pick(row, ['PAY_NM', 'PAY_YN_NM', 'PAY_YN', 'feeTypeName']);
   const publicType = pick(row, ['OPERATION_RULE_NM', 'OPER_MNATH', 'publicPrivateType']) || '공영';
@@ -242,7 +317,7 @@ function normalizePublicDataParkingRow(row) {
   const name = pick(row, ['prkplceNm', 'parkingLotName', '주차장명', 'PARKING_NAME', 'name']);
   const lat = toNumber(pick(row, ['latitude', 'lat', '위도', 'LAT']));
   const lng = toNumber(pick(row, ['longitude', 'lng', '경도', 'LNG']));
-  if (!name || !Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  if (!name || !isValidLatLng(lat, lng)) return null;
   const publicType = pick(row, ['prkplceSe', 'operSe', '운영구분', 'publicPrivateType']) || '공영';
   const feeType = pick(row, ['parkingchrgeInfo', 'feeType', '요금정보']) || '';
   return {
@@ -258,7 +333,7 @@ function normalizePublicDataParkingRow(row) {
     operatingDays: pick(row, ['operDay', '운영요일']) || '공공데이터 기준',
     weekdayOpen: formatHHMM(pick(row, ['weekdayOperOpenHhmm', '평일운영시작시각'])) || '00:00',
     weekdayClose: formatHHMM(pick(row, ['weekdayOperColseHhmm', 'weekdayOperCloseHhmm', '평일운영종료시각'])) || '23:59',
-    saturdayOpen: formatHHMM(pick(row, ['satOperOperOpenHhmm', '토요일운영시작시각'])) || '00:00',
+    saturdayOpen: formatHHMM(pick(row, ['satOperOperOpenHhmm', 'satOperOpenHhmm', '토요일운영시작시각'])) || '00:00',
     saturdayClose: formatHHMM(pick(row, ['satOperCloseHhmm', 'satOperColseHhmm', '토요일운영종료시각'])) || '23:59',
     holidayOpen: formatHHMM(pick(row, ['holidayOperOpenHhmm', '공휴일운영시작시각'])) || '00:00',
     holidayClose: formatHHMM(pick(row, ['holidayCloseOpenHhmm', 'holidayOperCloseHhmm', 'holidayOperColseHhmm', '공휴일운영종료시각'])) || '23:59',
@@ -312,6 +387,10 @@ function hasNumber(value) {
   return value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value));
 }
 
+function isValidLatLng(lat, lng) {
+  return Number.isFinite(Number(lat)) && Number.isFinite(Number(lng)) && Math.abs(Number(lat)) <= 90 && Math.abs(Number(lng)) <= 180;
+}
+
 function pick(row, keys) {
   for (const key of keys) {
     const value = row?.[key];
@@ -363,12 +442,20 @@ function normalizeName(value) {
 }
 
 function dedupeLots(lots) {
-  const seen = new Set();
   const result = [];
+  const seenIds = new Set();
   for (const lot of lots) {
-    const key = lot.id || `${lot.name}:${lot.lat}:${lot.lng}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
+    if (!lot) continue;
+    const id = String(lot.id || '').trim();
+    if (id && seenIds.has(id)) continue;
+    const duplicate = result.some((existing) => {
+      const sameName = normalizeName(existing.name) && normalizeName(existing.name) === normalizeName(lot.name);
+      if (!sameName) return false;
+      if (!isValidLatLng(existing.lat, existing.lng) || !isValidLatLng(lot.lat, lot.lng)) return true;
+      return distanceKm(existing, lot) <= 0.05;
+    });
+    if (duplicate) continue;
+    if (id) seenIds.add(id);
     result.push(lot);
   }
   return result;
@@ -386,6 +473,14 @@ function dedupeStatuses(statuses) {
   return result;
 }
 
+function roundDistance(value) {
+  return Math.round(Number(value) * 1000) / 1000;
+}
+
+function valueOrMax(value) {
+  return value == null ? Number.MAX_SAFE_INTEGER : Number(value);
+}
+
 export const __parkingAdapterTest = {
   normalizeSeoulParkInfoRow,
   normalizeSeoulRealtimeRow,
@@ -393,5 +488,8 @@ export const __parkingAdapterTest = {
   unwrapPublicDataRows,
   matchRealtimeStatuses,
   parseObservedTime,
-  formatHHMM
+  formatHHMM,
+  dedupeLots,
+  filterByRadius,
+  addDistances
 };

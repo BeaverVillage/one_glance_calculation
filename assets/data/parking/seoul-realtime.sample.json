@@ -51,6 +51,20 @@
       "totalSpaces": 6000,
       "observedAt": "2026-06-17T09:45:00+09:00",
       "source": "공항 주차 실시간 샘플"
+    },
+    {
+      "parkingLotId": "PARK_KONKUK_003",
+      "availableSpaces": 23,
+      "totalSpaces": 84,
+      "observedAt": "2026-06-17T13:20:00+09:00",
+      "source": "샘플 실시간"
+    },
+    {
+      "parkingLotId": "PARK_KONKUK_004",
+      "availableSpaces": 9,
+      "totalSpaces": 65,
+      "observedAt": "2026-06-17T13:20:00+09:00",
+      "source": "샘플 실시간"
     }
   ]
 }

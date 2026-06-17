@@ -6976,3 +6976,213 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* Parking calculation map: four-panel dashboard and strict radius MVP fix */
+.parking-dashboard {
+  display: grid;
+  grid-template-columns: minmax(340px, 420px) minmax(0, 1fr);
+  grid-template-rows: minmax(360px, 58vh) minmax(260px, auto);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.parking-control-column {
+  grid-row: 1 / span 2;
+  min-width: 0;
+}
+
+.parking-map-panel,
+.parking-results-panel {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.parking-map-panel {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 10px;
+  position: relative !important;
+  top: auto !important;
+}
+
+.parking-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
+.parking-panel-head span {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  padding: 0.28rem 0.58rem;
+  border-radius: 999px;
+  background: rgba(20, 108, 95, 0.08);
+  color: #146c5f;
+  font-size: 0.86rem;
+  font-weight: 900;
+  line-height: 1.3;
+}
+
+.parking-panel-head strong {
+  min-width: 0;
+  color: #102033;
+  font-size: 0.96rem;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+}
+
+.parking-dashboard .parking-map-card {
+  min-height: 0;
+  height: 100%;
+}
+
+.parking-results-panel {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  grid-template-rows: auto auto auto minmax(0, 1fr);
+  gap: 0.85rem;
+  overflow: hidden;
+}
+
+.parking-dashboard .parking-result-list {
+  display: grid !important;
+  max-height: min(52vh, 520px);
+  overflow-y: auto;
+  padding-right: 4px;
+  scroll-padding: 12px;
+}
+
+.parking-card-head,
+.parking-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+  min-width: 0;
+}
+
+.parking-card-head strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+}
+
+.parking-card-tags span,
+.parking-card-tags button {
+  min-width: 0;
+}
+
+.parking-pinned-badge,
+.parking-card-tags .parking-pinned-badge {
+  display: inline-flex;
+  width: fit-content;
+  padding: 0.22rem 0.5rem;
+  border-radius: 999px;
+  background: #0f766e;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.parking-result-card.is-pinned {
+  border-color: #0f766e;
+  background: linear-gradient(180deg, #f0fdfa 0%, #ffffff 60%);
+}
+
+@media (max-width: 1024px) {
+  .parking-dashboard {
+    grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
+    grid-template-rows: minmax(340px, 52vh) minmax(260px, auto);
+  }
+}
+
+@media (max-width: 860px) {
+  .parking-dashboard {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .parking-control-column,
+  .parking-map-panel,
+  .parking-results-panel {
+    grid-row: auto;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .parking-map-panel {
+    display: grid;
+  }
+
+  .parking-dashboard .parking-map-card {
+    min-height: 380px;
+    height: auto;
+  }
+
+  .parking-dashboard .parking-result-list {
+    display: grid !important;
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
+  }
+
+  .parking-results-panel {
+    overflow: visible;
+  }
+}
+
+@media (max-width: 640px) {
+  .parking-dashboard {
+    gap: 14px;
+  }
+
+  .parking-panel-head {
+    display: grid;
+    justify-items: start;
+  }
+
+  .parking-dashboard .parking-map-card {
+    min-height: 340px;
+  }
+
+  .parking-preference-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .parking-result-card details {
+    max-width: 100%;
+  }
+
+  .parking-result-card details[open] .parking-card-detail {
+    max-height: 46vh;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+}
+
+@media (max-width: 390px) {
+  .parking-dashboard .parking-map-card {
+    min-height: 320px;
+  }
+}
+
+.parking-legal-note {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.85rem;
+  border: 1px solid rgba(178, 106, 0, 0.2);
+  border-radius: 14px;
+  background: #fff8e7;
+  color: #5f4b21;
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+.parking-legal-note p {
+  margin: 0;
+}

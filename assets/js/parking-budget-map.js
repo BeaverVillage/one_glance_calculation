@@ -4,7 +4,8 @@ const SAMPLE_PLACES = [
   { name: "강남역", address: "서울 강남구 강남대로 396", lat: 37.4979, lng: 127.0276 },
   { name: "서울역", address: "서울 용산구 한강대로 405", lat: 37.5547, lng: 126.9707 },
   { name: "홍대입구", address: "서울 마포구 양화로 160", lat: 37.5572, lng: 126.9245 },
-  { name: "인천공항", address: "인천 중구 공항로 272", lat: 37.4602, lng: 126.4407 }
+  { name: "인천공항", address: "인천 중구 공항로 272", lat: 37.4602, lng: 126.4407 },
+  { name: "건국대학교 서울캠퍼스", address: "서울 광진구 능동로 120", lat: 37.5408, lng: 127.0793 }
 ];
 const API_BASE = "/api/parking";
 
@@ -22,7 +23,9 @@ const state = {
   lastHolidayContext: null,
   lastDataMode: "sample-fallback",
   lastRealtimeMode: "sample-fallback",
-  lastRealtimeNote: ""
+  lastRealtimeNote: "",
+  lastFallbackReason: "",
+  lastStats: null
 };
 
 const won = new Intl.NumberFormat("ko-KR");
@@ -190,7 +193,7 @@ function buildInput(els) {
     vehicleType: els.vehicleType.value,
     manualDiscountRate: Number(els.manualDiscount.value || 0),
     sort: els.sort.value,
-    radius: 3000,
+    radius: 1500,
     filters: {
       publicOnly: els.filters.publicOnly.checked,
       freeOnly: els.filters.freeOnly.checked,
@@ -221,6 +224,8 @@ async function calculateAndRender(els) {
     state.lastRealtimeMode = data.summary?.realtimeMode || "sample-fallback";
     state.lastRealtimeNote = data.summary?.realtimeNote || "";
     state.lastHolidayContext = data.summary?.holidayContext || null;
+    state.lastFallbackReason = data.summary?.fallbackReason || data.summary?.note || "";
+    state.lastStats = data.summary?.stats || null;
   } catch (_) {
     rows = fallbackRecommend(input);
     state.lastDataMode = "sample-fallback";
@@ -228,6 +233,8 @@ async function calculateAndRender(els) {
     state.lastRealtimeMode = "sample-fallback";
     state.lastRealtimeNote = "샘플 실시간 데이터를 사용합니다.";
     state.lastHolidayContext = buildClientHolidayContext(input.arrivalAt);
+    state.lastFallbackReason = "API 호출이 실패해 로컬 샘플 주차장 데이터로 계산합니다.";
+    state.lastStats = null;
   }
   state.results = rows;
   if (state.pinnedParkingId && !rows.some((row) => row.id === state.pinnedParkingId)) state.pinnedParkingId = "";
@@ -243,7 +250,7 @@ function fallbackRecommend(input) {
     .map((lot) => ({ ...lot, distanceFromDestinationKmRaw: distanceKm(input.destination, lot) }))
     .sort((a, b) => a.distanceFromDestinationKmRaw - b.distanceFromDestinationKmRaw);
   const nearby = withDistance.filter((lot) => lot.distanceFromDestinationKmRaw * 1000 <= input.radius);
-  const base = nearby.length ? nearby : withDistance.slice(0, 8);
+  const base = nearby.slice(0, 50);
   const rows = base.map((lot) => enrichLot(lot, input, realtimeMap.get(lot.id) || null));
   return sortRows(applyFilters(rows, input.filters), input.sort).map((row, index) => ({ ...row, rank: index + 1 }));
 }
@@ -437,12 +444,13 @@ function renderResults(els, input) {
   const realtimeModeText = state.lastRealtimeMode === "seoul-realtime-adapter" ? "서울 실시간 빈자리 참고" : "실시간 정보 일부 없음";
   const holidayText = state.lastHolidayContext?.holidayName ? `${state.lastHolidayContext.dayTypeLabel}(${state.lastHolidayContext.holidayName})` : (state.lastHolidayContext?.dayTypeLabel || "방문일");
   const modeText = recommendationModeLabel(input.sort);
+  const fallbackNote = state.lastFallbackReason ? ` · ${state.lastFallbackReason}` : "";
   els.summarySubtitle.textContent = state.results.length ? `${state.results.length}개 주차장 비교 · ${modeText} · 추천 1순위 ${state.results[0].name} · ${holidayText} 운영시간 · ${dataModeText} · ${realtimeModeText}` : "조건에 맞는 주차장이 없습니다.";
-  els.status.textContent = state.results.length ? `추천 결과를 계산했습니다. ${modeText} 기준으로 정렬했고, 운영시간은 ${holidayText} 기준으로 참고 판정합니다. (${dataModeText}, ${realtimeModeText})` : "조건에 맞는 주차장이 없습니다. 필터를 줄이거나 검색 반경을 넓혀보세요.";
-  const html = state.results.map((row) => renderResultCard(row)).join("") || `<article class="parking-result-card"><strong>계산 가능한 주차장을 찾지 못했습니다.</strong><p>검색 반경을 넓히거나 필터를 줄여보세요.</p></article>`;
+  els.status.textContent = state.results.length ? `추천 결과를 계산했습니다. ${modeText} 기준으로 정렬했고, 운영시간은 ${holidayText} 기준으로 참고 판정합니다. (${dataModeText}, ${realtimeModeText})${fallbackNote}` : "이 주변에서 계산 가능한 주차장을 찾지 못했습니다. 검색 반경을 넓히거나 필터를 줄여보세요.";
+  const html = state.results.map((row) => renderResultCard(row)).join("") || `<article class="parking-result-card"><strong>계산 가능한 주차장을 찾지 못했습니다.</strong><p>이 주변에서 계산 가능한 주차장을 찾지 못했습니다. 검색 반경을 넓히거나 필터를 줄여보세요.</p></article>`;
   els.resultList.innerHTML = html;
-  els.mobileResults.innerHTML = html;
-  [els.resultList, els.mobileResults].forEach((container) => bindResultCardEvents(container, els));
+  if (els.mobileResults && els.mobileResults !== els.resultList) els.mobileResults.innerHTML = html;
+  [els.resultList, els.mobileResults].filter(Boolean).forEach((container, index, arr) => { if (arr.indexOf(container) === index) bindResultCardEvents(container, els); });
   applyPinnedParkingState(els);
 }
 
