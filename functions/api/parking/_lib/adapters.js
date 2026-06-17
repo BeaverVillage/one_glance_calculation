@@ -16,6 +16,9 @@ const KAKAO_LOCAL_DEFAULT_QUERY = '주차장';
 const KAKAO_LOCAL_PAGE_SIZE = 15;
 const KAKAO_LOCAL_MAX_PAGES = 3;
 const KAKAO_LOCAL_SUPPLEMENT_MIN_CANDIDATES = 10;
+const KAKAO_LOCAL_LINK_MATCH_LIMIT = 10;
+const KAKAO_LOCAL_LINK_MATCH_RADIUS_METERS = 700;
+const KAKAO_LOCAL_LINK_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 
 let publicDataCache = {
   key: '',
@@ -33,6 +36,8 @@ let nationalRuntimeCache = {
   chunkPromises: new Map(),
   meta: null
 };
+
+const kakaoPlaceLinkCache = new Map();
 
 export async function resolveParkingLotDataset({ env = {}, destination = null, radius = 3000, query = '', assetBaseUrl = '' } = {}) {
   const startedAt = Date.now();
@@ -116,6 +121,8 @@ export async function resolveParkingLotDataset({ env = {}, destination = null, r
   selectedLots = filterByRadius(addDistances(selectedLots, destination), effectiveRadiusMeters)
     .sort((a, b) => valueOrMax(a.distanceFromDestinationKm) - valueOrMax(b.distanceFromDestinationKm))
     .slice(0, MAX_DATASET_RETURN);
+
+  selectedLots = await attachKakaoPlaceLinksToTopLots(env, selectedLots, { limit: KAKAO_LOCAL_LINK_MATCH_LIMIT });
 
   const searchMs = Date.now() - startedAt;
   console.info?.('[parking-data] source:', mode, 'cacheItems:', nationalMeta?.totalCount || nationalLots.length, 'loadMs:', cacheLoadMs, 'publicApiFallbackUsed:', publicFallbackUsed);
@@ -261,6 +268,97 @@ function shouldUseKakaoLocalSupplement({ env = {}, destination = null, selectedL
   if (!destination || !isValidLatLng(destination.lat, destination.lng)) return false;
   if (!nationalLots.length) return false;
   return selectedLots.length < KAKAO_LOCAL_SUPPLEMENT_MIN_CANDIDATES;
+}
+
+async function attachKakaoPlaceLinksToTopLots(env = {}, lots = [], { limit = KAKAO_LOCAL_LINK_MATCH_LIMIT } = {}) {
+  if (!env?.KAKAO_REST_API_KEY || !Array.isArray(lots) || !lots.length) return lots;
+  const targetCount = Math.max(0, Number(limit) || 0);
+  if (!targetCount) return lots;
+
+  const nextLots = [...lots];
+  const topIndexes = nextLots
+    .map((lot, index) => ({ lot, index }))
+    .filter(({ lot }) => lot && !lot.isKakaoLocalCandidate && !lot.kakaoPlaceUrl && isValidLatLng(lot.lat, lot.lng))
+    .slice(0, targetCount);
+
+  if (!topIndexes.length) return lots;
+
+  const matches = await Promise.all(topIndexes.map(({ lot }) => findKakaoPlaceLinkForLot(env, lot)));
+  matches.forEach((match, i) => {
+    if (!match?.url) return;
+    const index = topIndexes[i].index;
+    nextLots[index] = {
+      ...nextLots[index],
+      kakaoPlaceMatched: true,
+      kakaoPlaceName: match.name || nextLots[index].name,
+      kakaoPlaceUrl: match.url
+    };
+  });
+
+  return nextLots;
+}
+
+async function findKakaoPlaceLinkForLot(env = {}, lot = null) {
+  if (!env?.KAKAO_REST_API_KEY || !lot || !lot.name || !isValidLatLng(lot.lat, lot.lng)) return null;
+  const cacheKey = buildKakaoPlaceLinkCacheKey(lot);
+  const cached = kakaoPlaceLinkCache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) return cached.value;
+
+  const queries = buildKakaoPlaceLinkQueries(lot);
+  for (const query of queries) {
+    const candidates = await fetchKakaoPlaceLinkCandidates(env, lot, query);
+    const matched = candidates
+      .filter((candidate) => isSameParkingCandidate(lot, candidate))
+      .sort((a, b) => valueOrMax(a.distanceFromDestinationKm) - valueOrMax(b.distanceFromDestinationKm))[0];
+    if (matched?.sourceUrl) {
+      const value = { name: matched.name, url: matched.sourceUrl };
+      kakaoPlaceLinkCache.set(cacheKey, { value, expiresAt: Date.now() + KAKAO_LOCAL_LINK_CACHE_TTL_MS });
+      return value;
+    }
+  }
+
+  kakaoPlaceLinkCache.set(cacheKey, { value: null, expiresAt: Date.now() + KAKAO_LOCAL_LINK_CACHE_TTL_MS });
+  return null;
+}
+
+function buildKakaoPlaceLinkCacheKey(lot) {
+  return [
+    normalizeName(lot.name),
+    Number(lot.lat).toFixed(4),
+    Number(lot.lng).toFixed(4),
+    normalizeAddress(lot.roadAddress || lot.jibunAddress || lot.address || '')
+  ].join('|');
+}
+
+function buildKakaoPlaceLinkQueries(lot) {
+  const name = String(lot.name || '').trim();
+  const queries = [name];
+  if (name && !/주차/.test(name)) queries.push(`${name} 주차장`);
+  return [...new Set(queries.filter(Boolean))];
+}
+
+async function fetchKakaoPlaceLinkCandidates(env = {}, lot = null, query = '') {
+  if (!query || !lot || !isValidLatLng(lot.lat, lot.lng)) return [];
+  const url = new URL(KAKAO_LOCAL_ENDPOINT);
+  url.searchParams.set('query', query);
+  url.searchParams.set('x', String(lot.lng));
+  url.searchParams.set('y', String(lot.lat));
+  url.searchParams.set('radius', String(KAKAO_LOCAL_LINK_MATCH_RADIUS_METERS));
+  url.searchParams.set('sort', 'distance');
+  url.searchParams.set('page', '1');
+  url.searchParams.set('size', '5');
+  try {
+    const res = await fetch(url.toString(), {
+      headers: { Authorization: `KakaoAK ${env.KAKAO_REST_API_KEY}` },
+      cf: { cacheTtl: 3600, cacheEverything: true }
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const documents = Array.isArray(data?.documents) ? data.documents : [];
+    return addDistances(documents.map((row) => normalizeKakaoLocalParkingRow(row)).filter(Boolean), lot);
+  } catch {
+    return [];
+  }
 }
 
 async function fetchKakaoLocalParkingLots(env = {}, { destination, radius = 1500 } = {}) {
@@ -1231,6 +1329,8 @@ export const __parkingAdapterTest = {
   fetchAllPublicParkingPages,
   normalizePublicFallbackPages,
   fetchKakaoLocalParkingLots,
+  attachKakaoPlaceLinksToTopLots,
+  findKakaoPlaceLinkForLot,
   normalizeKakaoLocalParkingRow,
   mergeKakaoSupplementLots,
   shouldUseKakaoLocalSupplement

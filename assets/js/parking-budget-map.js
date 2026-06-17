@@ -702,7 +702,7 @@ function renderResultCard(row) {
     <div class="parking-card-detail" data-parking-card-detail hidden>
       <p><strong>요금 기준</strong> ${formatDuration(row.durationMinutes)} 기준 예상 요금입니다.</p>
       <p><strong>기본/추가 요금</strong> 기본 ${row.baseMinutes ?? "-"}분 ${formatFee(row.baseFee)}, 추가 ${row.additionalMinutes ?? "-"}분당 ${formatFee(row.additionalFee)}</p>
-      <p><strong>1일권 전환점</strong> ${dayPass}</p>
+      <p><strong><u>1일권 전환점 ${dayPass}</u></strong></p>
       <p><strong>할인 반영</strong> ${row.discountRate ? `${row.discountRate}% 참고 할인 적용` : "선택한 할인 없음"}</p>
       <p><strong>운영정보</strong> ${escapeHtml(row.openReason || "선택 시간 기준 운영 여부를 참고로 판정합니다.")}</p>
       <p><strong>거리</strong> ${distance} · 좌표 기반 직선거리입니다.</p>
