@@ -83,6 +83,7 @@ export function initParkingBudgetMap() {
   };
 
   setupDefaults(els);
+  setupMobileOptionsToggle();
   bindEvents(els);
   loadMockData().then(() => {
     renderPlaces(els);
@@ -107,6 +108,39 @@ function setupDefaults(els) {
   syncPreferenceCards(els);
 }
 
+function setupMobileOptionsToggle() {
+  const card = document.querySelector(".parking-control-card--options");
+  if (!card || card.dataset.mobileToggleReady === "true") return;
+  const label = card.querySelector(".step-label");
+  if (!label) return;
+
+  const toggle = document.createElement("button");
+  toggle.type = "button";
+  toggle.className = "parking-options-toggle";
+  toggle.setAttribute("aria-expanded", "false");
+  toggle.innerHTML = '<span>3단계 · 차량/할인 조건</span><strong>열기</strong>';
+
+  const body = document.createElement("div");
+  body.className = "parking-options-body";
+  let node = label.nextSibling;
+  while (node) {
+    const next = node.nextSibling;
+    body.appendChild(node);
+    node = next;
+  }
+
+  card.append(toggle, body);
+  card.classList.add("is-collapsed");
+  card.dataset.mobileToggleReady = "true";
+
+  toggle.addEventListener("click", () => {
+    const open = card.classList.toggle("is-open");
+    card.classList.toggle("is-collapsed", !open);
+    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    const stateText = toggle.querySelector("strong");
+    if (stateText) stateText.textContent = open ? "접기" : "열기";
+  });
+}
 function bindEvents(els) {
   els.form.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -519,6 +553,12 @@ function renderResults(els, input) {
 }
 
 function bindResultCardEvents(container, els) {
+  container.querySelectorAll("[data-parking-card-id]").forEach((card) => {
+    card.addEventListener("click", (event) => {
+      if (event.target.closest("button, a, summary, details, input, select, textarea")) return;
+      pinParkingCard(card.dataset.parkingCardId, els, { scrollToMap: window.innerWidth <= 860 });
+    });
+  });
   container.querySelectorAll("[data-parking-pin-clear]").forEach((button) => {
     button.addEventListener("click", () => {
       state.pinnedParkingId = "";
@@ -730,8 +770,8 @@ function renderMap(els) {
       button.type = "button";
       button.dataset.parkingMarkerId = row.id;
       button.title = `${row.name} · ${label}`;
-      button.innerHTML = `<span>${label}</span>`;
-      button.addEventListener("click", () => pinParkingCard(row.id, els, { scroll: true }));
+      button.innerHTML = markerContent(row, label);
+      button.addEventListener("click", () => pinParkingCard(row.id, els, { popup: true }));
       const marker = new window.kakao.maps.CustomOverlay({
         position: new window.kakao.maps.LatLng(row.lat, row.lng),
         content: button,
@@ -762,29 +802,64 @@ function renderFallbackMarkers(els) {
   els.markerLayer.innerHTML = rows.map((row) => {
     const p = pos(row);
     const label = markerLabel(row);
-    return `<button class="parking-map-label ${row.rank === 1 ? "is-best" : ""} ${state.pinnedParkingId === row.id ? "is-selected" : ""}" style="left:${p.left};top:${p.top}" type="button" data-parking-marker-id="${escapeHtml(row.id)}" title="${escapeHtml(row.name)} · ${label}"><span>${label}</span></button>`;
+    return `<button class="parking-map-label ${row.rank === 1 ? "is-best" : ""} ${state.pinnedParkingId === row.id ? "is-selected" : ""}" style="left:${p.left};top:${p.top}" type="button" data-parking-marker-id="${escapeHtml(row.id)}" title="${escapeHtml(row.name)} · ${label}">${markerContent(row, label)}</button>`;
   }).join("") + `<span class="parking-destination-marker" style="left:50%;top:50%">목적지</span>`;
   els.markerLayer.querySelectorAll("[data-parking-marker-id]").forEach((button) => {
-    button.addEventListener("click", () => pinParkingCard(button.dataset.parkingMarkerId, els, { scroll: true }));
+    button.addEventListener("click", () => pinParkingCard(button.dataset.parkingMarkerId, els, { popup: true }));
   });
 }
 
+function markerContent(row, label) {
+  const rank = Number.isFinite(Number(row.rank)) ? Number(row.rank) : "";
+  const rankHtml = rank ? `<b class="parking-marker-rank" aria-label="추천 순위 ${rank}위">${rank}</b>` : "";
+  return `${rankHtml}<span>${escapeHtml(label)}</span>`;
+}
 function markerLabel(row) {
   if (row.discountedFee == null) return "정보없음";
   if (row.discountedFee === 0) return "무료";
   return `${won.format(row.discountedFee)}원`;
 }
 
-function pinParkingCard(id, els, { scroll = false } = {}) {
+function pinParkingCard(id, els, { scroll = false, popup = false, scrollToMap = false } = {}) {
   state.pinnedParkingId = id || "";
   applyPinnedParkingState(els);
-  const safeId = typeof CSS !== "undefined" && CSS.escape ? CSS.escape(state.pinnedParkingId) : state.pinnedParkingId.replace(/"/g, "\\\"");
+  const safeId = typeof CSS !== "undefined" && CSS.escape ? CSS.escape(state.pinnedParkingId) : state.pinnedParkingId.replace(/"/g, "\\"");
   const target = document.querySelector(`[data-parking-card-id="${safeId}"]`);
+  if (scrollToMap) document.querySelector(".parking-dashboard__map")?.scrollIntoView({ behavior: "smooth", block: "start" });
   if (scroll) target?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   target?.classList.add("is-highlighted");
   setTimeout(() => target?.classList.remove("is-highlighted"), 1200);
+  if (popup) showParkingMapPopup(id, els);
 }
 
+function showParkingMapPopup(id, els) {
+  const row = state.results.find((item) => item.id === id);
+  const mapCard = document.querySelector(".parking-map-card");
+  if (!row || !mapCard) return;
+  mapCard.querySelector(".parking-map-popup")?.remove();
+  const price = row.discountedFee == null ? markerLabel(row) : row.discountedFee === 0 ? markerLabel(row) : `${won.format(row.discountedFee)}원`;
+  const distance = row.distanceFromDestinationKm == null ? "거리 정보 없음" : `목적지에서 약 ${formatDistance(row.distanceFromDestinationKm)}`;
+  const realtime = realtimeAvailabilityText(row);
+  const popup = document.createElement("article");
+  popup.className = "parking-map-popup";
+  popup.setAttribute("role", "dialog");
+  popup.setAttribute("aria-label", `${row.name} 주차장 요약`);
+  popup.innerHTML = [
+    '<button type="button" class="parking-map-popup__close" aria-label="지도 주차장 요약 닫기">×</button>',
+    '<div class="parking-map-popup__head">',
+    `<span>${row.rank || "-"}위</span>`,
+    `<strong>${escapeHtml(row.name)}</strong>`,
+    '</div>',
+    `<p class="parking-map-popup__meta">${escapeHtml(row.publicPrivateType || "구분 확인")} · ${escapeHtml(row.fullRiskLabel || "위험도 확인 필요")}</p>`,
+    `<p class="parking-map-popup__price">${escapeHtml(price)}</p>`,
+    `<p class="parking-map-popup__detail">${escapeHtml(distance)} · ${escapeHtml(realtime)}</p>`,
+    `<p class="parking-map-popup__detail">${escapeHtml(row.dataConfidenceLabel || "신뢰도 확인 필요")}</p>`,
+    '<button type="button" class="subtle-button tiny" data-popup-scroll-card>추천 카드 보기</button>'
+  ].join("");
+  popup.querySelector(".parking-map-popup__close")?.addEventListener("click", () => popup.remove());
+  popup.querySelector("[data-popup-scroll-card]")?.addEventListener("click", () => pinParkingCard(id, els, { scroll: true }));
+  mapCard.append(popup);
+}
 function applyPinnedParkingState(els) {
   document.querySelectorAll("[data-parking-card-id]").forEach((card) => {
     card.classList.toggle("is-pinned", Boolean(state.pinnedParkingId) && card.dataset.parkingCardId === state.pinnedParkingId);
