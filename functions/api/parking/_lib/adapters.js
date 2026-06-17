@@ -315,6 +315,7 @@ function normalizeSeoulParkInfoRow(row) {
     hasDisabledSpaces: null,
     dataDate: pick(row, ['SYNC_TIME', 'LAST_DATA_TIME', 'CUR_PARKING_TIME', 'dataDate']) || new Date().toISOString().slice(0, 10),
     source: '서울시 공영주차장 안내 정보',
+    region: normalizeRegion(pick(row, ['ADDR', 'ROAD_ADDR', 'LCTN_NM', 'roadAddress']) || '서울'),
     realtimeKey: parkingCode || null,
     disabledDiscountRate: 50,
     compactDiscountRate: 50,
@@ -384,6 +385,7 @@ function normalizePublicDataParkingRow(row) {
     hasDisabledSpaces: null,
     dataDate: pick(row, ['referenceDate', '데이터기준일자']) || new Date().toISOString().slice(0, 10),
     source: '공공데이터포털 주차장 API',
+    region: normalizeRegion(`${pick(row, ['rdnmadr', 'roadAddress', '소재지도로명주소'])} ${pick(row, ['lnmadr', 'jibunAddress', '소재지지번주소'])}`),
     realtimeKey: null,
     disabledDiscountRate: 50,
     compactDiscountRate: 50,
@@ -467,6 +469,28 @@ function parseObservedTime(value) {
 
 function slug(value) {
   return String(value).trim().replace(/[^a-zA-Z0-9가-힣_-]+/g, '_').slice(0, 80) || Math.random().toString(36).slice(2);
+}
+
+function normalizeRegion(value) {
+  const text = String(value || '');
+  if (/세종|세종특별자치시|세종시/.test(text)) return '세종';
+  if (/서울/.test(text)) return '서울';
+  if (/부산/.test(text)) return '부산';
+  if (/대구/.test(text)) return '대구';
+  if (/광주/.test(text)) return '광주';
+  if (/대전/.test(text)) return '대전';
+  if (/제주/.test(text)) return '제주';
+  if (/인천/.test(text)) return '인천';
+  if (/울산/.test(text)) return '울산';
+  if (/경기/.test(text)) return '경기';
+  if (/강원/.test(text)) return '강원';
+  if (/충북|충청북도/.test(text)) return '충북';
+  if (/충남|충청남도/.test(text)) return '충남';
+  if (/전북|전라북도/.test(text)) return '전북';
+  if (/전남|전라남도/.test(text)) return '전남';
+  if (/경북|경상북도/.test(text)) return '경북';
+  if (/경남|경상남도/.test(text)) return '경남';
+  return '';
 }
 
 function normalizeName(value) {

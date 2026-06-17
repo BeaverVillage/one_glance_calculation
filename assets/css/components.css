@@ -7711,3 +7711,214 @@ body {
     font-size: 0.72rem;
   }
 }
+
+/* Parking map final UI polish: clearer cards, compact sort chips, working detail panels */
+.parking-dashboard__main {
+  height: clamp(680px, calc(100vh - 140px), 860px) !important;
+  min-height: 680px !important;
+}
+
+.parking-dashboard__results {
+  min-height: 680px !important;
+}
+
+.parking-dashboard__results .parking-result-list {
+  gap: 1rem !important;
+  padding-right: 8px;
+}
+
+.parking-result-sort-tabs {
+  gap: 0.38rem !important;
+  align-items: center;
+}
+
+.parking-result-sort-tabs button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  min-width: 0;
+  min-height: 32px !important;
+  height: 32px;
+  padding: 0.32rem 0.68rem !important;
+  border-radius: 999px;
+  line-height: 1;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  font-size: 0.78rem !important;
+  letter-spacing: -0.01em;
+}
+
+.parking-result-card {
+  gap: 0.82rem !important;
+  padding: 1.05rem !important;
+  border-radius: 18px !important;
+  border-color: rgba(132, 154, 176, 0.35) !important;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.07);
+}
+
+.parking-result-card.is-best {
+  border-color: rgba(20, 108, 95, 0.42) !important;
+  box-shadow: 0 14px 34px rgba(20, 108, 95, 0.12);
+}
+
+.parking-card-head strong {
+  font-size: 1.08rem !important;
+}
+
+.parking-price-row {
+  padding: 0.7rem 0.78rem;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #f2fbf8 0%, #ffffff 100%);
+}
+
+.parking-price-row strong {
+  font-size: 1.85rem !important;
+}
+
+.parking-reason {
+  margin: 0;
+  color: #425466;
+  line-height: 1.5;
+  font-size: 0.9rem;
+}
+
+.parking-card-metrics {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 0.42rem !important;
+}
+
+.parking-card-metrics .parking-metric-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  width: fit-content;
+  padding: 0.42rem 0.58rem !important;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.78rem !important;
+  font-weight: 850;
+  line-height: 1.25;
+  white-space: normal;
+}
+
+.metric-distance {
+  background: #eef6ff !important;
+  border-color: #cfe4ff !important;
+  color: #1e4f7a !important;
+}
+
+.metric-availability {
+  background: #eefaf2 !important;
+  border-color: #c9efd8 !important;
+  color: #17633a !important;
+}
+
+.metric-risk-low {
+  background: #effaf5 !important;
+  border-color: #c7ecd8 !important;
+  color: #16633d !important;
+}
+
+.metric-risk-medium {
+  background: #fff7dc !important;
+  border-color: #f5e3a0 !important;
+  color: #735300 !important;
+}
+
+.metric-risk-high {
+  background: #fff1f0 !important;
+  border-color: #ffd2cc !important;
+  color: #9a251e !important;
+}
+
+.metric-confidence-high {
+  background: #ecfdf5 !important;
+  border-color: #c7f1df !important;
+  color: #146c5f !important;
+}
+
+.metric-confidence-medium {
+  background: #f5f3ff !important;
+  border-color: #ddd6fe !important;
+  color: #5b4e9f !important;
+}
+
+.metric-confidence-low {
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+  color: #475569 !important;
+}
+
+.parking-detail-toggle {
+  justify-self: start;
+  min-height: 36px;
+  padding: 0.48rem 0.76rem;
+  border: 1px solid rgba(20, 108, 95, 0.26);
+  border-radius: 999px;
+  background: #fff;
+  color: #146c5f;
+  cursor: pointer;
+  font-weight: 900;
+  font-size: 0.84rem;
+}
+
+.parking-detail-toggle:hover,
+.parking-detail-toggle[aria-expanded="true"] {
+  background: #146c5f;
+  color: #fff;
+}
+
+.parking-card-detail[hidden] {
+  display: none !important;
+}
+
+.parking-card-detail {
+  display: grid !important;
+  gap: 0.48rem !important;
+  padding: 0.82rem !important;
+  border: 1px solid #e0e9f1;
+  border-radius: 14px;
+  background: #f8fbfd;
+  font-size: 0.88rem !important;
+}
+
+.parking-card-detail p {
+  margin: 0;
+  line-height: 1.55;
+}
+
+@media (max-width: 1180px) {
+  .parking-dashboard__main {
+    height: clamp(640px, 70vh, 820px) !important;
+    min-height: 640px !important;
+  }
+  .parking-dashboard__results {
+    min-height: 640px !important;
+  }
+}
+
+@media (max-width: 860px) {
+  .parking-dashboard__main,
+  .parking-dashboard__results {
+    height: auto !important;
+    min-height: 0 !important;
+  }
+  .parking-result-sort-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 0.2rem;
+    scrollbar-width: thin;
+  }
+  .parking-result-sort-tabs button {
+    min-height: 38px !important;
+    height: 38px;
+  }
+  .parking-result-card {
+    padding: 0.95rem !important;
+  }
+  .parking-price-row strong {
+    font-size: 1.62rem !important;
+  }
+}

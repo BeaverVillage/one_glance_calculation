@@ -11,6 +11,10 @@ const SAMPLE_PLACES = [
   { name: "광주송정역", address: "광주 광산구 상무대로 201", lat: 35.1375, lng: 126.7914 },
   { name: "대전역", address: "대전 동구 중앙로 215", lat: 36.3322, lng: 127.434 },
   { name: "제주공항", address: "제주 제주시 공항로 2", lat: 33.5071, lng: 126.4931 },
+  { name: "세종시청", address: "세종특별자치시 한누리대로 2130", lat: 36.4807, lng: 127.2892 },
+  { name: "세종특별자치시청", address: "세종특별자치시 한누리대로 2130", lat: 36.4807, lng: 127.2892 },
+  { name: "정부세종청사", address: "세종특별자치시 도움6로 11", lat: 36.5046, lng: 127.2654 },
+  { name: "세종", address: "세종특별자치시 보람동", lat: 36.4807, lng: 127.2892 },
 ];
 const API_BASE = "/api/parking";
 
@@ -106,9 +110,9 @@ function setupDefaults(els) {
 function bindEvents(els) {
   els.form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    await searchDestination(els);
+    await handleParkingSearch(els);
   });
-  els.recommend.addEventListener("click", () => calculateAndRender(els));
+  els.recommend.addEventListener("click", () => handleParkingSearch(els));
   els.mapRefresh?.addEventListener("click", () => researchCurrentMapArea(els));
   els.vehicleType.addEventListener("change", () => {
     els.manualDiscountField.hidden = els.vehicleType.value !== "manual";
@@ -145,6 +149,34 @@ async function loadMockData() {
   state.realtime = realtimeRes.status === "fulfilled" ? realtimeRes.value.statuses || [] : [];
 }
 
+async function handleParkingSearch(els) {
+  const query = els.destination.value.trim();
+  if (!query) {
+    els.searchStatus.textContent = "목적지를 입력해 주세요.";
+    els.status.textContent = "목적지를 입력한 뒤 주차장 찾기를 눌러 주세요.";
+    els.destination.focus();
+    return;
+  }
+  const originalText = els.recommend?.textContent || "주차장 찾기";
+  if (els.recommend) {
+    els.recommend.disabled = true;
+    els.recommend.textContent = "주차장 찾는 중...";
+  }
+  try {
+    await searchDestination(els);
+  } finally {
+    if (els.recommend) {
+      els.recommend.disabled = false;
+      els.recommend.textContent = originalText;
+    }
+  }
+}
+
+function findSamplePlaces(query) {
+  const lower = String(query || "").toLowerCase().replace(/\s+/g, "");
+  return SAMPLE_PLACES.filter((place) => `${place.name} ${place.address}`.toLowerCase().replace(/\s+/g, "").includes(lower));
+}
+
 async function searchDestination(els) {
   const query = els.destination.value.trim();
   if (!query) return;
@@ -154,12 +186,20 @@ async function searchDestination(els) {
     const res = await fetch(`${API_BASE}/places?q=${encodeURIComponent(query)}`);
     if (!res.ok) throw new Error("places api failed");
     const data = await res.json();
-    state.places = data.places?.length ? data.places : [DEFAULT_PLACE];
+    if (data.places?.length) {
+      state.places = data.places;
+    } else {
+      usedSampleFallback = true;
+      state.places = findSamplePlaces(query);
+    }
   } catch (_) {
     usedSampleFallback = true;
-    const lower = query.toLowerCase();
-    state.places = SAMPLE_PLACES.filter((place) => `${place.name} ${place.address}`.toLowerCase().includes(lower));
-    if (!state.places.length) state.places = SAMPLE_PLACES;
+    state.places = findSamplePlaces(query);
+  }
+  if (!state.places.length) {
+    els.searchStatus.textContent = "검색 결과를 찾지 못했습니다. 다른 장소명을 입력해 주세요.";
+    els.status.textContent = "추천 결과입니다.";
+    return;
   }
   state.destination = state.places[0];
   state.lastSearchCenter = { lat: state.destination.lat, lng: state.destination.lng };
@@ -485,27 +525,56 @@ function bindResultCardEvents(container, els) {
       applyPinnedParkingState(els);
     });
   });
+  container.querySelectorAll("[data-parking-detail-toggle]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      const card = button.closest(".parking-result-card");
+      const detail = card?.querySelector("[data-parking-card-detail]");
+      if (!card || !detail) return;
+      const open = button.getAttribute("aria-expanded") !== "true";
+      button.setAttribute("aria-expanded", open ? "true" : "false");
+      button.textContent = open ? "상세 접기 ▲" : "상세 보기 ▼";
+      detail.hidden = !open;
+      card.classList.toggle("expanded", open);
+    });
+  });
 }
 
 function renderResultCard(row) {
   const price = row.discountedFee == null ? "정보 부족" : row.discountedFee === 0 ? "무료" : `${won.format(row.discountedFee)}원`;
   const original = row.parkingFee != null && row.parkingFee !== row.discountedFee ? `<span>할인 전 ${won.format(row.parkingFee)}원</span>` : "";
   const dayPass = row.dayPassBetterAfterMinutes ? `${formatDuration(row.dayPassBetterAfterMinutes)} 이상이면 일주차가 유리할 수 있습니다.` : "일주차 전환점 정보 없음";
-  const available = row.realtimeAvailable == null ? "실시간 정보 없음" : `현재 가능 ${row.realtimeAvailable}면`;
-  const observed = row.realtimeObservedAt ? ` · 관측 ${formatObservedAt(row.realtimeObservedAt)}` : "";
+  const realtime = realtimeAvailabilityText(row);
   const distance = row.distanceFromDestinationKm == null ? "거리 정보 없음" : `목적지에서 약 ${formatDistance(row.distanceFromDestinationKm)}`;
   const reason = recommendationReason(row);
   const pinned = state.pinnedParkingId === row.id;
+  const riskClass = row.fullRisk === "high" ? "metric-risk-high" : row.fullRisk === "medium" ? "metric-risk-medium" : "metric-risk-low";
+  const confidenceClass = row.dataConfidence === "high" ? "metric-confidence-high" : row.dataConfidence === "medium" ? "metric-confidence-medium" : "metric-confidence-low";
   return `<article class="parking-result-card ${row.rank === 1 ? "is-best" : ""} ${pinned ? "is-pinned" : ""}" data-parking-card-id="${escapeHtml(row.id)}">
     <div class="parking-card-head"><div><strong>${escapeHtml(row.name)}</strong><span>${row.rank === 1 ? "추천 1위" : `${row.rank}순위`} · ${escapeHtml(row.publicPrivateType || "구분 확인")}</span></div>${pinned ? `<button type="button" class="subtle-button tiny" data-parking-pin-clear>선택 해제</button>` : ""}</div>
     <div class="parking-price-row"><strong>${price}</strong>${original}</div>
     <p class="parking-reason">${escapeHtml(reason)}</p>
-    <div class="parking-card-metrics"><span>${distance}</span><span>${available}${observed}</span><span>${row.fullRiskLabel}</span><span>${row.dataConfidenceLabel}</span></div>
+    <div class="parking-card-metrics"><span class="parking-metric-chip metric-distance">${distance}</span><span class="parking-metric-chip metric-availability">${realtime}</span><span class="parking-metric-chip ${riskClass}">${row.fullRiskLabel}</span><span class="parking-metric-chip ${confidenceClass}">${row.dataConfidenceLabel}</span></div>
     ${pinned ? `<p class="parking-pinned-badge">지도에서 선택한 주차장입니다.</p>` : ""}
-    <details><summary>상세 보기</summary>
-    <div class="parking-card-detail"><p><strong>요금 계산</strong> 기본 ${row.baseMinutes ?? "-"}분 ${formatFee(row.baseFee)}, 추가 ${row.additionalMinutes ?? "-"}분당 ${formatFee(row.additionalFee)}</p><p><strong>일주차 전환점</strong> ${dayPass}</p><p><strong>할인 반영</strong> ${row.discountRate ? `${row.discountRate}% 참고 할인 적용` : "선택한 할인 없음"}</p><p><strong>운영정보</strong> ${escapeHtml(row.openReason || "선택 시간 기준 운영 여부를 참고로 판정합니다.")} · 평일 ${row.weekdayOpen || "-"}~${row.weekdayClose || "-"}, 토요일 ${row.saturdayOpen || "-"}~${row.saturdayClose || "-"}, 공휴일 ${row.holidayOpen || "-"}~${row.holidayClose || "-"}</p><p><strong>거리</strong> ${distance} · 좌표 기반 직선거리입니다.</p><p><strong>빈자리/위험도</strong> ${available}${observed} · ${row.fullRiskLabel}</p><p><strong>데이터</strong> 출처 ${escapeHtml(row.source || "샘플")}, 기준일 ${row.dataDate || "확인 필요"}</p><p class="fine-print">실제 요금, 할인 적용 여부, 주차 가능 여부는 현장 사정에 따라 달라질 수 있습니다.</p></div>
-    </details>
+    <button type="button" class="parking-detail-toggle" data-parking-detail-toggle aria-expanded="false">상세 보기 ▼</button>
+    <div class="parking-card-detail" data-parking-card-detail hidden>
+      <p><strong>요금 기준</strong> ${formatDuration(row.durationMinutes)} 기준 예상 요금입니다.</p>
+      <p><strong>기본/추가 요금</strong> 기본 ${row.baseMinutes ?? "-"}분 ${formatFee(row.baseFee)}, 추가 ${row.additionalMinutes ?? "-"}분당 ${formatFee(row.additionalFee)}</p>
+      <p><strong>일주차 전환점</strong> ${dayPass}</p>
+      <p><strong>할인 반영</strong> ${row.discountRate ? `${row.discountRate}% 참고 할인 적용` : "선택한 할인 없음"}</p>
+      <p><strong>운영정보</strong> ${escapeHtml(row.openReason || "선택 시간 기준 운영 여부를 참고로 판정합니다.")}</p>
+      <p><strong>거리</strong> ${distance} · 좌표 기반 직선거리입니다.</p>
+      <p><strong>빈자리/위험도</strong> ${realtime} · ${row.fullRiskLabel}</p>
+      <p><strong>데이터</strong> 출처 ${escapeHtml(row.source || "참고 데이터")}, 기준일 ${row.dataDate || "확인 필요"}</p>
+      <p class="fine-print">실제 요금, 할인 적용 여부, 주차 가능 여부는 현장 사정에 따라 달라질 수 있습니다.</p>
+    </div>
   </article>`;
+}
+
+function realtimeAvailabilityText(row) {
+  if (row.realtimeAvailable == null) return "빈자리 정보 없음";
+  const observed = row.realtimeObservedAt ? formatObservedAt(row.realtimeObservedAt) : "현재";
+  return `${observed} 기준 빈자리: ${row.realtimeAvailable}대`;
 }
 
 
@@ -514,7 +583,7 @@ function renderDataBadges(els, input) {
   const badges = [];
   const isPublic = state.lastDataMode === "public-adapter" || state.lastDataMode === "hybrid-public-sample";
   badges.push(isPublic ? "공공데이터" : "참고 데이터");
-  badges.push(state.lastRealtimeMode === "seoul-realtime-adapter" ? "실시간 일부 반영" : "실시간 정보 일부 없음");
+  badges.push(state.lastRealtimeMode === "seoul-realtime-adapter" ? "실시간 일부 반영" : "실시간 일부 없음");
   if (state.lastDataMode === "hybrid-public-sample" || state.lastDataMode === "sample-fallback") badges.push("보조 데이터 사용");
   if (state.lastHolidayContext?.dayTypeLabel) badges.push(`${state.lastHolidayContext.dayTypeLabel} 운영시간`);
   els.dataBadges.innerHTML = badges.map((badge) => `<span>${escapeHtml(badge)}</span>`).join("");
@@ -769,6 +838,11 @@ function formatDuration(minutes) { return minutes >= 60 ? `${Math.floor(minutes 
 function formatFee(value) { return value == null ? "정보 없음" : `${won.format(value)}원`; }
 function formatDistance(km) { return km == null ? "거리 정보 없음" : km < 1 ? `${Math.round(km * 1000)}m` : `${km.toFixed(1)}km`; }
 function formatObservedAt(value) {
+  const text = String(value || "");
+  const direct = text.match(/[T\s](\d{2}):(\d{2})/);
+  if (direct) return `${direct[1]}:${direct[2]}`;
+  const compact = text.replace(/[^0-9]/g, "");
+  if (compact.length >= 12) return `${compact.slice(8, 10)}:${compact.slice(10, 12)}`;
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "확인 필요";
   return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
