@@ -120,12 +120,41 @@ async function fetchSeoulRealtimeParking(env) {
 }
 
 async function fetchPublicParkingLots(env, { query = '' } = {}) {
-  // 전국주차장정보표준데이터는 제공 방식이 배포 환경마다 다를 수 있어
-  // 이번 MVP에서는 실제 endpoint를 하드코딩하지 않고 로컬/샘플 데이터 fallback을 우선 사용합니다.
-  // PUBLIC_DATA_API_KEY는 향후 데이터 수집/캐시 파이프라인에서 사용합니다.
-  void env;
-  void query;
-  return { ok: true, lots: [], source: null };
+  const key = env.PUBLIC_DATA_API_KEY || '';
+  if (!key) return { ok: true, lots: [], source: null };
+
+  const url = new URL('https://api.data.go.kr/openapi/tn_pubr_prkplce_info_api');
+  url.searchParams.set('serviceKey', key);
+  url.searchParams.set('pageNo', '1');
+  url.searchParams.set('numOfRows', '1000');
+  url.searchParams.set('type', 'json');
+
+  const res = await fetch(url.toString(), { cf: { cacheTtl: 21600, cacheEverything: true } });
+  if (!res.ok) throw new Error(`전국주차장정보표준데이터 호출 실패: ${res.status}`);
+
+  const contentType = res.headers.get('content-type') || '';
+  const data = contentType.includes('json') ? await res.json() : await parseMaybeJsonOrXml(await res.text());
+  const rows = unwrapPublicDataRows(data);
+  const normalized = rows.map(normalizePublicDataParkingRow).filter(Boolean);
+  const keyword = String(query || '').trim().toLowerCase();
+  const filtered = keyword
+    ? normalized.filter((lot) => `${lot.name} ${lot.roadAddress} ${lot.jibunAddress}`.toLowerCase().includes(keyword))
+    : normalized;
+
+  return {
+    ok: true,
+    source: { id: 'public-data-parking', name: '공공데이터포털 전국주차장정보표준데이터', service: 'tn_pubr_prkplce_info_api', count: filtered.length, fetchedCount: rows.length },
+    lots: filtered
+  };
+}
+
+async function parseMaybeJsonOrXml(text) {
+  const trimmed = String(text || '').trim();
+  if (!trimmed) return {};
+  if (trimmed.startsWith('{') || trimmed.startsWith('[')) return JSON.parse(trimmed);
+  // Cloudflare Pages Functions 런타임에는 DOMParser가 없을 수 있으므로
+  // 전국주차장정보표준데이터는 JSON(type=json)을 우선 요청하고, XML은 안전하게 비워 둡니다.
+  return { response: { body: { items: [] } }, rawPrefix: trimmed.slice(0, 120) };
 }
 
 function unwrapPublicDataRows(data) {
@@ -169,7 +198,7 @@ function normalizeSeoulParkInfoRow(row) {
     baseFee,
     additionalMinutes,
     additionalFee,
-    dayPassMinutes: null,
+    dayPassMinutes: toNumber(pick(row, ['dayCmmtktAdjTime', '1일주차권요금적용시간']), null),
     dayPassFee,
     monthlyFee: toNumber(pick(row, ['FULLTIME_MONTHLY', 'MONTHLY_FEE']), null),
     paymentMethods: '현장 확인',
@@ -217,7 +246,7 @@ function normalizePublicDataParkingRow(row) {
   const publicType = pick(row, ['prkplceSe', 'operSe', '운영구분', 'publicPrivateType']) || '공영';
   const feeType = pick(row, ['parkingchrgeInfo', 'feeType', '요금정보']) || '';
   return {
-    id: 'PUBLIC_' + slug(pick(row, ['prkplceNo', 'parkingLotId', '관리번호']) || name),
+    id: 'PUBLIC_' + slug(pick(row, ['prkplceNo', 'prkplceMngNo', 'parkingLotId', '주차장관리번호', '관리번호']) || name),
     name,
     publicPrivateType: String(publicType).includes('민영') ? '민영' : '공영',
     parkingType: pick(row, ['prkplceType', 'parkingType', '주차장유형']) || '주차장',
@@ -228,18 +257,18 @@ function normalizePublicDataParkingRow(row) {
     capacity: toNumber(pick(row, ['prkcmprt', 'capacity', '주차구획수']), null),
     operatingDays: pick(row, ['operDay', '운영요일']) || '공공데이터 기준',
     weekdayOpen: formatHHMM(pick(row, ['weekdayOperOpenHhmm', '평일운영시작시각'])) || '00:00',
-    weekdayClose: formatHHMM(pick(row, ['weekdayOperColseHhmm', '평일운영종료시각'])) || '23:59',
+    weekdayClose: formatHHMM(pick(row, ['weekdayOperColseHhmm', 'weekdayOperCloseHhmm', '평일운영종료시각'])) || '23:59',
     saturdayOpen: formatHHMM(pick(row, ['satOperOperOpenHhmm', '토요일운영시작시각'])) || '00:00',
-    saturdayClose: formatHHMM(pick(row, ['satOperCloseHhmm', '토요일운영종료시각'])) || '23:59',
+    saturdayClose: formatHHMM(pick(row, ['satOperCloseHhmm', 'satOperColseHhmm', '토요일운영종료시각'])) || '23:59',
     holidayOpen: formatHHMM(pick(row, ['holidayOperOpenHhmm', '공휴일운영시작시각'])) || '00:00',
-    holidayClose: formatHHMM(pick(row, ['holidayCloseOpenHhmm', '공휴일운영종료시각'])) || '23:59',
+    holidayClose: formatHHMM(pick(row, ['holidayCloseOpenHhmm', 'holidayOperCloseHhmm', 'holidayOperColseHhmm', '공휴일운영종료시각'])) || '23:59',
     feeType: String(feeType).includes('무료') ? '무료' : '유료',
-    baseMinutes: toNumber(pick(row, ['basicTime', '기본시간']), null),
-    baseFee: toNumber(pick(row, ['basicCharge', '기본요금']), null),
-    additionalMinutes: toNumber(pick(row, ['addUnitTime', '추가단위시간']), null),
-    additionalFee: toNumber(pick(row, ['addUnitCharge', '추가단위요금']), null),
-    dayPassMinutes: null,
-    dayPassFee: toNumber(pick(row, ['dayCmmtkt', '일주차권요금적용시간', 'dayPassFee']), null),
+    baseMinutes: toNumber(pick(row, ['basicTime', 'parkingBasicTime', '주차기본시간', '기본시간']), null),
+    baseFee: toNumber(pick(row, ['basicCharge', 'parkingBasicCharge', '주차기본요금', '기본요금']), null),
+    additionalMinutes: toNumber(pick(row, ['addUnitTime', 'addUnitTimeUnit', '추가단위시간']), null),
+    additionalFee: toNumber(pick(row, ['addUnitCharge', 'addUnitChargeUnit', '추가단위요금']), null),
+    dayPassMinutes: toNumber(pick(row, ['dayCmmtktAdjTime', '1일주차권요금적용시간']), null),
+    dayPassFee: toNumber(pick(row, ['dayCmmtkt', 'dayParkingTicketCharge', '1일주차권요금', 'dayPassFee']), null),
     monthlyFee: toNumber(pick(row, ['monthCmmtkt', '월정기권요금']), null),
     paymentMethods: pick(row, ['metpay', '결제방법']) || '현장 확인',
     notes: '공공데이터포털 주차장 데이터 후보입니다. 실제 운영시간과 요금은 현장 기준을 확인하세요.',
@@ -360,6 +389,8 @@ function dedupeStatuses(statuses) {
 export const __parkingAdapterTest = {
   normalizeSeoulParkInfoRow,
   normalizeSeoulRealtimeRow,
+  normalizePublicDataParkingRow,
+  unwrapPublicDataRows,
   matchRealtimeStatuses,
   parseObservedTime,
   formatHHMM
