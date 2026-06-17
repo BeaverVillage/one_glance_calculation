@@ -7186,3 +7186,299 @@ body {
 .parking-legal-note p {
   margin: 0;
 }
+
+/* Parking calculation map dashboard layout pass: top controls + bottom results/map */
+.parking-app-shell .parking-dashboard {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  grid-template-rows: auto minmax(0, auto) !important;
+  gap: 18px !important;
+  align-items: stretch !important;
+  width: 100%;
+  max-width: 100%;
+}
+
+.parking-dashboard__controls,
+.parking-dashboard__main,
+.parking-dashboard__results,
+.parking-dashboard__map {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.parking-dashboard__controls .parking-control-column {
+  display: block;
+  width: 100%;
+}
+
+.parking-dashboard__controls .parking-input-panel {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 16px !important;
+  align-items: start;
+  width: 100%;
+}
+
+.parking-control-card {
+  display: grid;
+  gap: 0.85rem;
+  align-content: start;
+  min-width: 0;
+  height: 100%;
+  padding: 1rem;
+  border: 1px solid rgba(139, 162, 184, 0.28);
+  border-radius: 18px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbfd 100%);
+  box-shadow: 0 10px 28px rgba(16, 32, 51, 0.06);
+}
+
+.parking-control-card .step-label {
+  margin-top: 0;
+  margin-bottom: 0.1rem;
+}
+
+.parking-control-card .field,
+.parking-control-card .field-row,
+.parking-control-card .quick-duration-row,
+.parking-control-card .parking-filter-row,
+.parking-control-card .parking-place-results,
+.parking-control-card .parking-preference-panel,
+.parking-control-card .parking-filter-note {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.parking-dashboard__controls .parking-date-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.parking-control-card--options .parking-date-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.parking-control-card--options .parking-sort-field {
+  grid-column: 1 / -1;
+}
+
+.parking-control-card--options .parking-preference-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.parking-control-card--options .parking-preference-card span {
+  font-size: 0.78rem;
+}
+
+.parking-control-card--options .wide-button {
+  margin-top: 0.2rem;
+}
+
+.parking-control-legal {
+  grid-column: 1 / -1;
+}
+
+.parking-dashboard__main {
+  display: grid;
+  grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: stretch;
+  height: clamp(500px, 58vh, 680px);
+  min-height: 0;
+}
+
+.parking-dashboard__results,
+.parking-dashboard__map {
+  height: 100%;
+  min-height: 0;
+}
+
+.parking-dashboard__map {
+  display: grid !important;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 10px;
+  position: relative !important;
+  top: auto !important;
+}
+
+.parking-dashboard__map .parking-map-card {
+  height: 100% !important;
+  min-height: 0 !important;
+}
+
+.parking-dashboard__results {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  grid-template-rows: auto auto auto auto minmax(0, 1fr) !important;
+  gap: 0.75rem !important;
+  overflow: hidden !important;
+  min-height: 0;
+}
+
+.parking-dashboard__results .parking-result-list {
+  display: grid !important;
+  gap: 0.9rem;
+  min-height: 0;
+  max-height: none !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  padding-right: 6px;
+  scroll-padding: 12px;
+}
+
+.parking-dashboard__results .parking-summary-bar {
+  margin: 0;
+}
+
+.parking-result-sort-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.parking-result-sort-tabs button {
+  min-height: 38px;
+  padding: 0.48rem 0.72rem;
+  border: 1px solid rgba(20, 108, 95, 0.24);
+  border-radius: 999px;
+  background: #fff;
+  color: #146c5f;
+  font-size: 0.82rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.parking-result-sort-tabs button.active,
+.parking-result-sort-tabs button[aria-pressed="true"] {
+  border-color: #146c5f;
+  background: #146c5f;
+  color: #fff;
+}
+
+@media (max-width: 1180px) {
+  .parking-dashboard__controls .parking-input-panel {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .parking-control-card--options,
+  .parking-control-legal {
+    grid-column: 1 / -1;
+  }
+
+  .parking-control-card--options .parking-preference-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  .parking-dashboard__controls .parking-input-panel {
+    grid-template-columns: 1fr !important;
+  }
+
+  .parking-control-card,
+  .parking-control-card--options,
+  .parking-control-legal {
+    grid-column: auto;
+  }
+
+  .parking-control-card--options .parking-preference-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .parking-dashboard__main {
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: 0;
+  }
+
+  .parking-dashboard__map {
+    order: 1;
+    min-height: 360px;
+  }
+
+  .parking-dashboard__results {
+    order: 2;
+    height: auto;
+    min-height: 0;
+    overflow: visible !important;
+  }
+
+  .parking-dashboard__map .parking-map-card {
+    min-height: 360px !important;
+    height: 360px !important;
+  }
+
+  .parking-dashboard__results .parking-result-list {
+    max-height: none !important;
+    overflow: visible !important;
+    padding-right: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .parking-dashboard__controls .parking-input-panel {
+    gap: 14px !important;
+  }
+
+  .parking-control-card {
+    padding: 0.9rem;
+    border-radius: 16px;
+  }
+
+  .parking-dashboard__controls .parking-date-grid,
+  .parking-control-card--options .parking-date-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .parking-result-sort-tabs button,
+  .quick-duration-row button,
+  .parking-filter-row label {
+    min-height: 44px;
+  }
+
+  .parking-dashboard__map .parking-map-card {
+    min-height: 330px !important;
+    height: 330px !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .parking-dashboard__map .parking-map-card {
+    min-height: 310px !important;
+    height: 310px !important;
+  }
+}
+
+/* Compact the new top control band: sorting is also available in the result panel. */
+.parking-dashboard__controls .parking-preference-panel {
+  display: none !important;
+}
+
+@media (min-width: 861px) {
+  .parking-control-card--destination .parking-place-results {
+    max-height: 220px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+
+  .parking-control-card--options .parking-filter-row {
+    max-height: 132px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+}
+
+.parking-dashboard__controls .parking-control-card {
+  height: auto !important;
+}
+
+@media (min-width: 861px) {
+  .parking-control-card--options .parking-date-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+  .parking-control-card--options .parking-sort-field {
+    grid-column: auto !important;
+  }
+  .parking-control-card--options .parking-filter-note {
+    display: none;
+  }
+}
