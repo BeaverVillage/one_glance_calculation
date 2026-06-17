@@ -828,17 +828,40 @@ function normalizeName(value) {
 function dedupeLots(lots) {
   const result = [];
   const seenIds = new Set();
+  const seenByNameGrid = new Map();
+  const cellSize = 0.001; // about 90~110m in Korea; checked only within nearby cells below.
+
   for (const lot of lots) {
     if (!lot) continue;
     const id = String(lot.id || '').trim();
     if (id && seenIds.has(id)) continue;
-    const duplicate = result.some((existing) => {
-      const sameName = normalizeName(existing.name) && normalizeName(existing.name) === normalizeName(lot.name);
-      if (!sameName) return false;
-      if (!isValidLatLng(existing.lat, existing.lng) || !isValidLatLng(lot.lat, lot.lng)) return true;
-      return distanceKm(existing, lot) <= 0.05;
-    });
-    if (duplicate) continue;
+
+    const normalizedName = normalizeName(lot.name);
+    let duplicate = false;
+
+    if (normalizedName && isValidLatLng(lot.lat, lot.lng)) {
+      const latCell = Math.round(Number(lot.lat) / cellSize);
+      const lngCell = Math.round(Number(lot.lng) / cellSize);
+      for (let dy = -1; dy <= 1 && !duplicate; dy += 1) {
+        for (let dx = -1; dx <= 1 && !duplicate; dx += 1) {
+          const bucketKey = `${normalizedName}:${latCell + dy}:${lngCell + dx}`;
+          const bucket = seenByNameGrid.get(bucketKey);
+          if (!bucket) continue;
+          duplicate = bucket.some((existing) => distanceKm(existing, lot) <= 0.05);
+        }
+      }
+      if (duplicate) continue;
+
+      const ownBucketKey = `${normalizedName}:${latCell}:${lngCell}`;
+      const ownBucket = seenByNameGrid.get(ownBucketKey) || [];
+      ownBucket.push(lot);
+      seenByNameGrid.set(ownBucketKey, ownBucket);
+    } else if (normalizedName) {
+      const bucketKey = `${normalizedName}:no-coordinate`;
+      if (seenByNameGrid.has(bucketKey)) continue;
+      seenByNameGrid.set(bucketKey, [lot]);
+    }
+
     if (id) seenIds.add(id);
     result.push(lot);
   }
