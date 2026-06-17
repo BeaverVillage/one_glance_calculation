@@ -102,8 +102,12 @@ function syncPreferenceCards(els) {
 }
 
 function setupDefaults(els) {
-  const today = new Date();
-  els.visitDate.value = today.toISOString().slice(0, 10);
+  const now = new Date();
+  const departure = new Date(now);
+  departure.setHours(departure.getHours() + 4);
+  els.visitDate.value = formatDateInput(now);
+  els.arrival.value = formatTimeInput(now);
+  els.departure.value = formatDateInput(departure) === els.visitDate.value ? formatTimeInput(departure) : "23:59";
   els.destination.value = DEFAULT_PLACE.name;
   syncPreferenceCards(els);
 }
@@ -823,7 +827,7 @@ function markerLabel(row) {
 function pinParkingCard(id, els, { scroll = false, popup = false, scrollToMap = false } = {}) {
   state.pinnedParkingId = id || "";
   applyPinnedParkingState(els);
-  const safeId = typeof CSS !== "undefined" && CSS.escape ? CSS.escape(state.pinnedParkingId) : state.pinnedParkingId.replace(/"/g, "\\"");
+  const safeId = typeof CSS !== "undefined" && CSS.escape ? CSS.escape(state.pinnedParkingId) : String(state.pinnedParkingId).replace(/"/g, '\\"');
   const target = document.querySelector(`[data-parking-card-id="${safeId}"]`);
   if (scrollToMap) document.querySelector(".parking-dashboard__map")?.scrollIntoView({ behavior: "smooth", block: "start" });
   if (scroll) target?.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -905,6 +909,8 @@ function distanceKm(a, b) {
 }
 function toMin(value) { const [h, m] = value.split(":").map(Number); return h * 60 + m; }
 function pad(value) { return String(value).padStart(2, "0"); }
+function formatDateInput(date) { return date.getFullYear() + "-" + pad(date.getMonth() + 1) + "-" + pad(date.getDate()); }
+function formatTimeInput(date) { return pad(date.getHours()) + ":" + pad(date.getMinutes()); }
 function round1(value) { return Math.round(value * 10) / 10; }
 function clamp(value, min, max) { return Math.min(max, Math.max(min, Number(value) || 0)); }
 function valueOrMax(value) { return value == null ? Number.MAX_SAFE_INTEGER : Number(value); }

@@ -6,7 +6,7 @@ import { initApplianceElectricityCalculator } from "./appliance-electricity.js?v
 import { initAustraliaPayCalculator } from "./australia-pay.js?v=20260616-mobile-exchange-whv-final";
 import { initAustraliaWhv88DaysCalculator } from "./australia-whv-88-days.js?v=20260616-mobile-exchange-whv-final";
 import { initExchangeRateCalculator } from "./exchange-rate.js?v=20260616-mobile-exchange-whv-final";
-import { initParkingBudgetMap } from "./parking-budget-map.js?v=20260617-parking-map-mobile-ux2";
+import { initParkingBudgetMap } from "./parking-budget-map.js?v=20260617-parking-map-fix3";
 import { initLoanInterestCalculator } from "./loan-interest.js?v=20260614-cache-fix";
 import { initNetSalaryCalculator } from "./net-salary.js?v=20260614-cache-fix";
 import { initPercentileCalculator } from "./percentile.js?v=20260614-cache-fix";
@@ -617,6 +617,7 @@ function showLoadError(error) {
   els.decisionBadge.className = "decision-badge warn";
   els.decisionCopy.textContent = "잠시 후 다시 시도해 주세요. 문제가 계속되면 문의 페이지로 알려 주세요.";
 }
+
 
 
 

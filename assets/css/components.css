@@ -8289,3 +8289,61 @@ body {
     min-height: 500px !important;
   }
 }
+
+/* Parking budget map guide/FAQ consistency fix 2026-06-17 */
+.parking-content-guide {
+  display: grid;
+  gap: 1rem;
+}
+.parking-content-guide .eyebrow,
+.parking-content-guide h2,
+.parking-content-guide .section-lead {
+  margin-left: 0;
+  margin-right: 0;
+}
+.parking-content-guide .parking-guide-grid {
+  align-items: stretch;
+}
+.parking-content-guide .parking-guide-grid article,
+.parking-faq-section details {
+  border-radius: 16px;
+  border: 1px solid #dbe6ef;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbfd 100%);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.045);
+}
+.parking-content-guide .parking-guide-grid article {
+  padding: 1.2rem;
+}
+.parking-faq-section {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem 1rem;
+  align-items: start;
+}
+.parking-faq-section .eyebrow,
+.parking-faq-section h2 {
+  grid-column: 1 / -1;
+  margin-bottom: 0;
+}
+.parking-faq-section details + details {
+  margin-top: 0 !important;
+}
+.parking-faq-section details {
+  min-width: 0;
+  height: 100%;
+}
+.parking-faq-section summary {
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  line-height: 1.45;
+}
+@media (max-width: 760px) {
+  .parking-faq-section {
+    grid-template-columns: 1fr;
+  }
+  .parking-content-guide .parking-guide-grid article,
+  .parking-faq-section details {
+    border-radius: 14px;
+  }
+}
