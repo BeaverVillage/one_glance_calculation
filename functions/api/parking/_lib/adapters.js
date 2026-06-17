@@ -4,7 +4,19 @@ import { parkingLots as sampleParkingLots, nationalParkingLots } from './mock-da
 const DEFAULT_SEOUL_BASE = 'http://openapi.seoul.go.kr:8088';
 const DEFAULT_SEOUL_PARK_INFO_SERVICE = 'GetParkInfo';
 const DEFAULT_SEOUL_REALTIME_SERVICE = 'GetParkingInfo';
+const PUBLIC_DATA_ENDPOINT = 'https://api.data.go.kr/openapi/tn_pubr_prkplce_info_api';
+const PUBLIC_DATA_NUM_OF_ROWS = 1000;
+const MAX_PUBLIC_DATA_PAGES = 100;
+const PUBLIC_DATA_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const MAX_DATASET_RETURN = 80;
+
+let publicDataCache = {
+  key: '',
+  expiresAt: 0,
+  lots: [],
+  meta: null,
+  promise: null
+};
 
 export async function resolveParkingLotDataset({ env = {}, destination = null, radius = 3000, query = '' } = {}) {
   const radiusMeters = normalizeRadiusMeters(radius);
@@ -32,10 +44,13 @@ export async function resolveParkingLotDataset({ env = {}, destination = null, r
   const dedupedExternal = dedupeLots(externalLots);
   const externalWithDistance = addDistances(dedupedExternal, destination);
   const externalNearby = filterByRadius(externalWithDistance, radiusMeters);
+
   const nationalCache = loadNationalParkingCache({ query: adapterQuery });
   const cacheWithDistance = addDistances(nationalCache, destination);
   const cacheNearby = filterByRadius(cacheWithDistance, radiusMeters);
-  const expandedCacheNearby = cacheNearby.length ? cacheNearby : filterByRadius(cacheWithDistance, Math.min(3000, Math.max(radiusMeters, 3000)));
+  const expandedRadiusMeters = Math.min(3000, Math.max(radiusMeters, 3000));
+  const expandedCacheNearby = cacheNearby.length ? cacheNearby : filterByRadius(cacheWithDistance, expandedRadiusMeters);
+
   const sampleWithDistance = addDistances(sampleParkingLots, destination);
   const sampleNearby = filterByRadius(sampleWithDistance, radiusMeters);
 
@@ -52,7 +67,7 @@ export async function resolveParkingLotDataset({ env = {}, destination = null, r
       : externalWithDistance.length
         ? '공공데이터는 조회됐지만 현재 반경 내 주차장이 없어 전국 주차장 캐시 후보를 사용했습니다.'
         : '연동 가능한 공공데이터 후보가 없어 전국 주차장 캐시 후보를 사용했습니다.';
-    if (!externalNearby.length && !cacheNearby.length && expandedCacheNearby.length) effectiveRadiusMeters = Math.min(3000, Math.max(radiusMeters, 3000));
+    if (!externalNearby.length && !cacheNearby.length && expandedCacheNearby.length) effectiveRadiusMeters = expandedRadiusMeters;
   } else if (externalNearby.length < 3 && sampleNearby.length) {
     selectedLots = dedupeLots([...externalNearby, ...sampleNearby]);
     mode = externalNearby.length ? 'hybrid-public-sample' : 'sample-fallback';
@@ -137,19 +152,25 @@ function normalizeRadiusMeters(radius) {
 }
 
 function addDistances(lots, destination) {
-  const validLots = lots.filter((lot) => Number.isFinite(Number(lot.lat)) && Number.isFinite(Number(lot.lng)));
-  if (!destination || !Number.isFinite(Number(destination.lat)) || !Number.isFinite(Number(destination.lng))) return validLots;
-  return validLots.map((lot) => ({
-    ...lot,
-    distanceFromDestinationKm: roundDistance(distanceKm(destination, lot)),
-    distanceKm: roundDistance(distanceKm(destination, lot))
-  }));
+  const validLots = lots.filter((lot) => isValidLatLng(lot.lat, lot.lng));
+  if (!destination || !isValidLatLng(destination.lat, destination.lng)) return validLots;
+  return validLots.map((lot) => {
+    const km = distanceKm(destination, lot);
+    return {
+      ...lot,
+      lat: Number(lot.lat),
+      lng: Number(lot.lng),
+      distanceFromDestinationKm: roundDistance(km),
+      distanceKm: roundDistance(km)
+    };
+  });
 }
 
 function filterByRadius(lots, radiusMeters) {
+  const meters = normalizeRadiusMeters(radiusMeters);
   return lots.filter((lot) => {
     if (lot.distanceFromDestinationKm == null) return true;
-    return Number(lot.distanceFromDestinationKm) * 1000 <= radiusMeters;
+    return Number(lot.distanceFromDestinationKm) * 1000 <= meters;
   });
 }
 
@@ -159,7 +180,13 @@ function buildDatasetStats({ sources, externalLots, dedupedExternal, externalWit
   const publicData = sourceById.get('public-data-parking') || {};
   return {
     seoulFetchedCount: Number(seoul.count || 0),
+    publicPagesFetched: Number(publicData.pagesFetched || 0),
+    publicTotalCount: Number(publicData.totalCount || 0),
     publicFetchedCount: Number(publicData.fetchedCount || publicData.count || 0),
+    publicNormalizedCount: Number(publicData.normalizedCount || 0),
+    publicWithCoordinateCount: Number(publicData.withCoordinateCount || 0),
+    publicMissingCoordinateCount: Number(publicData.missingCoordinateCount || 0),
+    publicFailedPages: Number(publicData.failedPages || 0),
     normalizedCount: externalLots.length,
     dedupedCount: dedupedExternal.length,
     withCoordinateCount: externalWithDistance.length,
@@ -171,12 +198,15 @@ function buildDatasetStats({ sources, externalLots, dedupedExternal, externalWit
   };
 }
 
-
 function loadNationalParkingCache({ query = '' } = {}) {
-  const lots = Array.isArray(nationalParkingLots) && nationalParkingLots.length ? nationalParkingLots : sampleParkingLots;
+  const lots = normalizeCachedLots(Array.isArray(nationalParkingLots) && nationalParkingLots.length ? nationalParkingLots : sampleParkingLots);
   const keyword = String(query || '').trim().toLowerCase();
   if (!keyword) return lots;
   return lots.filter((lot) => `${lot.name} ${lot.roadAddress || ''} ${lot.jibunAddress || ''} ${lot.region || ''}`.toLowerCase().includes(keyword));
+}
+
+function normalizeCachedLots(lots) {
+  return lots.map((lot) => normalizeParkingLotLike(lot, { source: lot.source || '전국 주차장 캐시' })).filter(Boolean);
 }
 
 async function safeFetch(name, task) {
@@ -227,47 +257,161 @@ async function fetchPublicParkingLots(env, { query = '' } = {}) {
   const key = env.PUBLIC_DATA_API_KEY || '';
   if (!key) return { ok: true, lots: [], source: null };
 
-  const maxPages = Math.min(5, Math.max(1, Number(env.PUBLIC_DATA_PARKING_MAX_PAGES || 3) || 3));
-  const numOfRows = 1000;
-  const allRows = [];
-  for (let pageNo = 1; pageNo <= maxPages; pageNo += 1) {
-    const url = new URL('https://api.data.go.kr/openapi/tn_pubr_prkplce_info_api');
-    url.searchParams.set('serviceKey', key);
-    url.searchParams.set('pageNo', String(pageNo));
-    url.searchParams.set('numOfRows', String(numOfRows));
-    url.searchParams.set('type', 'json');
-    const res = await fetch(url.toString(), { cf: { cacheTtl: 21600, cacheEverything: true } });
-    if (!res.ok) throw new Error(`전국주차장정보표준데이터 호출 실패: ${res.status}`);
-    const contentType = res.headers.get('content-type') || '';
-    const data = contentType.includes('json') ? await res.json() : await parseMaybeJsonOrXml(await res.text());
-    const rows = unwrapPublicDataRows(data);
-    allRows.push(...rows);
-    if (rows.length < numOfRows) break;
-  }
-  const normalized = allRows.map(normalizePublicDataParkingRow).filter(Boolean);
+  const cache = await getPublicParkingDataCache(key);
   const keyword = String(query || '').trim().toLowerCase();
   const filtered = keyword
-    ? normalized.filter((lot) => `${lot.name} ${lot.roadAddress} ${lot.jibunAddress}`.toLowerCase().includes(keyword))
-    : normalized;
+    ? cache.lots.filter((lot) => `${lot.name} ${lot.roadAddress || ''} ${lot.jibunAddress || ''} ${lot.region || ''} ${lot.district || ''}`.toLowerCase().includes(keyword))
+    : cache.lots;
 
   return {
     ok: true,
-    source: { id: 'public-data-parking', name: '공공데이터포털 전국주차장정보표준데이터', service: 'tn_pubr_prkplce_info_api', count: filtered.length, fetchedCount: allRows.length, normalizedCount: normalized.length, pagesFetched: maxPages },
+    source: {
+      id: 'public-data-parking',
+      name: '공공데이터포털 전국주차장정보표준데이터',
+      service: 'tn_pubr_prkplce_info_api',
+      count: filtered.length,
+      ...cache.meta
+    },
     lots: filtered
   };
+}
+
+async function getPublicParkingDataCache(serviceKey) {
+  const cacheKey = serviceKey ? String(serviceKey).slice(0, 8) : 'no-key';
+  const now = Date.now();
+  if (publicDataCache.key === cacheKey && publicDataCache.lots.length && publicDataCache.expiresAt > now) {
+    return { lots: publicDataCache.lots, meta: { ...publicDataCache.meta, cacheMode: 'memory-hit' } };
+  }
+  if (publicDataCache.key === cacheKey && publicDataCache.promise) return publicDataCache.promise;
+
+  publicDataCache.key = cacheKey;
+  publicDataCache.promise = fetchAllPublicParkingPages(serviceKey)
+    .then((result) => {
+      publicDataCache.lots = result.lots;
+      publicDataCache.meta = result.meta;
+      publicDataCache.expiresAt = Date.now() + PUBLIC_DATA_CACHE_TTL_MS;
+      publicDataCache.promise = null;
+      return { lots: publicDataCache.lots, meta: { ...publicDataCache.meta, cacheMode: 'memory-refresh' } };
+    })
+    .catch((error) => {
+      publicDataCache.promise = null;
+      if (publicDataCache.lots.length) return { lots: publicDataCache.lots, meta: { ...publicDataCache.meta, cacheMode: 'memory-stale', fetchError: error?.message || String(error) } };
+      throw error;
+    });
+  return publicDataCache.promise;
+}
+
+async function fetchAllPublicParkingPages(serviceKey) {
+  const first = await fetchPublicParkingPage(serviceKey, 1);
+  const allRows = [...first.rows];
+  const failedPages = [];
+  const totalCount = first.totalCount || 0;
+  const totalPages = totalCount ? Math.ceil(totalCount / PUBLIC_DATA_NUM_OF_ROWS) : MAX_PUBLIC_DATA_PAGES;
+  const pagesToFetch = Math.max(1, Math.min(MAX_PUBLIC_DATA_PAGES, totalPages));
+
+  for (let pageNo = 2; pageNo <= pagesToFetch; pageNo += 1) {
+    try {
+      const page = await fetchPublicParkingPage(serviceKey, pageNo);
+      allRows.push(...page.rows);
+      if (!totalCount && page.rows.length < PUBLIC_DATA_NUM_OF_ROWS) break;
+    } catch (error) {
+      failedPages.push({ pageNo, message: error?.message || String(error) });
+    }
+  }
+
+  const normalizedRows = allRows.map((row) => normalizePublicDataParkingRow(row));
+  const normalized = normalizedRows.filter(Boolean);
+  const missingCoordinates = normalizedRows.length - normalized.length;
+  const deduped = dedupeLots(normalized);
+
+  console.info?.('[public-data] pagesFetched:', pagesToFetch - failedPages.length, 'rawItems:', allRows.length, 'normalizedItems:', normalized.length, 'withCoordinates:', deduped.length, 'missingCoordinates:', missingCoordinates, 'failedPages:', failedPages.length);
+
+  return {
+    lots: deduped,
+    meta: {
+      fetchedCount: allRows.length,
+      totalCount,
+      pagesFetched: pagesToFetch - failedPages.length,
+      requestedPages: pagesToFetch,
+      failedPages: failedPages.length,
+      failedPageNumbers: failedPages.map((item) => item.pageNo),
+      normalizedCount: normalized.length,
+      withCoordinateCount: deduped.length,
+      missingCoordinateCount: missingCoordinates,
+      numOfRows: PUBLIC_DATA_NUM_OF_ROWS,
+      maxPages: MAX_PUBLIC_DATA_PAGES,
+      cacheMode: 'memory-refresh'
+    }
+  };
+}
+
+async function fetchPublicParkingPage(serviceKey, pageNo) {
+  const url = new URL(PUBLIC_DATA_ENDPOINT);
+  url.searchParams.set('serviceKey', serviceKey);
+  url.searchParams.set('pageNo', String(pageNo));
+  url.searchParams.set('numOfRows', String(PUBLIC_DATA_NUM_OF_ROWS));
+  url.searchParams.set('type', 'json');
+  const res = await fetch(url.toString(), { cf: { cacheTtl: 21600, cacheEverything: true } });
+  if (!res.ok) throw new Error(`전국주차장정보표준데이터 ${pageNo}페이지 호출 실패: ${res.status}`);
+  const contentType = res.headers.get('content-type') || '';
+  const data = contentType.includes('json') ? await res.json() : await parseMaybeJsonOrXml(await res.text());
+  const parsed = unwrapPublicDataPayload(data);
+  return { rows: parsed.rows, totalCount: parsed.totalCount };
 }
 
 async function parseMaybeJsonOrXml(text) {
   const trimmed = String(text || '').trim();
   if (!trimmed) return {};
   if (trimmed.startsWith('{') || trimmed.startsWith('[')) return JSON.parse(trimmed);
-  return { response: { body: { items: [] } }, rawPrefix: trimmed.slice(0, 120) };
+  return parseSimpleXmlPayload(trimmed);
+}
+
+function parseSimpleXmlPayload(xml) {
+  const totalCount = toNumber(matchXmlText(xml, 'totalCount'), 0);
+  const items = [];
+  const itemPattern = /<item>([\s\S]*?)<\/item>/g;
+  let match;
+  while ((match = itemPattern.exec(xml))) {
+    const itemXml = match[1];
+    const row = {};
+    const fieldPattern = /<([^\/][^>\s]*)[^>]*>([\s\S]*?)<\/\1>/g;
+    let field;
+    while ((field = fieldPattern.exec(itemXml))) {
+      row[field[1]] = decodeXml(field[2]);
+    }
+    if (Object.keys(row).length) items.push(row);
+  }
+  return { response: { body: { totalCount, items: { item: items } } } };
+}
+
+function matchXmlText(xml, tagName) {
+  const match = new RegExp(`<${tagName}[^>]*>([\\s\\S]*?)<\\/${tagName}>`).exec(xml);
+  return match ? decodeXml(match[1]) : '';
+}
+
+function decodeXml(value) {
+  return String(value || '')
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .trim();
 }
 
 function unwrapPublicDataRows(data) {
+  return unwrapPublicDataPayload(data).rows;
+}
+
+function unwrapPublicDataPayload(data) {
   const body = data?.response?.body || data?.body || data;
   const items = body?.items?.item || body?.items || body?.data || body?.rows || [];
-  return Array.isArray(items) ? items : [items].filter(Boolean);
+  const rows = Array.isArray(items) ? items : [items].filter(Boolean);
+  return {
+    rows,
+    totalCount: toNumber(body?.totalCount ?? data?.totalCount, rows.length)
+  };
 }
 
 function normalizeSeoulParkInfoRow(row) {
@@ -317,6 +461,7 @@ function normalizeSeoulParkInfoRow(row) {
     source: '서울시 공영주차장 안내 정보',
     region: normalizeRegion(pick(row, ['ADDR', 'ROAD_ADDR', 'LCTN_NM', 'roadAddress']) || '서울'),
     realtimeKey: parkingCode || null,
+    pricingStatus: resolvePricingStatus({ feeType: payName, baseMinutes, baseFee, additionalMinutes, additionalFee, dayPassFee }),
     disabledDiscountRate: 50,
     compactDiscountRate: 50,
     evDiscountRate: 50
@@ -347,49 +492,105 @@ function normalizeSeoulRealtimeRow(row) {
 }
 
 function normalizePublicDataParkingRow(row) {
-  const name = pick(row, ['prkplceNm', 'parkingLotName', '주차장명', 'PARKING_NAME', 'name']);
-  const lat = toNumber(pick(row, ['latitude', 'lat', '위도', 'LAT']));
-  const lng = toNumber(pick(row, ['longitude', 'lng', '경도', 'LNG']));
+  const name = pick(row, ['prkplceNm', 'prkplce_nm', 'parkingLotName', 'parkingLotNm', 'parkNm', '주차장명', 'PARKING_NAME', 'name']);
+  const roadAddress = pick(row, ['rdnmadr', 'roadAddress', 'roadNmAddress', '소재지도로명주소', 'ROAD_ADDR']);
+  const jibunAddress = pick(row, ['lnmadr', 'jibunAddress', 'lotnoAddress', '소재지지번주소', 'JIBUN_ADDR']);
+  const lat = parseCoordinate(pick(row, ['latitude', 'lat', '위도', 'LAT', 'y', 'Y좌표', '위도값']));
+  const lng = parseCoordinate(pick(row, ['longitude', 'lng', '경도', 'LNG', 'x', 'X좌표', '경도값']));
   if (!name || !isValidLatLng(lat, lng)) return null;
-  const publicType = pick(row, ['prkplceSe', 'operSe', '운영구분', 'publicPrivateType']) || '공영';
-  const feeType = pick(row, ['parkingchrgeInfo', 'feeType', '요금정보']) || '';
+
+  const publicType = pick(row, ['prkplceSe', 'prkplce_se', 'operSe', 'operatingSe', '운영구분', '주차장구분', 'publicPrivateType']) || '공영';
+  const feeInfo = pick(row, ['parkingchrgeInfo', 'parkingChargeInfo', 'parkingchrgeSe', 'feeType', '요금정보', '유무료구분']);
+  const baseMinutes = parseFeeNumber(pick(row, ['basicTime', 'parkingBasicTime', 'prkBasicTime', '주차기본시간', '기본시간']), null);
+  const baseFee = parseFeeNumber(pick(row, ['basicCharge', 'parkingBasicCharge', 'prkBasicCharge', '주차기본요금', '기본요금']), null);
+  const additionalMinutes = parseFeeNumber(pick(row, ['addUnitTime', 'addUnitTimeUnit', 'addTime', '추가단위시간']), null);
+  const additionalFee = parseFeeNumber(pick(row, ['addUnitCharge', 'addUnitChargeUnit', 'addCharge', '추가단위요금']), null);
+  const dayPassFee = parseFeeNumber(pick(row, ['dayCmmtkt', 'dayParkingTicketCharge', 'dayPassFee', '1일주차권요금', '일주차요금']), null);
+  const feeType = resolveFeeType(feeInfo, baseFee, additionalFee);
+  const pricingStatus = resolvePricingStatus({ feeType, baseMinutes, baseFee, additionalMinutes, additionalFee, dayPassFee });
+
   return {
-    id: 'PUBLIC_' + slug(pick(row, ['prkplceNo', 'prkplceMngNo', 'parkingLotId', '주차장관리번호', '관리번호']) || name),
+    id: 'PUBLIC_' + slug(pick(row, ['prkplceNo', 'prkplceMngNo', 'parkingLotId', '주차장관리번호', '관리번호']) || `${name}_${lat}_${lng}`),
     name,
-    publicPrivateType: String(publicType).includes('민영') ? '민영' : '공영',
+    publicPrivateType: String(publicType).includes('민영') || String(publicType).includes('민간') ? '민영' : '공영',
     parkingType: pick(row, ['prkplceType', 'parkingType', '주차장유형']) || '주차장',
-    roadAddress: pick(row, ['rdnmadr', 'roadAddress', '소재지도로명주소']) || '',
-    jibunAddress: pick(row, ['lnmadr', 'jibunAddress', '소재지지번주소']) || '',
+    roadAddress,
+    jibunAddress,
+    address: roadAddress || jibunAddress,
     lat,
     lng,
-    capacity: toNumber(pick(row, ['prkcmprt', 'capacity', '주차구획수']), null),
+    region: normalizeRegion(`${roadAddress} ${jibunAddress} ${pick(row, ['ctprvnNm', '시도명', 'region'])}`),
+    district: normalizeDistrict(`${roadAddress} ${jibunAddress}`),
+    capacity: parseFeeNumber(pick(row, ['prkcmprt', 'capacity', '주차구획수', '주차면수']), null),
     operatingDays: pick(row, ['operDay', '운영요일']) || '공공데이터 기준',
-    weekdayOpen: formatHHMM(pick(row, ['weekdayOperOpenHhmm', '평일운영시작시각'])) || '00:00',
-    weekdayClose: formatHHMM(pick(row, ['weekdayOperColseHhmm', 'weekdayOperCloseHhmm', '평일운영종료시각'])) || '23:59',
-    saturdayOpen: formatHHMM(pick(row, ['satOperOperOpenHhmm', 'satOperOpenHhmm', '토요일운영시작시각'])) || '00:00',
-    saturdayClose: formatHHMM(pick(row, ['satOperCloseHhmm', 'satOperColseHhmm', '토요일운영종료시각'])) || '23:59',
-    holidayOpen: formatHHMM(pick(row, ['holidayOperOpenHhmm', '공휴일운영시작시각'])) || '00:00',
-    holidayClose: formatHHMM(pick(row, ['holidayCloseOpenHhmm', 'holidayOperCloseHhmm', 'holidayOperColseHhmm', '공휴일운영종료시각'])) || '23:59',
-    feeType: String(feeType).includes('무료') ? '무료' : '유료',
-    baseMinutes: toNumber(pick(row, ['basicTime', 'parkingBasicTime', '주차기본시간', '기본시간']), null),
-    baseFee: toNumber(pick(row, ['basicCharge', 'parkingBasicCharge', '주차기본요금', '기본요금']), null),
-    additionalMinutes: toNumber(pick(row, ['addUnitTime', 'addUnitTimeUnit', '추가단위시간']), null),
-    additionalFee: toNumber(pick(row, ['addUnitCharge', 'addUnitChargeUnit', '추가단위요금']), null),
-    dayPassMinutes: toNumber(pick(row, ['dayCmmtktAdjTime', '1일주차권요금적용시간']), null),
-    dayPassFee: toNumber(pick(row, ['dayCmmtkt', 'dayParkingTicketCharge', '1일주차권요금', 'dayPassFee']), null),
-    monthlyFee: toNumber(pick(row, ['monthCmmtkt', '월정기권요금']), null),
-    paymentMethods: pick(row, ['metpay', '결제방법']) || '현장 확인',
-    notes: '공공데이터포털 주차장 데이터 후보입니다. 실제 운영시간과 요금은 현장 기준을 확인하세요.',
-    agencyName: pick(row, ['institutionNm', '관리기관명']) || '공공데이터포털',
+    weekdayOpen: formatHHMM(pick(row, ['weekdayOperOpenHhmm', 'weekdayOpenTime', '평일운영시작시각'])) || '00:00',
+    weekdayClose: formatHHMM(pick(row, ['weekdayOperColseHhmm', 'weekdayOperCloseHhmm', 'weekdayCloseTime', '평일운영종료시각'])) || '23:59',
+    saturdayOpen: formatHHMM(pick(row, ['satOperOperOpenHhmm', 'satOperOpenHhmm', 'saturdayOpenTime', '토요일운영시작시각'])) || '00:00',
+    saturdayClose: formatHHMM(pick(row, ['satOperCloseHhmm', 'satOperColseHhmm', 'saturdayCloseTime', '토요일운영종료시각'])) || '23:59',
+    holidayOpen: formatHHMM(pick(row, ['holidayOperOpenHhmm', 'holidayOpenTime', '공휴일운영시작시각'])) || '00:00',
+    holidayClose: formatHHMM(pick(row, ['holidayCloseOpenHhmm', 'holidayOperCloseHhmm', 'holidayOperColseHhmm', 'holidayCloseTime', '공휴일운영종료시각'])) || '23:59',
+    feeType,
+    baseMinutes,
+    baseFee,
+    additionalMinutes,
+    additionalFee,
+    unitMinutes: additionalMinutes,
+    unitFee: additionalFee,
+    dayPassMinutes: parseFeeNumber(pick(row, ['dayCmmtktAdjTime', '1일주차권요금적용시간']), null),
+    dayPassFee,
+    dailyMaxFee: dayPassFee,
+    monthlyFee: parseFeeNumber(pick(row, ['monthCmmtkt', 'monthlyFee', '월정기권요금']), null),
+    freeMinutes: feeType === '무료' ? 1440 : null,
+    paymentMethods: pick(row, ['metpay', 'paymentMethods', '결제방법']) || '현장 확인',
+    notes: pick(row, ['spcmnt', '특기사항']) || '공공데이터포털 주차장 데이터 후보입니다. 실제 운영시간과 요금은 현장 기준을 확인하세요.',
+    agencyName: pick(row, ['institutionNm', 'institutionName', '관리기관명']) || '공공데이터포털',
     phone: pick(row, ['phoneNumber', '전화번호']) || '',
-    hasDisabledSpaces: null,
-    dataDate: pick(row, ['referenceDate', '데이터기준일자']) || new Date().toISOString().slice(0, 10),
-    source: '공공데이터포털 주차장 API',
-    region: normalizeRegion(`${pick(row, ['rdnmadr', 'roadAddress', '소재지도로명주소'])} ${pick(row, ['lnmadr', 'jibunAddress', '소재지지번주소'])}`),
+    hasDisabledSpaces: normalizeBoolean(pick(row, ['pwdbsPpkZoneYn', '장애인전용주차구역보유여부'])),
+    dataDate: pick(row, ['referenceDate', 'dataDate', '데이터기준일자']) || new Date().toISOString().slice(0, 10),
+    source: '공공데이터포털 전국주차장정보표준데이터',
+    sourceUpdatedAt: pick(row, ['referenceDate', 'dataDate', '데이터기준일자']) || new Date().toISOString().slice(0, 10),
+    pricingStatus,
+    realtimeAvailable: null,
     realtimeKey: null,
     disabledDiscountRate: 50,
     compactDiscountRate: 50,
     evDiscountRate: 50
+  };
+}
+
+function normalizeParkingLotLike(lot, { source = '전국 주차장 캐시' } = {}) {
+  const lat = parseCoordinate(lot.lat ?? lot.latitude);
+  const lng = parseCoordinate(lot.lng ?? lot.longitude);
+  if (!lot.name || !isValidLatLng(lat, lng)) return null;
+  const baseMinutes = parseFeeNumber(lot.baseMinutes ?? lot.parkingBasicTime, null);
+  const baseFee = parseFeeNumber(lot.baseFee ?? lot.parkingBasicCharge, null);
+  const additionalMinutes = parseFeeNumber(lot.additionalMinutes ?? lot.unitMinutes, null);
+  const additionalFee = parseFeeNumber(lot.additionalFee ?? lot.unitFee, null);
+  const dayPassFee = parseFeeNumber(lot.dayPassFee ?? lot.dailyMaxFee, null);
+  const feeType = resolveFeeType(lot.feeType, baseFee, additionalFee);
+  return {
+    ...lot,
+    id: lot.id || 'CACHE_' + slug(`${lot.name}_${lat}_${lng}`),
+    lat,
+    lng,
+    roadAddress: lot.roadAddress || lot.address || '',
+    jibunAddress: lot.jibunAddress || '',
+    address: lot.address || lot.roadAddress || lot.jibunAddress || '',
+    region: lot.region || normalizeRegion(`${lot.roadAddress || lot.address || ''} ${lot.jibunAddress || ''}`),
+    district: lot.district || normalizeDistrict(`${lot.roadAddress || lot.address || ''} ${lot.jibunAddress || ''}`),
+    feeType,
+    baseMinutes,
+    baseFee,
+    additionalMinutes,
+    additionalFee,
+    unitMinutes: additionalMinutes,
+    unitFee: additionalFee,
+    dayPassFee,
+    dailyMaxFee: dayPassFee,
+    pricingStatus: lot.pricingStatus || resolvePricingStatus({ feeType, baseMinutes, baseFee, additionalMinutes, additionalFee, dayPassFee }),
+    source: lot.source || source,
+    sourceUpdatedAt: lot.sourceUpdatedAt || lot.dataDate || '',
+    realtimeAvailable: lot.realtimeAvailable ?? null
   };
 }
 
@@ -426,17 +627,68 @@ function isValidLatLng(lat, lng) {
 }
 
 function pick(row, keys) {
+  if (!row) return '';
+  const keyMap = buildLooseKeyMap(row);
   for (const key of keys) {
-    const value = row?.[key];
-    if (value !== undefined && value !== null && String(value).trim() !== '') return String(value).trim();
+    if (row[key] !== undefined && row[key] !== null && String(row[key]).trim() !== '') return String(row[key]).trim();
+    const looseKey = normalizeKey(key);
+    const matchedKey = keyMap.get(looseKey);
+    if (matchedKey && row[matchedKey] !== undefined && row[matchedKey] !== null && String(row[matchedKey]).trim() !== '') return String(row[matchedKey]).trim();
   }
   return '';
+}
+
+function buildLooseKeyMap(row) {
+  const map = new Map();
+  for (const key of Object.keys(row || {})) map.set(normalizeKey(key), key);
+  return map;
+}
+
+function normalizeKey(key) {
+  return String(key || '').replace(/[\s_\-()\[\].]/g, '').toLowerCase();
 }
 
 function toNumber(value, fallback = 0) {
   if (value == null || value === '') return fallback;
   const number = Number(String(value).replace(/[^0-9.-]/g, ''));
   return Number.isFinite(number) ? number : fallback;
+}
+
+function parseFeeNumber(value, fallback = 0) {
+  if (value == null || value === '') return fallback;
+  const text = String(value).trim();
+  if (!text || text === '-' || /없음|해당없음|무료/.test(text)) return /무료/.test(text) ? 0 : fallback;
+  const number = Number(text.replace(/[^0-9.-]/g, ''));
+  return Number.isFinite(number) ? number : fallback;
+}
+
+function parseCoordinate(value) {
+  if (value == null || value === '') return NaN;
+  const number = Number(String(value).trim().replace(/,/g, ''));
+  return Number.isFinite(number) ? number : NaN;
+}
+
+function resolveFeeType(feeInfo, baseFee, additionalFee) {
+  const text = String(feeInfo || '').trim();
+  if (/무료/.test(text)) return '무료';
+  if (Number(baseFee) === 0 && Number(additionalFee) === 0) return '무료';
+  return '유료';
+}
+
+function resolvePricingStatus({ feeType, baseMinutes, baseFee, additionalMinutes, additionalFee, dayPassFee }) {
+  if (String(feeType || '').includes('무료')) return 'free';
+  if (hasNumber(baseMinutes) && hasNumber(baseFee) && hasNumber(additionalMinutes) && hasNumber(additionalFee)) return 'complete';
+  if (hasNumber(baseMinutes) && hasNumber(baseFee)) return 'partial';
+  if (hasNumber(dayPassFee)) return 'partial';
+  return 'unknown';
+}
+
+function normalizeBoolean(value) {
+  const text = String(value || '').trim();
+  if (!text) return null;
+  if (/Y|YES|TRUE|있|보유|유/i.test(text)) return true;
+  if (/N|NO|FALSE|없|미보유|무/i.test(text)) return false;
+  return null;
 }
 
 function formatHHMM(value) {
@@ -474,23 +726,29 @@ function slug(value) {
 function normalizeRegion(value) {
   const text = String(value || '');
   if (/세종|세종특별자치시|세종시/.test(text)) return '세종';
-  if (/서울/.test(text)) return '서울';
-  if (/부산/.test(text)) return '부산';
-  if (/대구/.test(text)) return '대구';
-  if (/광주/.test(text)) return '광주';
-  if (/대전/.test(text)) return '대전';
-  if (/제주/.test(text)) return '제주';
-  if (/인천/.test(text)) return '인천';
-  if (/울산/.test(text)) return '울산';
-  if (/경기/.test(text)) return '경기';
-  if (/강원/.test(text)) return '강원';
+  if (/서울|서울특별시/.test(text)) return '서울';
+  if (/부산|부산광역시/.test(text)) return '부산';
+  if (/대구|대구광역시/.test(text)) return '대구';
+  if (/인천|인천광역시/.test(text)) return '인천';
+  if (/광주|광주광역시/.test(text)) return '광주';
+  if (/대전|대전광역시/.test(text)) return '대전';
+  if (/울산|울산광역시/.test(text)) return '울산';
+  if (/경기|경기도/.test(text)) return '경기';
+  if (/강원|강원특별자치도|강원도/.test(text)) return '강원';
   if (/충북|충청북도/.test(text)) return '충북';
   if (/충남|충청남도/.test(text)) return '충남';
-  if (/전북|전라북도/.test(text)) return '전북';
+  if (/전북|전북특별자치도|전라북도/.test(text)) return '전북';
   if (/전남|전라남도/.test(text)) return '전남';
   if (/경북|경상북도/.test(text)) return '경북';
   if (/경남|경상남도/.test(text)) return '경남';
+  if (/제주|제주특별자치도/.test(text)) return '제주';
   return '';
+}
+
+function normalizeDistrict(value) {
+  const text = String(value || '');
+  const match = text.match(/([가-힣]+(?:시|군|구))/);
+  return match ? match[1] : '';
 }
 
 function normalizeName(value) {
@@ -541,12 +799,18 @@ export const __parkingAdapterTest = {
   normalizeSeoulParkInfoRow,
   normalizeSeoulRealtimeRow,
   normalizePublicDataParkingRow,
+  normalizeParkingLotLike,
   unwrapPublicDataRows,
+  unwrapPublicDataPayload,
   matchRealtimeStatuses,
+  parseMaybeJsonOrXml,
+  parseSimpleXmlPayload,
   parseObservedTime,
   formatHHMM,
   dedupeLots,
   filterByRadius,
   addDistances,
-  loadNationalParkingCache
+  loadNationalParkingCache,
+  fetchPublicParkingLots,
+  fetchAllPublicParkingPages
 };

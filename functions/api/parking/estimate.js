@@ -1,4 +1,4 @@
-import { parkingLots } from './_lib/mock-data.js';
+import { parkingLots, nationalParkingLots } from './_lib/mock-data.js';
 import { estimateParkingFee } from './_lib/fee.js';
 
 function json(data, init = {}) {
@@ -31,11 +31,20 @@ export async function onRequestPost({ request }) {
     : body.lot
       ? [body.lot]
       : body.parkingLotIds?.length
-        ? parkingLots.filter((lot) => new Set(body.parkingLotIds).has(lot.id))
+        ? mergeCandidateLots().filter((lot) => new Set(body.parkingLotIds).has(lot.id))
         : parkingLots.slice(0, 20);
 
   if (!lots.length) return error('계산할 주차장 후보가 없습니다.', 404);
   return json({
     results: lots.map((lot) => ({ ...estimateParkingFee(lot, input), name: lot.name, source: lot.source || 'sample' }))
+  });
+}
+
+function mergeCandidateLots() {
+  const seen = new Set();
+  return [...parkingLots, ...(Array.isArray(nationalParkingLots) ? nationalParkingLots : [])].filter((lot) => {
+    if (!lot?.id || seen.has(lot.id)) return false;
+    seen.add(lot.id);
+    return true;
   });
 }
