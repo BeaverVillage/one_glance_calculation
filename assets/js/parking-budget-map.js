@@ -110,7 +110,7 @@ function setupDefaults(els) {
   departure.setHours(departure.getHours() + 4);
   els.visitDate.value = formatDateInput(now);
   els.arrival.value = formatTimeInput(now);
-  els.departure.value = formatDateInput(departure) === els.visitDate.value ? formatTimeInput(departure) : "23:59";
+  els.departure.value = formatTimeInput(departure);
   els.destination.value = DEFAULT_PLACE.name;
   syncPreferenceCards(els);
 }
@@ -331,14 +331,13 @@ async function selectPlaceFromPopup(index, els) {
 function applyQuickDuration(els, value) {
   const [h, m] = els.arrival.value.split(":").map(Number);
   const date = new Date(`${els.visitDate.value}T${pad(h)}:${pad(m)}:00`);
-  const minutes = value === "day" ? 720 : Number(value);
+  const minutes = value === "day" ? 1440 : Number(value);
   date.setMinutes(date.getMinutes() + minutes);
   els.departure.value = `${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
 function buildInput(els) {
-  const arrivalAt = `${els.visitDate.value}T${els.arrival.value}:00+09:00`;
-  const departureAt = `${els.visitDate.value}T${els.departure.value}:00+09:00`;
+  const { arrivalAt, departureAt } = buildScheduleIso(els.visitDate.value, els.arrival.value, els.departure.value);
   const duration = durationMinutes(arrivalAt, departureAt);
   return {
     destination: state.destination,
@@ -359,6 +358,31 @@ function buildInput(els) {
       lowRiskOnly: els.filters.lowRiskOnly.checked
     }
   };
+}
+
+function buildScheduleIso(visitDate, arrivalTime, departureTime) {
+  const arrivalAt = `${visitDate}T${arrivalTime}:00+09:00`;
+  const arrivalMinutes = timeToMinutes(arrivalTime);
+  const departureMinutes = timeToMinutes(departureTime);
+  const crossesMidnight = Number.isFinite(arrivalMinutes) && Number.isFinite(departureMinutes) && departureMinutes <= arrivalMinutes;
+  const departureDate = crossesMidnight ? addDaysToDateInput(visitDate, 1) : visitDate;
+  return {
+    arrivalAt,
+    departureAt: `${departureDate}T${departureTime}:00+09:00`
+  };
+}
+
+function timeToMinutes(value) {
+  const [hours, minutes] = String(value || '').split(':').map(Number);
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return null;
+  return hours * 60 + minutes;
+}
+
+function addDaysToDateInput(value, days) {
+  const [year, month, day] = String(value || '').split('-').map(Number);
+  if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) return value;
+  const date = new Date(Date.UTC(year, month - 1, day + days));
+  return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
 }
 
 async function calculateAndRender(els) {
@@ -650,7 +674,7 @@ function bindResultCardEvents(container, els) {
 function renderResultCard(row) {
   const price = row.discountedFee == null ? "정보 부족" : row.discountedFee === 0 ? "무료" : `${won.format(row.discountedFee)}원`;
   const original = row.parkingFee != null && row.parkingFee !== row.discountedFee ? `<span>할인 전 ${won.format(row.parkingFee)}원</span>` : "";
-  const dayPass = row.dayPassBetterAfterMinutes ? `${formatDuration(row.dayPassBetterAfterMinutes)} 이상이면 일주차가 유리할 수 있습니다.` : "일주차 전환점 정보 없음";
+  const dayPass = row.dayPassBetterAfterMinutes ? `${formatDuration(row.dayPassBetterAfterMinutes)} 이상이면 1일권이 유리할 수 있습니다.` : "1일권 전환점 정보 없음";
   const realtime = realtimeAvailabilityText(row);
   const distance = row.distanceFromDestinationKm == null ? "거리 정보 없음" : `목적지에서 약 ${formatDistance(row.distanceFromDestinationKm)}`;
   const reason = recommendationReason(row);
@@ -667,7 +691,7 @@ function renderResultCard(row) {
     <div class="parking-card-detail" data-parking-card-detail hidden>
       <p><strong>요금 기준</strong> ${formatDuration(row.durationMinutes)} 기준 예상 요금입니다.</p>
       <p><strong>기본/추가 요금</strong> 기본 ${row.baseMinutes ?? "-"}분 ${formatFee(row.baseFee)}, 추가 ${row.additionalMinutes ?? "-"}분당 ${formatFee(row.additionalFee)}</p>
-      <p><strong>일주차 전환점</strong> ${dayPass}</p>
+      <p><strong>1일권 전환점</strong> ${dayPass}</p>
       <p><strong>할인 반영</strong> ${row.discountRate ? `${row.discountRate}% 참고 할인 적용` : "선택한 할인 없음"}</p>
       <p><strong>운영정보</strong> ${escapeHtml(row.openReason || "선택 시간 기준 운영 여부를 참고로 판정합니다.")}</p>
       <p><strong>거리</strong> ${distance} · 좌표 기반 직선거리입니다.</p>
