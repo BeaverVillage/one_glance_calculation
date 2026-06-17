@@ -8347,3 +8347,135 @@ body {
     border-radius: 14px;
   }
 }
+
+/* Parking destination candidate popup and selected-state fix: scoped change only. */
+.parking-place-popup[hidden] {
+  display: none !important;
+}
+
+.parking-place-popup {
+  position: fixed;
+  inset: 0;
+  z-index: 1400;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.42);
+}
+
+.parking-place-popup__panel {
+  width: min(520px, 100%);
+  max-height: min(620px, 82vh);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 28px 80px rgba(15, 23, 42, 0.28);
+}
+
+.parking-place-popup__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1rem 0.75rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+.parking-place-popup__head strong {
+  color: #102033;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.parking-place-popup__close {
+  width: 34px;
+  height: 34px;
+  border: 1px solid #d6e0ea;
+  border-radius: 999px;
+  background: #fff;
+  color: #334155;
+  cursor: pointer;
+  font-size: 1.2rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.parking-place-popup__list {
+  display: grid;
+  gap: 0.65rem;
+  padding: 0.9rem 1rem 1rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.parking-place-popup__item {
+  display: grid;
+  gap: 0.25rem;
+  width: 100%;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid #d6e0ea;
+  border-radius: 14px;
+  background: #fff;
+  color: #17324d;
+  cursor: pointer;
+  text-align: left;
+}
+
+.parking-place-popup__item:hover,
+.parking-place-popup__item:focus-visible {
+  border-color: #146c5f;
+  background: #f0fdfa;
+  outline: none;
+}
+
+.parking-place-popup__item strong {
+  font-size: 0.95rem;
+  font-weight: 900;
+}
+
+.parking-place-popup__item span,
+.parking-place-popup__empty {
+  color: #607085;
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.parking-place-popup__empty {
+  margin: 0;
+  padding: 1rem 0.25rem;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .parking-place-popup {
+    align-items: start;
+    padding: max(0.75rem, env(safe-area-inset-top)) 0.75rem 0.75rem;
+  }
+
+  .parking-place-popup__panel {
+    max-height: min(560px, 76vh);
+    border-radius: 16px;
+  }
+}
+
+.parking-map-label.is-best:not(.is-selected) {
+  border-color: #146c5f !important;
+  background: #fff !important;
+  color: #0f594f !important;
+  box-shadow: 0 8px 18px rgba(15, 35, 55, 0.18) !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+.parking-map-label.is-best:not(.is-selected) .parking-marker-rank {
+  background: #0f766e !important;
+  color: #fff !important;
+}
+
+.parking-result-card.is-best:not(.is-pinned) {
+  border-color: rgba(132, 154, 176, 0.35) !important;
+  background: #fff !important;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.07) !important;
+}

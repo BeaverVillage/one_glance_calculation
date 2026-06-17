@@ -39,7 +39,8 @@ const state = {
   lastSearchZoom: null,
   recommendCache: new Map(),
   mapIdleTimer: null,
-  hasMapMoveEvents: false
+  hasMapMoveEvents: false,
+  lastPlaceSearchUsedSampleFallback: false
 };
 
 const won = new Intl.NumberFormat("ko-KR");
@@ -53,6 +54,7 @@ export function initParkingBudgetMap() {
     destination: document.querySelector("#parking-destination"),
     searchStatus: document.querySelector("#parking-search-status"),
     placeResults: document.querySelector("#parking-place-results"),
+    placePopup: ensurePlacePopup(),
     visitDate: document.querySelector("#parking-visit-date"),
     arrival: document.querySelector("#parking-arrival-time"),
     departure: document.querySelector("#parking-departure-time"),
@@ -146,6 +148,12 @@ function setupMobileOptionsToggle() {
   });
 }
 function bindEvents(els) {
+  els.placePopup?.addEventListener("click", (event) => {
+    if (event.target === els.placePopup || event.target.closest("[data-place-popup-close]")) closePlacePopup(els);
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && els.placePopup && !els.placePopup.hidden) closePlacePopup(els);
+  });
   els.form.addEventListener("submit", async (event) => {
     event.preventDefault();
     await handleParkingSearch(els);
@@ -234,36 +242,85 @@ async function searchDestination(els) {
     usedSampleFallback = true;
     state.places = findSamplePlaces(query);
   }
+  state.lastPlaceSearchUsedSampleFallback = usedSampleFallback;
   if (!state.places.length) {
     els.searchStatus.textContent = "검색 결과를 찾지 못했습니다. 다른 장소명을 입력해 주세요.";
     els.status.textContent = "추천 결과입니다.";
+    renderPlaces(els, { openPopup: true, emptyMessage: "검색 결과를 찾지 못했습니다." });
     return;
   }
-  state.destination = state.places[0];
-  state.lastSearchCenter = { lat: state.destination.lat, lng: state.destination.lng };
-  renderPlaces(els);
-  await calculateAndRender(els);
-  els.searchStatus.textContent = usedSampleFallback
-    ? `목적지 검색 API를 사용할 수 없어 ${state.destination.name} 샘플 위치 기준으로 계산합니다.`
-    : `${state.destination.name} 기준으로 주변 주차장을 계산했습니다.`;
+  els.searchStatus.textContent = `${state.places.length}개 후보를 찾았습니다. 목적지를 선택해 주세요.`;
+  renderPlaces(els, { openPopup: true });
 }
 
-function renderPlaces(els) {
-  els.placeResults.innerHTML = state.places.map((place, index) => `
-    <button type="button" class="parking-place-chip ${index === 0 ? "active" : ""}" data-place-index="${index}">
-      <strong>${escapeHtml(place.name)}</strong><span>${escapeHtml(place.address || "주소 정보 없음")}</span>
-    </button>
-  `).join("");
-  els.placeResults.querySelectorAll("[data-place-index]").forEach((button) => {
-    button.addEventListener("click", () => {
-      state.destination = state.places[Number(button.dataset.placeIndex)];
-      state.lastSearchCenter = { lat: state.destination.lat, lng: state.destination.lng };
-      els.destination.value = state.destination.name;
-      els.placeResults.querySelectorAll(".parking-place-chip").forEach((chip) => chip.classList.remove("active"));
-      button.classList.add("active");
-      calculateAndRender(els);
+function renderPlaces(els, options = {}) {
+  if (els.placeResults) els.placeResults.innerHTML = "";
+  if (options.openPopup) openPlacePopup(els, options.emptyMessage || "");
+}
+
+function ensurePlacePopup() {
+  let popup = document.querySelector("#parking-place-popup");
+  if (popup) return popup;
+  popup = document.createElement("div");
+  popup.id = "parking-place-popup";
+  popup.className = "parking-place-popup";
+  popup.hidden = true;
+  popup.setAttribute("role", "dialog");
+  popup.setAttribute("aria-modal", "true");
+  popup.setAttribute("aria-labelledby", "parking-place-popup-title");
+  popup.innerHTML = `
+    <div class="parking-place-popup__panel" role="document">
+      <div class="parking-place-popup__head">
+        <strong id="parking-place-popup-title">목적지를 선택해 주세요</strong>
+        <button type="button" class="parking-place-popup__close" data-place-popup-close aria-label="목적지 후보 팝업 닫기">×</button>
+      </div>
+      <div class="parking-place-popup__list" data-place-popup-list></div>
+    </div>
+  `;
+  document.body.append(popup);
+  return popup;
+}
+
+function openPlacePopup(els, emptyMessage = "") {
+  const popup = els.placePopup || ensurePlacePopup();
+  const list = popup.querySelector("[data-place-popup-list]");
+  if (!list) return;
+  if (emptyMessage || !state.places.length) {
+    list.innerHTML = `<p class="parking-place-popup__empty">${escapeHtml(emptyMessage || "검색 결과를 찾지 못했습니다.")}</p>`;
+  } else {
+    list.innerHTML = state.places.map((place, index) => `
+      <button type="button" class="parking-place-popup__item" data-place-index="${index}">
+        <strong>${escapeHtml(place.name)}</strong>
+        <span>${escapeHtml(place.address || "주소 정보 없음")}</span>
+      </button>
+    `).join("");
+    list.querySelectorAll("[data-place-index]").forEach((button) => {
+      button.addEventListener("click", () => selectPlaceFromPopup(Number(button.dataset.placeIndex), els));
     });
-  });
+  }
+  popup.hidden = false;
+  document.body.classList.add("parking-place-popup-open");
+  popup.querySelector(".parking-place-popup__close")?.focus({ preventScroll: true });
+}
+
+function closePlacePopup(els) {
+  const popup = els?.placePopup || document.querySelector("#parking-place-popup");
+  if (!popup) return;
+  popup.hidden = true;
+  document.body.classList.remove("parking-place-popup-open");
+}
+
+async function selectPlaceFromPopup(index, els) {
+  const place = state.places[index];
+  if (!place) return;
+  state.destination = place;
+  state.lastSearchCenter = { lat: place.lat, lng: place.lng };
+  els.destination.value = place.name;
+  closePlacePopup(els);
+  els.searchStatus.textContent = state.lastPlaceSearchUsedSampleFallback
+    ? `목적지 검색 API를 사용할 수 없어 ${place.name} 샘플 위치 기준으로 계산합니다.`
+    : `${place.name} 기준으로 주변 주차장을 계산했습니다.`;
+  await calculateAndRender(els);
 }
 
 function applyQuickDuration(els, value) {
@@ -342,6 +399,7 @@ async function calculateAndRender(els) {
   state.lastSearchCenter = { lat: state.destination.lat, lng: state.destination.lng };
   if (els.mapRefresh) els.mapRefresh.hidden = true;
   if (state.pinnedParkingId && !rows.some((row) => row.id === state.pinnedParkingId)) state.pinnedParkingId = "";
+  if (!state.pinnedParkingId && rows[0]?.id) state.pinnedParkingId = rows[0].id;
   renderResults(els, input);
   renderMap(els);
 }
