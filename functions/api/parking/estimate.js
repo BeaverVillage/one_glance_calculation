@@ -1,4 +1,5 @@
-import { parkingLots, nationalParkingLots } from './_lib/mock-data.js';
+import { parkingLots } from './_lib/mock-data.js';
+import { getNationalParkingLots } from './_lib/adapters.js';
 import { estimateParkingFee } from './_lib/fee.js';
 
 function json(data, init = {}) {
@@ -42,7 +43,7 @@ export async function onRequestPost({ request }) {
 
 function mergeCandidateLots() {
   const seen = new Set();
-  return [...parkingLots, ...(Array.isArray(nationalParkingLots) ? nationalParkingLots : [])].filter((lot) => {
+  return [...parkingLots, ...getNationalParkingLots()].filter((lot) => {
     if (!lot?.id || seen.has(lot.id)) return false;
     seen.add(lot.id);
     return true;

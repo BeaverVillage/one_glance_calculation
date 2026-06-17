@@ -1,5 +1,6 @@
 import { distanceKm } from './distance.js';
-import { parkingLots as sampleParkingLots, nationalParkingLots } from './mock-data.js';
+import { parkingLots as sampleParkingLots, nationalParkingLots as fallbackNationalParkingLots } from './mock-data.js';
+import { nationalParkingLots as generatedNationalParkingLots, nationalParkingMeta as generatedNationalParkingMeta } from './generated-national-parking-lots.js';
 
 const DEFAULT_SEOUL_BASE = 'http://openapi.seoul.go.kr:8088';
 const DEFAULT_SEOUL_PARK_INFO_SERVICE = 'GetParkInfo';
@@ -42,7 +43,7 @@ export async function resolveParkingLotDataset({ env = {}, destination = null, r
   const cacheLoadMs = Date.now() - nationalStartedAt;
 
   let selectedLots = cacheNearby.length ? cacheNearby : expandedCacheNearby;
-  let mode = selectedLots.length ? 'national-cache' : 'national-cache-empty';
+  let mode = selectedLots.length ? (nationalMeta?.source?.id || 'national-cache') : 'national-cache-empty';
   let fallbackReason = '';
   let effectiveRadiusMeters = cacheNearby.length ? radiusMeters : (expandedCacheNearby.length ? expandedRadiusMeters : radiusMeters);
   let publicDataSource = null;
@@ -193,7 +194,7 @@ function filterByRadius(lots, radiusMeters) {
 
 function buildDatasetStats({ sources, publicDataSource, publicDataLots = [], cacheLots = [], cacheWithDistance = [], cacheNearby = [], expandedCacheNearby = [], sampleNearby = [], selectedLots = [], cacheLoadMs = 0, searchMs = 0, publicFallbackUsed = false }) {
   const sourceById = new Map(sources.filter(Boolean).map((source) => [source.id, source]));
-  const national = sourceById.get('national-cache') || {};
+  const national = sourceById.get('national-json-cache') || sourceById.get('national-cache') || sourceById.get('national-mock-fallback') || {};
   const publicData = publicDataSource || sourceById.get('public-data-parking') || {};
   return {
     dataSource: national.id || publicData.id || '',
@@ -219,29 +220,46 @@ function buildDatasetStats({ sources, publicDataSource, publicDataLots = [], cac
   };
 }
 
+export function getNationalParkingLots({ query = '' } = {}) {
+  return loadNationalParkingCache({ query });
+}
+
 function loadNationalParkingCache({ query = '' } = {}) {
   if (!nationalRuntimeCache.lots) {
-    const sourceLots = Array.isArray(nationalParkingLots) ? nationalParkingLots : [];
-    const normalizedRows = sourceLots.map((lot) => normalizeParkingLotLike(lot, { source: lot.source || '전국 주차장 캐시' }));
+    const primaryLots = Array.isArray(generatedNationalParkingLots) ? generatedNationalParkingLots : [];
+    const fallbackLots = Array.isArray(fallbackNationalParkingLots) ? fallbackNationalParkingLots : [];
+    const usingGeneratedCache = primaryLots.length > 0;
+    const sourceLots = usingGeneratedCache ? primaryLots : fallbackLots;
+    const cacheMode = usingGeneratedCache ? 'generated-module' : 'mock-data-fallback';
+    const sourceLabel = usingGeneratedCache ? '전국 주차장 정규화 캐시' : '로컬 fallback 주차장 캐시';
+    const normalizedRows = sourceLots.map((lot) => normalizeParkingLotLike(lot, { source: lot.source || sourceLabel }));
     const normalized = normalizedRows.filter(Boolean);
     const deduped = dedupeLots(normalized);
+    const missingCoordinateCount = normalizedRows.length - normalized.length;
+    const generatedMeta = generatedNationalParkingMeta?.meta || generatedNationalParkingMeta || {};
     nationalRuntimeCache.lots = deduped;
     nationalRuntimeCache.meta = {
       totalCount: sourceLots.length,
       normalizedCount: normalized.length,
       withCoordinateCount: deduped.length,
-      missingCoordinateCount: normalizedRows.length - normalized.length,
+      missingCoordinateCount,
       source: {
-        id: 'national-cache',
-        name: '전국 주차장 정규화 캐시',
-        service: 'national-parking-lots.json',
+        id: usingGeneratedCache ? 'national-json-cache' : 'national-mock-fallback',
+        name: sourceLabel,
+        service: usingGeneratedCache ? 'generated-national-parking-lots.js' : 'mock-data.js',
         count: deduped.length,
+        rawCount: sourceLots.length,
         normalizedCount: normalized.length,
         withCoordinateCount: deduped.length,
-        missingCoordinateCount: normalizedRows.length - normalized.length,
-        cacheMode: 'module-memory'
+        missingCoordinateCount,
+        cacheMode,
+        cacheVersion: generatedNationalParkingMeta?.version || '',
+        generatedAt: generatedMeta.generatedAt || generatedMeta.createdAt || generatedNationalParkingMeta?.generatedAt || ''
       }
     };
+    if (deduped.length < 100) {
+      console.warn?.('[parking-data] national cache has fewer than 100 lots. Run tools/build-parking-cache.mjs with PUBLIC_DATA_API_KEY before production deploy.', 'count:', deduped.length, 'cacheMode:', cacheMode);
+    }
   }
 
   const keyword = String(query || '').trim().toLowerCase();
@@ -863,6 +881,7 @@ export const __parkingAdapterTest = {
   filterByRadius,
   addDistances,
   loadNationalParkingCache,
+  getNationalParkingLots,
   getNationalParkingCacheMeta,
   fetchPublicParkingLots,
   fetchAllPublicParkingPages,
