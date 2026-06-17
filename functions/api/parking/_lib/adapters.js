@@ -1,5 +1,5 @@
 import { distanceKm } from './distance.js';
-import { parkingLots as sampleParkingLots } from './mock-data.js';
+import { parkingLots as sampleParkingLots, nationalParkingLots } from './mock-data.js';
 
 const DEFAULT_SEOUL_BASE = 'http://openapi.seoul.go.kr:8088';
 const DEFAULT_SEOUL_PARK_INFO_SERVICE = 'GetParkInfo';
@@ -32,14 +32,28 @@ export async function resolveParkingLotDataset({ env = {}, destination = null, r
   const dedupedExternal = dedupeLots(externalLots);
   const externalWithDistance = addDistances(dedupedExternal, destination);
   const externalNearby = filterByRadius(externalWithDistance, radiusMeters);
+  const nationalCache = loadNationalParkingCache({ query: adapterQuery });
+  const cacheWithDistance = addDistances(nationalCache, destination);
+  const cacheNearby = filterByRadius(cacheWithDistance, radiusMeters);
+  const expandedCacheNearby = cacheNearby.length ? cacheNearby : filterByRadius(cacheWithDistance, Math.min(3000, Math.max(radiusMeters, 3000)));
   const sampleWithDistance = addDistances(sampleParkingLots, destination);
   const sampleNearby = filterByRadius(sampleWithDistance, radiusMeters);
 
   let selectedLots = externalNearby;
   let mode = externalNearby.length ? 'public-adapter' : 'public-adapter-empty';
   let fallbackReason = '';
+  let effectiveRadiusMeters = radiusMeters;
 
-  if (externalNearby.length < 3 && sampleNearby.length) {
+  if (externalNearby.length < 3 && expandedCacheNearby.length) {
+    selectedLots = dedupeLots([...externalNearby, ...expandedCacheNearby]);
+    mode = externalNearby.length ? 'hybrid-public-national-cache' : 'national-cache-fallback';
+    fallbackReason = externalNearby.length
+      ? '공공데이터 반경 후보가 적어 전국 주차장 캐시 후보를 함께 사용했습니다.'
+      : externalWithDistance.length
+        ? '공공데이터는 조회됐지만 현재 반경 내 주차장이 없어 전국 주차장 캐시 후보를 사용했습니다.'
+        : '연동 가능한 공공데이터 후보가 없어 전국 주차장 캐시 후보를 사용했습니다.';
+    if (!externalNearby.length && !cacheNearby.length && expandedCacheNearby.length) effectiveRadiusMeters = Math.min(3000, Math.max(radiusMeters, 3000));
+  } else if (externalNearby.length < 3 && sampleNearby.length) {
     selectedLots = dedupeLots([...externalNearby, ...sampleNearby]);
     mode = externalNearby.length ? 'hybrid-public-sample' : 'sample-fallback';
     fallbackReason = externalNearby.length
@@ -53,7 +67,7 @@ export async function resolveParkingLotDataset({ env = {}, destination = null, r
       : '연동 가능한 공공데이터 후보가 없습니다.';
   }
 
-  selectedLots = filterByRadius(addDistances(selectedLots, destination), radiusMeters)
+  selectedLots = filterByRadius(addDistances(selectedLots, destination), effectiveRadiusMeters)
     .sort((a, b) => valueOrMax(a.distanceFromDestinationKm) - valueOrMax(b.distanceFromDestinationKm))
     .slice(0, MAX_DATASET_RETURN);
 
@@ -64,6 +78,8 @@ export async function resolveParkingLotDataset({ env = {}, destination = null, r
     externalWithDistance,
     externalNearby,
     sampleNearby,
+    cacheNearby,
+    expandedCacheNearby,
     selectedLots
   });
 
@@ -76,6 +92,7 @@ export async function resolveParkingLotDataset({ env = {}, destination = null, r
       errors,
       stats,
       fallbackReason,
+      effectiveRadius: effectiveRadiusMeters,
       note: selectedLots.length
         ? mode === 'public-adapter'
           ? '공공/개방 데이터 어댑터에서 읽은 반경 내 후보를 사용했습니다.'
@@ -136,7 +153,7 @@ function filterByRadius(lots, radiusMeters) {
   });
 }
 
-function buildDatasetStats({ sources, externalLots, dedupedExternal, externalWithDistance, externalNearby, sampleNearby, selectedLots }) {
+function buildDatasetStats({ sources, externalLots, dedupedExternal, externalWithDistance, externalNearby, sampleNearby, cacheNearby, expandedCacheNearby, selectedLots }) {
   const sourceById = new Map(sources.filter(Boolean).map((source) => [source.id, source]));
   const seoul = sourceById.get('seoul-open-data') || {};
   const publicData = sourceById.get('public-data-parking') || {};
@@ -147,9 +164,19 @@ function buildDatasetStats({ sources, externalLots, dedupedExternal, externalWit
     dedupedCount: dedupedExternal.length,
     withCoordinateCount: externalWithDistance.length,
     nearbyCount: externalNearby.length,
+    nationalCacheNearbyCount: cacheNearby?.length || 0,
+    expandedCacheNearbyCount: expandedCacheNearby?.length || 0,
     sampleNearbyCount: sampleNearby.length,
     returnedCount: selectedLots.length
   };
+}
+
+
+function loadNationalParkingCache({ query = '' } = {}) {
+  const lots = Array.isArray(nationalParkingLots) && nationalParkingLots.length ? nationalParkingLots : sampleParkingLots;
+  const keyword = String(query || '').trim().toLowerCase();
+  if (!keyword) return lots;
+  return lots.filter((lot) => `${lot.name} ${lot.roadAddress || ''} ${lot.jibunAddress || ''} ${lot.region || ''}`.toLowerCase().includes(keyword));
 }
 
 async function safeFetch(name, task) {
@@ -200,19 +227,24 @@ async function fetchPublicParkingLots(env, { query = '' } = {}) {
   const key = env.PUBLIC_DATA_API_KEY || '';
   if (!key) return { ok: true, lots: [], source: null };
 
-  const url = new URL('https://api.data.go.kr/openapi/tn_pubr_prkplce_info_api');
-  url.searchParams.set('serviceKey', key);
-  url.searchParams.set('pageNo', '1');
-  url.searchParams.set('numOfRows', '1000');
-  url.searchParams.set('type', 'json');
-
-  const res = await fetch(url.toString(), { cf: { cacheTtl: 21600, cacheEverything: true } });
-  if (!res.ok) throw new Error(`전국주차장정보표준데이터 호출 실패: ${res.status}`);
-
-  const contentType = res.headers.get('content-type') || '';
-  const data = contentType.includes('json') ? await res.json() : await parseMaybeJsonOrXml(await res.text());
-  const rows = unwrapPublicDataRows(data);
-  const normalized = rows.map(normalizePublicDataParkingRow).filter(Boolean);
+  const maxPages = Math.min(5, Math.max(1, Number(env.PUBLIC_DATA_PARKING_MAX_PAGES || 3) || 3));
+  const numOfRows = 1000;
+  const allRows = [];
+  for (let pageNo = 1; pageNo <= maxPages; pageNo += 1) {
+    const url = new URL('https://api.data.go.kr/openapi/tn_pubr_prkplce_info_api');
+    url.searchParams.set('serviceKey', key);
+    url.searchParams.set('pageNo', String(pageNo));
+    url.searchParams.set('numOfRows', String(numOfRows));
+    url.searchParams.set('type', 'json');
+    const res = await fetch(url.toString(), { cf: { cacheTtl: 21600, cacheEverything: true } });
+    if (!res.ok) throw new Error(`전국주차장정보표준데이터 호출 실패: ${res.status}`);
+    const contentType = res.headers.get('content-type') || '';
+    const data = contentType.includes('json') ? await res.json() : await parseMaybeJsonOrXml(await res.text());
+    const rows = unwrapPublicDataRows(data);
+    allRows.push(...rows);
+    if (rows.length < numOfRows) break;
+  }
+  const normalized = allRows.map(normalizePublicDataParkingRow).filter(Boolean);
   const keyword = String(query || '').trim().toLowerCase();
   const filtered = keyword
     ? normalized.filter((lot) => `${lot.name} ${lot.roadAddress} ${lot.jibunAddress}`.toLowerCase().includes(keyword))
@@ -220,7 +252,7 @@ async function fetchPublicParkingLots(env, { query = '' } = {}) {
 
   return {
     ok: true,
-    source: { id: 'public-data-parking', name: '공공데이터포털 전국주차장정보표준데이터', service: 'tn_pubr_prkplce_info_api', count: filtered.length, fetchedCount: rows.length, normalizedCount: normalized.length },
+    source: { id: 'public-data-parking', name: '공공데이터포털 전국주차장정보표준데이터', service: 'tn_pubr_prkplce_info_api', count: filtered.length, fetchedCount: allRows.length, normalizedCount: normalized.length, pagesFetched: maxPages },
     lots: filtered
   };
 }
@@ -491,5 +523,6 @@ export const __parkingAdapterTest = {
   formatHHMM,
   dedupeLots,
   filterByRadius,
-  addDistances
+  addDistances,
+  loadNationalParkingCache
 };

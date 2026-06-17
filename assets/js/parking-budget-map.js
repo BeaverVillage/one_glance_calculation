@@ -5,7 +5,12 @@ const SAMPLE_PLACES = [
   { name: "서울역", address: "서울 용산구 한강대로 405", lat: 37.5547, lng: 126.9707 },
   { name: "홍대입구", address: "서울 마포구 양화로 160", lat: 37.5572, lng: 126.9245 },
   { name: "인천공항", address: "인천 중구 공항로 272", lat: 37.4602, lng: 126.4407 },
-  { name: "건국대학교 서울캠퍼스", address: "서울 광진구 능동로 120", lat: 37.5408, lng: 127.0793 }
+  { name: "건국대학교 서울캠퍼스", address: "서울 광진구 능동로 120", lat: 37.5408, lng: 127.0793 },
+  { name: "부산역", address: "부산 동구 중앙대로 206", lat: 35.1151, lng: 129.0403 },
+  { name: "대구역", address: "대구 북구 태평로 161", lat: 35.8763, lng: 128.5966 },
+  { name: "광주송정역", address: "광주 광산구 상무대로 201", lat: 35.1375, lng: 126.7914 },
+  { name: "대전역", address: "대전 동구 중앙로 215", lat: 36.3322, lng: 127.434 },
+  { name: "제주공항", address: "제주 제주시 공항로 2", lat: 33.5071, lng: 126.4931 },
 ];
 const API_BASE = "/api/parking";
 
@@ -25,7 +30,12 @@ const state = {
   lastRealtimeMode: "sample-fallback",
   lastRealtimeNote: "",
   lastFallbackReason: "",
-  lastStats: null
+  lastStats: null,
+  lastSearchCenter: DEFAULT_PLACE,
+  lastSearchZoom: null,
+  recommendCache: new Map(),
+  mapIdleTimer: null,
+  hasMapMoveEvents: false
 };
 
 const won = new Intl.NumberFormat("ko-KR");
@@ -49,12 +59,14 @@ export function initParkingBudgetMap() {
     preferenceCards: Array.from(document.querySelectorAll("[data-parking-sort-mode]")),
     recommend: document.querySelector("#parking-recommend-button"),
     status: document.querySelector("#parking-status"),
+    dataBadges: document.querySelector("#parking-data-badges"),
     summaryTitle: document.querySelector("#parking-summary-title"),
     summarySubtitle: document.querySelector("#parking-summary-subtitle"),
     resultList: document.querySelector("#parking-result-list"),
     mobileResults: document.querySelector("#parking-mobile-results"),
     map: document.querySelector("#parking-map"),
     markerLayer: document.querySelector("#parking-map-markers"),
+    mapRefresh: document.querySelector("#parking-map-research-button"),
     filters: {
       publicOnly: document.querySelector("#parking-filter-public"),
       freeOnly: document.querySelector("#parking-filter-free"),
@@ -97,6 +109,7 @@ function bindEvents(els) {
     await searchDestination(els);
   });
   els.recommend.addEventListener("click", () => calculateAndRender(els));
+  els.mapRefresh?.addEventListener("click", () => researchCurrentMapArea(els));
   els.vehicleType.addEventListener("change", () => {
     els.manualDiscountField.hidden = els.vehicleType.value !== "manual";
     calculateAndRender(els);
@@ -149,6 +162,7 @@ async function searchDestination(els) {
     if (!state.places.length) state.places = SAMPLE_PLACES;
   }
   state.destination = state.places[0];
+  state.lastSearchCenter = { lat: state.destination.lat, lng: state.destination.lng };
   renderPlaces(els);
   await calculateAndRender(els);
   els.searchStatus.textContent = usedSampleFallback
@@ -165,6 +179,7 @@ function renderPlaces(els) {
   els.placeResults.querySelectorAll("[data-place-index]").forEach((button) => {
     button.addEventListener("click", () => {
       state.destination = state.places[Number(button.dataset.placeIndex)];
+      state.lastSearchCenter = { lat: state.destination.lat, lng: state.destination.lng };
       els.destination.value = state.destination.name;
       els.placeResults.querySelectorAll(".parking-place-chip").forEach((chip) => chip.classList.remove("active"));
       button.classList.add("active");
@@ -212,12 +227,20 @@ async function calculateAndRender(els) {
     els.status.textContent = "출차 시간이 입차 시간보다 늦어야 합니다.";
     return;
   }
-  els.status.textContent = "주차장별 예상 요금과 추천 점수를 계산하고 있습니다.";
+  els.status.textContent = "현재 조건으로 추천 결과를 계산하고 있습니다.";
   let rows;
+  const cacheKey = buildRecommendCacheKey(input);
+  const cached = state.recommendCache.get(cacheKey);
   try {
-    const res = await fetch(`${API_BASE}/recommend`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(input) });
-    if (!res.ok) throw new Error("recommend api failed");
-    const data = await res.json();
+    let data;
+    if (cached) {
+      data = cached;
+    } else {
+      const res = await fetch(`${API_BASE}/recommend`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(input) });
+      if (!res.ok) throw new Error("recommend api failed");
+      data = await res.json();
+      rememberRecommendCache(cacheKey, data);
+    }
     rows = data.recommended || [];
     state.lastDataMode = data.summary?.dataMode || "api";
     state.lastDataSources = data.summary?.dataSources || [];
@@ -226,6 +249,7 @@ async function calculateAndRender(els) {
     state.lastHolidayContext = data.summary?.holidayContext || null;
     state.lastFallbackReason = data.summary?.fallbackReason || data.summary?.note || "";
     state.lastStats = data.summary?.stats || null;
+    if (cached) console.info("[parking-map] cached recommendation result used", cacheKey);
   } catch (_) {
     rows = fallbackRecommend(input);
     state.lastDataMode = "sample-fallback";
@@ -237,6 +261,8 @@ async function calculateAndRender(els) {
     state.lastStats = null;
   }
   state.results = rows;
+  state.lastSearchCenter = { lat: state.destination.lat, lng: state.destination.lng };
+  if (els.mapRefresh) els.mapRefresh.hidden = true;
   if (state.pinnedParkingId && !rows.some((row) => row.id === state.pinnedParkingId)) state.pinnedParkingId = "";
   renderResults(els, input);
   renderMap(els);
@@ -440,13 +466,11 @@ function renderResults(els, input) {
   const durationText = formatDuration(input.duration);
   const vehicleText = vehicleLabel(input.vehicleType);
   els.summaryTitle.textContent = `${state.destination.name} · ${durationText} · ${vehicleText}`;
-  const dataModeText = state.lastDataMode === "public-adapter" ? "공공데이터 어댑터 우선" : "샘플 데이터 기준";
-  const realtimeModeText = state.lastRealtimeMode === "seoul-realtime-adapter" ? "서울 실시간 빈자리 참고" : "실시간 정보 일부 없음";
-  const holidayText = state.lastHolidayContext?.holidayName ? `${state.lastHolidayContext.dayTypeLabel}(${state.lastHolidayContext.holidayName})` : (state.lastHolidayContext?.dayTypeLabel || "방문일");
   const modeText = recommendationModeLabel(input.sort);
-  const fallbackNote = state.lastFallbackReason ? ` · ${state.lastFallbackReason}` : "";
-  els.summarySubtitle.textContent = state.results.length ? `${state.results.length}개 주차장 비교 · ${modeText} · 추천 1순위 ${state.results[0].name} · ${holidayText} 운영시간 · ${dataModeText} · ${realtimeModeText}` : "조건에 맞는 주차장이 없습니다.";
-  els.status.textContent = state.results.length ? `추천 결과를 계산했습니다. ${modeText} 기준으로 정렬했고, 운영시간은 ${holidayText} 기준으로 참고 판정합니다. (${dataModeText}, ${realtimeModeText})${fallbackNote}` : "이 주변에서 계산 가능한 주차장을 찾지 못했습니다. 검색 반경을 넓히거나 필터를 줄여보세요.";
+  els.summarySubtitle.textContent = state.results.length ? `${state.results.length}개 주차장 비교 · ${modeText}` : "조건에 맞는 주차장이 없습니다.";
+  els.status.textContent = state.results.length ? "추천 결과입니다." : "이 주변에서 계산 가능한 주차장을 찾지 못했습니다. 검색 반경을 넓히거나 필터를 줄여보세요.";
+  renderDataBadges(els, input);
+  if (state.lastFallbackReason) console.info("[parking-map] data fallback/status", { mode: state.lastDataMode, reason: state.lastFallbackReason, stats: state.lastStats });
   const html = state.results.map((row) => renderResultCard(row)).join("") || `<article class="parking-result-card"><strong>계산 가능한 주차장을 찾지 못했습니다.</strong><p>이 주변에서 계산 가능한 주차장을 찾지 못했습니다. 검색 반경을 넓히거나 필터를 줄여보세요.</p></article>`;
   els.resultList.innerHTML = html;
   if (els.mobileResults && els.mobileResults !== els.resultList) els.mobileResults.innerHTML = html;
@@ -473,15 +497,90 @@ function renderResultCard(row) {
   const reason = recommendationReason(row);
   const pinned = state.pinnedParkingId === row.id;
   return `<article class="parking-result-card ${row.rank === 1 ? "is-best" : ""} ${pinned ? "is-pinned" : ""}" data-parking-card-id="${escapeHtml(row.id)}">
-    <div class="parking-card-head"><span class="rank-badge">${row.rank === 1 ? "추천 1위" : `${row.rank}순위`}</span><strong>${escapeHtml(row.name)}</strong></div>
-    <div class="parking-card-tags"><span>${escapeHtml(row.publicPrivateType || "구분 확인")}</span><span>${escapeHtml(row.parkingType || "유형 확인")}</span><span>${row.scoreMode || "추천순"} ${row.score ?? "-"}</span>${pinned ? `<span class="parking-pinned-badge">지도에서 선택됨</span><button type="button" class="subtle-button tiny" data-parking-pin-clear>선택 해제</button>` : ""}</div>
+    <div class="parking-card-head"><div><strong>${escapeHtml(row.name)}</strong><span>${row.rank === 1 ? "추천 1위" : `${row.rank}순위`} · ${escapeHtml(row.publicPrivateType || "구분 확인")}</span></div>${pinned ? `<button type="button" class="subtle-button tiny" data-parking-pin-clear>선택 해제</button>` : ""}</div>
     <div class="parking-price-row"><strong>${price}</strong>${original}</div>
-    <p class="parking-reason">${escapeHtml(reason)}</p><p class="parking-score-reason">${escapeHtml(row.scoreReason || "추천 기준을 종합해 산정한 참고 점수입니다.")}</p>
-    <div class="parking-card-metrics"><span>${distance}</span><span>${row.openDayTypeLabel || "방문일"} · ${row.isOpen ? "선택 시간 운영 가능" : "운영시간 확인 필요"}</span><span>${available}${observed}</span><span>${row.fullRiskLabel}</span><span>${row.dataConfidenceLabel}</span></div>
+    <p class="parking-reason">${escapeHtml(reason)}</p>
+    <div class="parking-card-metrics"><span>${distance}</span><span>${available}${observed}</span><span>${row.fullRiskLabel}</span><span>${row.dataConfidenceLabel}</span></div>
+    ${pinned ? `<p class="parking-pinned-badge">지도에서 선택한 주차장입니다.</p>` : ""}
     <details><summary>상세 보기</summary>
     <div class="parking-card-detail"><p><strong>요금 계산</strong> 기본 ${row.baseMinutes ?? "-"}분 ${formatFee(row.baseFee)}, 추가 ${row.additionalMinutes ?? "-"}분당 ${formatFee(row.additionalFee)}</p><p><strong>일주차 전환점</strong> ${dayPass}</p><p><strong>할인 반영</strong> ${row.discountRate ? `${row.discountRate}% 참고 할인 적용` : "선택한 할인 없음"}</p><p><strong>운영정보</strong> ${escapeHtml(row.openReason || "선택 시간 기준 운영 여부를 참고로 판정합니다.")} · 평일 ${row.weekdayOpen || "-"}~${row.weekdayClose || "-"}, 토요일 ${row.saturdayOpen || "-"}~${row.saturdayClose || "-"}, 공휴일 ${row.holidayOpen || "-"}~${row.holidayClose || "-"}</p><p><strong>거리</strong> ${distance} · 좌표 기반 직선거리입니다.</p><p><strong>빈자리/위험도</strong> ${available}${observed} · ${row.fullRiskLabel}</p><p><strong>데이터</strong> 출처 ${escapeHtml(row.source || "샘플")}, 기준일 ${row.dataDate || "확인 필요"}</p><p class="fine-print">실제 요금, 할인 적용 여부, 주차 가능 여부는 현장 사정에 따라 달라질 수 있습니다.</p></div>
     </details>
   </article>`;
+}
+
+
+function renderDataBadges(els, input) {
+  if (!els.dataBadges) return;
+  const badges = [];
+  const isPublic = state.lastDataMode === "public-adapter" || state.lastDataMode === "hybrid-public-sample";
+  badges.push(isPublic ? "공공데이터" : "참고 데이터");
+  badges.push(state.lastRealtimeMode === "seoul-realtime-adapter" ? "실시간 일부 반영" : "실시간 정보 일부 없음");
+  if (state.lastDataMode === "hybrid-public-sample" || state.lastDataMode === "sample-fallback") badges.push("보조 데이터 사용");
+  if (state.lastHolidayContext?.dayTypeLabel) badges.push(`${state.lastHolidayContext.dayTypeLabel} 운영시간`);
+  els.dataBadges.innerHTML = badges.map((badge) => `<span>${escapeHtml(badge)}</span>`).join("");
+}
+
+function buildRecommendCacheKey(input) {
+  const filters = Object.entries(input.filters || {}).filter(([, value]) => value).map(([key]) => key).sort().join(",");
+  return [
+    Number(input.destination.lat).toFixed(4),
+    Number(input.destination.lng).toFixed(4),
+    input.radius,
+    input.duration,
+    input.vehicleType,
+    input.manualDiscountRate,
+    input.sort,
+    filters
+  ].join("|");
+}
+
+function rememberRecommendCache(key, data) {
+  if (!key) return;
+  state.recommendCache.set(key, data);
+  if (state.recommendCache.size > 24) {
+    const first = state.recommendCache.keys().next().value;
+    state.recommendCache.delete(first);
+  }
+}
+
+function bindKakaoMapMoveEvents(els) {
+  if (!state.map || !window.kakao?.maps || state.hasMapMoveEvents) return;
+  state.hasMapMoveEvents = true;
+  state.lastSearchZoom = state.map.getLevel?.() ?? null;
+  window.kakao.maps.event.addListener(state.map, "idle", () => {
+    clearTimeout(state.mapIdleTimer);
+    state.mapIdleTimer = setTimeout(() => updateMapResearchButton(els), 700);
+  });
+}
+
+function updateMapResearchButton(els) {
+  if (!els.mapRefresh || !state.map || !window.kakao?.maps) return;
+  const center = state.map.getCenter();
+  const current = { lat: center.getLat(), lng: center.getLng() };
+  const movedKm = distanceKm(state.lastSearchCenter || state.destination, current);
+  const level = state.map.getLevel?.() ?? state.lastSearchZoom;
+  const zoomChanged = state.lastSearchZoom != null && Math.abs(Number(level) - Number(state.lastSearchZoom)) >= 1;
+  els.mapRefresh.hidden = !(movedKm >= 0.5 || zoomChanged);
+}
+
+async function researchCurrentMapArea(els) {
+  if (!state.map || !window.kakao?.maps) return;
+  const center = state.map.getCenter();
+  state.destination = {
+    name: "현재 지도 중심",
+    address: "지도에서 다시 검색한 위치",
+    lat: center.getLat(),
+    lng: center.getLng()
+  };
+  state.places = [state.destination];
+  state.lastSearchCenter = { lat: state.destination.lat, lng: state.destination.lng };
+  state.lastSearchZoom = state.map.getLevel?.() ?? state.lastSearchZoom;
+  if (els.destination) els.destination.value = state.destination.name;
+  if (els.searchStatus) els.searchStatus.textContent = "현재 지도 주변 주차장을 찾는 중입니다.";
+  if (els.mapRefresh) els.mapRefresh.hidden = true;
+  renderPlaces(els);
+  await calculateAndRender(els);
+  if (els.searchStatus) els.searchStatus.textContent = state.results.length ? "현재 지도 기준 추천 결과입니다." : "현재 지도 주변에서 조건에 맞는 주차장을 찾지 못했습니다.";
 }
 
 async function loadKakaoMap(els) {
@@ -496,6 +595,7 @@ async function loadKakaoMap(els) {
     state.mapMode = "kakao";
     els.map.classList.remove("is-fallback");
     updateMapFallbackNotice(els, "카카오맵 연결됨", "목적지 주변 주차장 후보를 지도에서 비교해 보세요.");
+    bindKakaoMapMoveEvents(els);
     renderMap(els);
   } catch (error) {
     state.map = null;
@@ -638,10 +738,10 @@ function recommendationReason(row) {
   if (!row.isOpen) return "선택한 시간 일부가 운영시간 밖일 수 있어 방문 전 확인이 필요합니다.";
   if (row.discountedFee == null) return "요금 정보가 부족해 현장 확인이 필요합니다.";
   if (row.discountedFee === 0) return "무료 가능성이 있는 후보입니다. 운영시간과 실제 무료 조건을 확인해 보세요.";
-  if (row.rank === 1) return `${formatDuration(row.durationMinutes)} 기준 요금, 직선거리, 데이터 신뢰도를 함께 고려한 추천 후보입니다.`;
-  if (row.dayPassBetterAfterMinutes) return `일 최대 요금이 있어 ${formatDuration(row.dayPassBetterAfterMinutes)} 이상 장시간 주차에 유리할 수 있습니다.`;
-  if (row.publicPrivateType === "공영") return "공영주차장으로 할인 조건을 확인해 볼 만한 후보입니다.";
-  return "목적지 주변에서 비교 가능한 후보입니다. 실제 요금과 운영시간은 현장 기준을 확인하세요.";
+  if (row.rank === 1) return `${formatDuration(row.durationMinutes)} 기준 가장 합리적인 후보입니다.`;
+  if (row.dayPassBetterAfterMinutes) return `장시간 주차에 유리할 수 있습니다.`;
+  if (row.publicPrivateType === "공영") return "공영주차장 할인 조건을 확인해 보세요.";
+  return "목적지 주변 비교 후보입니다.";
 }
 
 function durationMinutes(arrivalAt, departureAt) {

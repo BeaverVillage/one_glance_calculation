@@ -15,13 +15,14 @@ export async function onRequestGet({ request, env }) {
 
   const center = { lat, lng };
   const dataset = await resolveParkingLotDataset({ env, destination: center, radius, query: url.searchParams.get('q') || '' });
+  const effectiveRadius = Number(dataset.meta?.effectiveRadius || radius);
   const lots = dataset.lots
     .filter((lot) => Number.isFinite(Number(lot.lat)) && Number.isFinite(Number(lot.lng)))
     .map((lot) => {
       const km = roundDistance(distanceKm(center, lot));
       return { ...lot, distanceKm: km, distanceFromDestinationKm: km };
     })
-    .filter((lot) => Number(lot.distanceKm) * 1000 <= radius)
+    .filter((lot) => Number(lot.distanceKm) * 1000 <= effectiveRadius)
     .sort((a, b) => a.distanceKm - b.distanceKm)
     .slice(0, 50);
 
@@ -34,6 +35,7 @@ export async function onRequestGet({ request, env }) {
   return json({
     lots,
     radius,
+    effectiveRadius,
     dataMode: dataset.meta.mode || (lots.length ? 'public-adapter' : 'empty'),
     dataSources: dataset.meta.sources || [],
     stats,

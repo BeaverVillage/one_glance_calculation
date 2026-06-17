@@ -19,6 +19,7 @@ export async function onRequestPost({ request, env }) {
   const holidayContext = await resolveHolidayContext({ env, dateString: body.arrivalAt });
   const input = { ...body, radius, sort: normalizeSort(body.sort), holidayContext };
   const dataset = await resolveParkingLotDataset({ env, destination: body.destination, radius, query: body.destination?.name || '' });
+  const effectiveRadius = Number(dataset.meta?.effectiveRadius || radius);
 
   const candidates = dataset.lots
     .filter((lot) => Number.isFinite(Number(lot.lat)) && Number.isFinite(Number(lot.lng)))
@@ -26,7 +27,7 @@ export async function onRequestPost({ request, env }) {
       const km = roundDistance(distanceKm(body.destination, lot));
       return { ...lot, distanceFromDestinationKm: km, distanceKm: km };
     })
-    .filter((lot) => Number(lot.distanceFromDestinationKm) * 1000 <= radius)
+    .filter((lot) => Number(lot.distanceFromDestinationKm) * 1000 <= effectiveRadius)
     .sort((a, b) => a.distanceFromDestinationKm - b.distanceFromDestinationKm)
     .slice(0, 50);
 
@@ -47,6 +48,7 @@ export async function onRequestPost({ request, env }) {
       resultCount: filtered.length,
       bestLabel: recommendationModeLabel(input.sort),
       dataMode: dataset.meta.mode || (candidates.length ? 'public-adapter' : 'empty'),
+      effectiveRadius,
       dataSources: [...(dataset.meta.sources || []), ...(externalRealtime.meta.sources || [])],
       stats,
       fallbackReason: dataset.meta.fallbackReason || '',
