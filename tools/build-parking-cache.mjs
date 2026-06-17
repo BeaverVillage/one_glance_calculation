@@ -106,9 +106,28 @@ for (let pageNo = 2; pageNo <= pages; pageNo += 1) {
   raw.push(...page.rows);
   if (!first.totalCount && page.rows.length < numOfRows) break;
 }
-const lots = raw.map(normalize).filter(Boolean);
-const payload = { version: new Date().toISOString().slice(0, 10), sourceName: '공공데이터포털 전국주차장정보표준데이터', disclaimer: '정규화 캐시입니다. 실제 요금과 운영시간은 현장 기준을 확인하세요.', lots };
+const normalizedRows = raw.map(normalize);
+const lots = normalizedRows.filter(Boolean);
+const missingCoordinates = normalizedRows.length - lots.length;
+const payload = {
+  version: new Date().toISOString().slice(0, 10),
+  sourceName: '공공데이터포털 전국주차장정보표준데이터',
+  disclaimer: '정규화 캐시입니다. 실제 요금과 운영시간은 현장 기준을 확인하세요.',
+  meta: {
+    pagesFetched: pages,
+    rawItems: raw.length,
+    normalizedItems: lots.length,
+    withCoordinates: lots.length,
+    missingCoordinates
+  },
+  lots
+};
 for (const out of ['functions/api/parking/_data/national-parking-lots.json', 'assets/data/parking/national-parking-lots.json']) {
   await writeFile(path.resolve(out), JSON.stringify(payload, null, 2), 'utf8');
-  console.log('wrote', out, lots.length);
+  console.log('[parking-cache] output:', out);
 }
+console.log('[parking-cache] pagesFetched:', pages);
+console.log('[parking-cache] rawItems:', raw.length);
+console.log('[parking-cache] normalizedItems:', lots.length);
+console.log('[parking-cache] withCoordinates:', lots.length);
+console.log('[parking-cache] missingCoordinates:', missingCoordinates);

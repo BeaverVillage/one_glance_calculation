@@ -7,95 +7,105 @@ const DEFAULT_SEOUL_REALTIME_SERVICE = 'GetParkingInfo';
 const PUBLIC_DATA_ENDPOINT = 'https://api.data.go.kr/openapi/tn_pubr_prkplce_info_api';
 const PUBLIC_DATA_NUM_OF_ROWS = 1000;
 const MAX_PUBLIC_DATA_PAGES = 100;
+const PUBLIC_DATA_RUNTIME_FALLBACK_PAGES = 3;
 const PUBLIC_DATA_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const MAX_DATASET_RETURN = 80;
 
 let publicDataCache = {
   key: '',
+  maxPages: 0,
   expiresAt: 0,
   lots: [],
   meta: null,
   promise: null
 };
 
+let nationalRuntimeCache = {
+  lots: null,
+  meta: null
+};
+
 export async function resolveParkingLotDataset({ env = {}, destination = null, radius = 3000, query = '' } = {}) {
+  const startedAt = Date.now();
   const radiusMeters = normalizeRadiusMeters(radius);
   const sources = [];
   const errors = [];
-  const externalLots = [];
   const adapterQuery = destination ? '' : query;
 
-  const seoul = await safeFetch('seoul-open-data', () => fetchSeoulParkingLots(env, { query: adapterQuery }));
-  if (seoul.ok) {
-    if (seoul.source) sources.push(seoul.source);
-    if (seoul.lots.length) externalLots.push(...seoul.lots);
-  } else {
-    errors.push(seoul.error);
-  }
-
-  const publicData = await safeFetch('public-data-portal', () => fetchPublicParkingLots(env, { query: adapterQuery }));
-  if (publicData.ok) {
-    if (publicData.source) sources.push(publicData.source);
-    if (publicData.lots.length) externalLots.push(...publicData.lots);
-  } else {
-    errors.push(publicData.error);
-  }
-
-  const dedupedExternal = dedupeLots(externalLots);
-  const externalWithDistance = addDistances(dedupedExternal, destination);
-  const externalNearby = filterByRadius(externalWithDistance, radiusMeters);
-
-  const nationalCache = loadNationalParkingCache({ query: adapterQuery });
-  const cacheWithDistance = addDistances(nationalCache, destination);
-  const cacheNearby = filterByRadius(cacheWithDistance, radiusMeters);
+  const nationalStartedAt = Date.now();
+  const nationalLots = loadNationalParkingCache({ query: adapterQuery });
+  const nationalMeta = getNationalParkingCacheMeta();
+  const nationalWithDistance = addDistances(nationalLots, destination);
+  const cacheNearby = filterByRadius(nationalWithDistance, radiusMeters);
   const expandedRadiusMeters = Math.min(3000, Math.max(radiusMeters, 3000));
-  const expandedCacheNearby = cacheNearby.length ? cacheNearby : filterByRadius(cacheWithDistance, expandedRadiusMeters);
+  const expandedCacheNearby = cacheNearby.length ? cacheNearby : filterByRadius(nationalWithDistance, expandedRadiusMeters);
+  const cacheLoadMs = Date.now() - nationalStartedAt;
+
+  let selectedLots = cacheNearby.length ? cacheNearby : expandedCacheNearby;
+  let mode = selectedLots.length ? 'national-cache' : 'national-cache-empty';
+  let fallbackReason = '';
+  let effectiveRadiusMeters = cacheNearby.length ? radiusMeters : (expandedCacheNearby.length ? expandedRadiusMeters : radiusMeters);
+  let publicDataSource = null;
+  let publicDataLots = [];
+  let publicFallbackUsed = false;
+
+  if (nationalMeta?.source) sources.push(nationalMeta.source);
+
+  if (!nationalLots.length) {
+    const publicData = await safeFetch('public-data-portal', () => fetchPublicParkingLots(env, { query: adapterQuery, maxPages: PUBLIC_DATA_RUNTIME_FALLBACK_PAGES }));
+    publicFallbackUsed = true;
+    if (publicData.ok) {
+      if (publicData.source) {
+        sources.push(publicData.source);
+        publicDataSource = publicData.source;
+      }
+      publicDataLots = publicData.lots;
+      const publicWithDistance = addDistances(publicDataLots, destination);
+      const publicNearby = filterByRadius(publicWithDistance, radiusMeters);
+      selectedLots = publicNearby;
+      mode = publicNearby.length ? 'public-api-limited-fallback' : 'public-api-limited-fallback-empty';
+      fallbackReason = publicNearby.length
+        ? '전국 주차장 캐시를 사용할 수 없어 제한적인 공공데이터 API fallback 후보를 사용했습니다.'
+        : '전국 주차장 캐시와 제한적인 공공데이터 API fallback에서 반경 내 후보를 찾지 못했습니다.';
+      effectiveRadiusMeters = radiusMeters;
+    } else {
+      errors.push(publicData.error);
+    }
+  }
 
   const sampleWithDistance = addDistances(sampleParkingLots, destination);
   const sampleNearby = filterByRadius(sampleWithDistance, radiusMeters);
-
-  let selectedLots = externalNearby;
-  let mode = externalNearby.length ? 'public-adapter' : 'public-adapter-empty';
-  let fallbackReason = '';
-  let effectiveRadiusMeters = radiusMeters;
-
-  if (externalNearby.length < 3 && expandedCacheNearby.length) {
-    selectedLots = dedupeLots([...externalNearby, ...expandedCacheNearby]);
-    mode = externalNearby.length ? 'hybrid-public-national-cache' : 'national-cache-fallback';
-    fallbackReason = externalNearby.length
-      ? '공공데이터 반경 후보가 적어 전국 주차장 캐시 후보를 함께 사용했습니다.'
-      : externalWithDistance.length
-        ? '공공데이터는 조회됐지만 현재 반경 내 주차장이 없어 전국 주차장 캐시 후보를 사용했습니다.'
-        : '연동 가능한 공공데이터 후보가 없어 전국 주차장 캐시 후보를 사용했습니다.';
-    if (!externalNearby.length && !cacheNearby.length && expandedCacheNearby.length) effectiveRadiusMeters = expandedRadiusMeters;
-  } else if (externalNearby.length < 3 && sampleNearby.length) {
-    selectedLots = dedupeLots([...externalNearby, ...sampleNearby]);
-    mode = externalNearby.length ? 'hybrid-public-sample' : 'sample-fallback';
-    fallbackReason = externalNearby.length
-      ? '공공데이터 반경 후보가 적어 로컬 샘플 후보를 함께 사용했습니다.'
-      : externalWithDistance.length
-        ? '공공데이터는 조회됐지만 현재 반경 내 주차장이 없어 로컬 샘플 후보를 사용했습니다.'
-        : '연동 가능한 공공데이터 후보가 없어 로컬 샘플 후보를 사용했습니다.';
-  } else if (!externalNearby.length) {
-    fallbackReason = externalWithDistance.length
-      ? '공공데이터는 조회됐지만 현재 반경 내 주차장이 없습니다.'
-      : '연동 가능한 공공데이터 후보가 없습니다.';
+  if (!selectedLots.length && !nationalLots.length && sampleNearby.length) {
+    selectedLots = sampleNearby;
+    mode = 'sample-fallback';
+    fallbackReason = fallbackReason || '전국 주차장 캐시와 제한적인 공공데이터 fallback을 사용할 수 없어 로컬 샘플 후보를 사용했습니다.';
+  } else if (!selectedLots.length) {
+    fallbackReason = fallbackReason || '전국 주차장 캐시 기준 현재 반경 내 후보가 없습니다.';
+  } else if (!cacheNearby.length && expandedCacheNearby.length) {
+    fallbackReason = '기본 반경 내 후보가 없어 전국 주차장 캐시에서 확장 반경 후보를 사용했습니다.';
   }
 
   selectedLots = filterByRadius(addDistances(selectedLots, destination), effectiveRadiusMeters)
     .sort((a, b) => valueOrMax(a.distanceFromDestinationKm) - valueOrMax(b.distanceFromDestinationKm))
     .slice(0, MAX_DATASET_RETURN);
 
+  const searchMs = Date.now() - startedAt;
+  console.info?.('[parking-data] source:', mode, 'cacheItems:', nationalMeta?.totalCount || nationalLots.length, 'loadMs:', cacheLoadMs, 'publicApiFallbackUsed:', publicFallbackUsed);
+  console.info?.('[parking-search] radius:', radiusMeters, 'candidatesWithinRadius:', selectedLots.length, 'searchMs:', searchMs);
+
   const stats = buildDatasetStats({
     sources,
-    externalLots,
-    dedupedExternal,
-    externalWithDistance,
-    externalNearby,
-    sampleNearby,
+    publicDataSource,
+    publicDataLots,
+    cacheLots: nationalLots,
+    cacheWithDistance: nationalWithDistance,
     cacheNearby,
     expandedCacheNearby,
-    selectedLots
+    sampleNearby,
+    selectedLots,
+    cacheLoadMs,
+    searchMs,
+    publicFallbackUsed
   });
 
   return {
@@ -109,8 +119,8 @@ export async function resolveParkingLotDataset({ env = {}, destination = null, r
       fallbackReason,
       effectiveRadius: effectiveRadiusMeters,
       note: selectedLots.length
-        ? mode === 'public-adapter'
-          ? '공공/개방 데이터 어댑터에서 읽은 반경 내 후보를 사용했습니다.'
+        ? mode === 'national-cache'
+          ? '전국 주차장 캐시에서 읽은 반경 내 후보를 사용했습니다.'
           : fallbackReason
         : fallbackReason || '조건에 맞는 주차장 후보가 없습니다.'
     }
@@ -145,6 +155,13 @@ export async function resolveRealtimeStatuses({ env = {}, lots = [] } = {}) {
   };
 }
 
+
+function normalizePublicFallbackPages(maxPages, hardMax = PUBLIC_DATA_RUNTIME_FALLBACK_PAGES) {
+  const value = Number(maxPages);
+  if (!Number.isFinite(value) || value <= 0) return Math.min(PUBLIC_DATA_RUNTIME_FALLBACK_PAGES, hardMax);
+  return Math.min(hardMax, Math.max(1, Math.round(value)));
+}
+
 function normalizeRadiusMeters(radius) {
   const value = Number(radius);
   if (!Number.isFinite(value) || value <= 0) return 1500;
@@ -174,35 +191,67 @@ function filterByRadius(lots, radiusMeters) {
   });
 }
 
-function buildDatasetStats({ sources, externalLots, dedupedExternal, externalWithDistance, externalNearby, sampleNearby, cacheNearby, expandedCacheNearby, selectedLots }) {
+function buildDatasetStats({ sources, publicDataSource, publicDataLots = [], cacheLots = [], cacheWithDistance = [], cacheNearby = [], expandedCacheNearby = [], sampleNearby = [], selectedLots = [], cacheLoadMs = 0, searchMs = 0, publicFallbackUsed = false }) {
   const sourceById = new Map(sources.filter(Boolean).map((source) => [source.id, source]));
-  const seoul = sourceById.get('seoul-open-data') || {};
-  const publicData = sourceById.get('public-data-parking') || {};
+  const national = sourceById.get('national-cache') || {};
+  const publicData = publicDataSource || sourceById.get('public-data-parking') || {};
   return {
-    seoulFetchedCount: Number(seoul.count || 0),
+    dataSource: national.id || publicData.id || '',
+    nationalCacheCount: Number(national.count || cacheLots.length || 0),
+    nationalCacheNormalizedCount: Number(national.normalizedCount || cacheLots.length || 0),
+    nationalCacheWithCoordinateCount: Number(national.withCoordinateCount || cacheWithDistance.length || 0),
+    nationalCacheMissingCoordinateCount: Number(national.missingCoordinateCount || 0),
+    nationalCacheNearbyCount: cacheNearby?.length || 0,
+    expandedCacheNearbyCount: expandedCacheNearby?.length || 0,
+    publicApiFallbackUsed: Boolean(publicFallbackUsed),
     publicPagesFetched: Number(publicData.pagesFetched || 0),
+    publicRequestedPages: Number(publicData.requestedPages || 0),
     publicTotalCount: Number(publicData.totalCount || 0),
-    publicFetchedCount: Number(publicData.fetchedCount || publicData.count || 0),
+    publicFetchedCount: Number(publicData.fetchedCount || publicData.count || publicDataLots.length || 0),
     publicNormalizedCount: Number(publicData.normalizedCount || 0),
     publicWithCoordinateCount: Number(publicData.withCoordinateCount || 0),
     publicMissingCoordinateCount: Number(publicData.missingCoordinateCount || 0),
     publicFailedPages: Number(publicData.failedPages || 0),
-    normalizedCount: externalLots.length,
-    dedupedCount: dedupedExternal.length,
-    withCoordinateCount: externalWithDistance.length,
-    nearbyCount: externalNearby.length,
-    nationalCacheNearbyCount: cacheNearby?.length || 0,
-    expandedCacheNearbyCount: expandedCacheNearby?.length || 0,
     sampleNearbyCount: sampleNearby.length,
-    returnedCount: selectedLots.length
+    returnedCount: selectedLots.length,
+    cacheLoadMs,
+    searchMs
   };
 }
 
 function loadNationalParkingCache({ query = '' } = {}) {
-  const lots = normalizeCachedLots(Array.isArray(nationalParkingLots) && nationalParkingLots.length ? nationalParkingLots : sampleParkingLots);
+  if (!nationalRuntimeCache.lots) {
+    const sourceLots = Array.isArray(nationalParkingLots) ? nationalParkingLots : [];
+    const normalizedRows = sourceLots.map((lot) => normalizeParkingLotLike(lot, { source: lot.source || '전국 주차장 캐시' }));
+    const normalized = normalizedRows.filter(Boolean);
+    const deduped = dedupeLots(normalized);
+    nationalRuntimeCache.lots = deduped;
+    nationalRuntimeCache.meta = {
+      totalCount: sourceLots.length,
+      normalizedCount: normalized.length,
+      withCoordinateCount: deduped.length,
+      missingCoordinateCount: normalizedRows.length - normalized.length,
+      source: {
+        id: 'national-cache',
+        name: '전국 주차장 정규화 캐시',
+        service: 'national-parking-lots.json',
+        count: deduped.length,
+        normalizedCount: normalized.length,
+        withCoordinateCount: deduped.length,
+        missingCoordinateCount: normalizedRows.length - normalized.length,
+        cacheMode: 'module-memory'
+      }
+    };
+  }
+
   const keyword = String(query || '').trim().toLowerCase();
-  if (!keyword) return lots;
-  return lots.filter((lot) => `${lot.name} ${lot.roadAddress || ''} ${lot.jibunAddress || ''} ${lot.region || ''}`.toLowerCase().includes(keyword));
+  if (!keyword) return nationalRuntimeCache.lots;
+  return nationalRuntimeCache.lots.filter((lot) => `${lot.name} ${lot.roadAddress || ''} ${lot.jibunAddress || ''} ${lot.region || ''} ${lot.district || ''}`.toLowerCase().includes(keyword));
+}
+
+function getNationalParkingCacheMeta() {
+  if (!nationalRuntimeCache.meta) loadNationalParkingCache();
+  return nationalRuntimeCache.meta || { totalCount: 0, normalizedCount: 0, withCoordinateCount: 0, missingCoordinateCount: 0, source: null };
 }
 
 function normalizeCachedLots(lots) {
@@ -253,11 +302,11 @@ async function fetchSeoulRealtimeParking(env) {
   };
 }
 
-async function fetchPublicParkingLots(env, { query = '' } = {}) {
+async function fetchPublicParkingLots(env, { query = '', maxPages = PUBLIC_DATA_RUNTIME_FALLBACK_PAGES } = {}) {
   const key = env.PUBLIC_DATA_API_KEY || '';
   if (!key) return { ok: true, lots: [], source: null };
 
-  const cache = await getPublicParkingDataCache(key);
+  const cache = await getPublicParkingDataCache(key, { maxPages });
   const keyword = String(query || '').trim().toLowerCase();
   const filtered = keyword
     ? cache.lots.filter((lot) => `${lot.name} ${lot.roadAddress || ''} ${lot.jibunAddress || ''} ${lot.region || ''} ${lot.district || ''}`.toLowerCase().includes(keyword))
@@ -276,16 +325,18 @@ async function fetchPublicParkingLots(env, { query = '' } = {}) {
   };
 }
 
-async function getPublicParkingDataCache(serviceKey) {
+async function getPublicParkingDataCache(serviceKey, { maxPages = PUBLIC_DATA_RUNTIME_FALLBACK_PAGES } = {}) {
   const cacheKey = serviceKey ? String(serviceKey).slice(0, 8) : 'no-key';
   const now = Date.now();
-  if (publicDataCache.key === cacheKey && publicDataCache.lots.length && publicDataCache.expiresAt > now) {
+  const safeMaxPages = normalizePublicFallbackPages(maxPages);
+  if (publicDataCache.key === cacheKey && publicDataCache.maxPages === safeMaxPages && publicDataCache.lots.length && publicDataCache.expiresAt > now) {
     return { lots: publicDataCache.lots, meta: { ...publicDataCache.meta, cacheMode: 'memory-hit' } };
   }
-  if (publicDataCache.key === cacheKey && publicDataCache.promise) return publicDataCache.promise;
+  if (publicDataCache.key === cacheKey && publicDataCache.maxPages === safeMaxPages && publicDataCache.promise) return publicDataCache.promise;
 
   publicDataCache.key = cacheKey;
-  publicDataCache.promise = fetchAllPublicParkingPages(serviceKey)
+  publicDataCache.maxPages = safeMaxPages;
+  publicDataCache.promise = fetchAllPublicParkingPages(serviceKey, { maxPages: safeMaxPages })
     .then((result) => {
       publicDataCache.lots = result.lots;
       publicDataCache.meta = result.meta;
@@ -301,13 +352,14 @@ async function getPublicParkingDataCache(serviceKey) {
   return publicDataCache.promise;
 }
 
-async function fetchAllPublicParkingPages(serviceKey) {
+async function fetchAllPublicParkingPages(serviceKey, { maxPages = MAX_PUBLIC_DATA_PAGES } = {}) {
   const first = await fetchPublicParkingPage(serviceKey, 1);
   const allRows = [...first.rows];
   const failedPages = [];
   const totalCount = first.totalCount || 0;
-  const totalPages = totalCount ? Math.ceil(totalCount / PUBLIC_DATA_NUM_OF_ROWS) : MAX_PUBLIC_DATA_PAGES;
-  const pagesToFetch = Math.max(1, Math.min(MAX_PUBLIC_DATA_PAGES, totalPages));
+  const safeMaxPages = normalizePublicFallbackPages(maxPages, MAX_PUBLIC_DATA_PAGES);
+  const totalPages = totalCount ? Math.ceil(totalCount / PUBLIC_DATA_NUM_OF_ROWS) : safeMaxPages;
+  const pagesToFetch = Math.max(1, Math.min(safeMaxPages, totalPages));
 
   for (let pageNo = 2; pageNo <= pagesToFetch; pageNo += 1) {
     try {
@@ -339,7 +391,7 @@ async function fetchAllPublicParkingPages(serviceKey) {
       withCoordinateCount: deduped.length,
       missingCoordinateCount: missingCoordinates,
       numOfRows: PUBLIC_DATA_NUM_OF_ROWS,
-      maxPages: MAX_PUBLIC_DATA_PAGES,
+      maxPages: safeMaxPages,
       cacheMode: 'memory-refresh'
     }
   };
@@ -811,6 +863,8 @@ export const __parkingAdapterTest = {
   filterByRadius,
   addDistances,
   loadNationalParkingCache,
+  getNationalParkingCacheMeta,
   fetchPublicParkingLots,
-  fetchAllPublicParkingPages
+  fetchAllPublicParkingPages,
+  normalizePublicFallbackPages
 };
