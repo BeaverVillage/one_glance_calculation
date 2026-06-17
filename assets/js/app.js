@@ -6,6 +6,7 @@ import { initApplianceElectricityCalculator } from "./appliance-electricity.js?v
 import { initAustraliaPayCalculator } from "./australia-pay.js?v=20260616-mobile-exchange-whv-final";
 import { initAustraliaWhv88DaysCalculator } from "./australia-whv-88-days.js?v=20260616-mobile-exchange-whv-final";
 import { initExchangeRateCalculator } from "./exchange-rate.js?v=20260616-mobile-exchange-whv-final";
+import { initParkingBudgetMap } from "./parking-budget-map.js?v=20260617-parking-budget-map";
 import { initLoanInterestCalculator } from "./loan-interest.js?v=20260614-cache-fix";
 import { initNetSalaryCalculator } from "./net-salary.js?v=20260614-cache-fix";
 import { initPercentileCalculator } from "./percentile.js?v=20260614-cache-fix";
@@ -50,7 +51,8 @@ const TOOL_GROUPS = [
     tools: [
       ["전기차 충전비 vs 주유비 계산기", "calculators/ev-vs-gas.html"],
       ["가전제품 월 전기요금 계산기", "calculators/appliance-electricity.html"],
-      ["중고 전자제품 가격 계산기", "calculators/used-device-price.html"]
+      ["중고 전자제품 가격 계산기", "calculators/used-device-price.html"],
+      ["주차비 예산 지도", "calculators/parking-budget-map.html"]
     ]
   },
   {
@@ -133,6 +135,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   initAustraliaPayCalculator();
   initAustraliaWhv88DaysCalculator();
   initExchangeRateCalculator();
+  initParkingBudgetMap();
   initNetSalaryCalculator();
   initLoanInterestCalculator();
   initWeeklyHolidayPayCalculator();

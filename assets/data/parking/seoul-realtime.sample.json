@@ -1,0 +1,10 @@
+﻿{
+  "version": "2026-06-17",
+  "sourceName": "서울시 시영주차장 실시간 주차대수 정보 샘플",
+  "disclaimer": "실시간 API 키가 없거나 매칭되지 않을 때 표시하는 샘플 데이터입니다.",
+  "statuses": [
+    {"parkingLotId":"PARK_COEX_001","availableSpaces":23,"totalSpaces":996,"observedAt":"2026-06-17T09:30:00+09:00","source":"서울시 시영주차장 실시간 샘플"},
+    {"parkingLotId":"PARK_COEX_003","availableSpaces":5,"totalSpaces":82,"observedAt":"2026-06-17T09:32:00+09:00","source":"서울시 시영주차장 실시간 샘플"},
+    {"parkingLotId":"PARK_GANGNAM_001","availableSpaces":8,"totalSpaces":96,"observedAt":"2026-06-17T09:35:00+09:00","source":"서울시 시영주차장 실시간 샘플"}
+  ]
+}

@@ -1,0 +1,125 @@
+﻿<!doctype html>
+<html lang="ko">
+  <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-D4SBV1Y07N"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-D4SBV1Y07N');
+    </script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="shortcut icon" href="/favicon.svg" type="image/svg+xml">
+    <meta name="theme-color" content="#146c5f">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6340743169950430" crossorigin="anonymous"></script>
+    <meta name="google-adsense-account" content="ca-pub-6340743169950430">
+    <meta name="msvalidate.01" content="71220435128A45EF179793784E9AFC3E">
+    <meta name="naver-site-verification" content="0f429adf1d8d3475017f3824ee96355074bcfd23">
+    <meta name="description" content="목적지 주변 주차장의 예상 주차비, 차량 이동시간, 운영시간, 실시간 빈자리와 만차 위험도를 비교해 내 일정에 맞는 합리적인 주차장을 찾아보세요.">
+    <title>주차비 예산 지도 | 주차요금·빈자리·만차 위험도 계산 | 한눈계산</title>
+    <link rel="canonical" href="https://hannuncalc.com/calculators/parking-budget-map">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="ko_KR">
+    <meta property="og:site_name" content="한눈계산">
+    <meta property="og:title" content="주차비 예산 지도 | 주차요금·빈자리·만차 위험도 계산 | 한눈계산">
+    <meta property="og:description" content="목적지 주변 주차장의 예상 주차비와 차량 이동시간, 빈자리, 만차 위험도, 데이터 신뢰도를 계산해 비교합니다.">
+    <meta property="og:url" content="https://hannuncalc.com/calculators/parking-budget-map">
+    <script type="application/ld+json" data-schema="webapplication">{"@context":"https://schema.org","@type":"WebApplication","name":"주차비 예산 지도","url":"https://hannuncalc.com/calculators/parking-budget-map","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","inLanguage":"ko-KR","description":"목적지 주변 주차장의 예상 요금, 차량 이동시간, 빈자리, 만차 위험도와 데이터 신뢰도를 비교하는 지도형 계산기입니다.","offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"}}</script>
+    <script type="application/ld+json" data-schema="breadcrumb">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"한눈계산","item":"https://hannuncalc.com/"},{"@type":"ListItem","position":2,"name":"주차비 예산 지도","item":"https://hannuncalc.com/calculators/parking-budget-map"}]}</script>
+    <script type="application/ld+json" data-schema="faqpage">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"주차비 예산 지도는 실제 주차요금을 보장하나요?","acceptedAnswer":{"@type":"Answer","text":"아니요. 공공데이터와 입력값을 바탕으로 한 참고용 예상 금액입니다. 실제 요금, 할인, 운영시간은 현장 정책에 따라 달라질 수 있습니다."}},{"@type":"Question","name":"실시간 빈자리가 있으면 주차 가능이 보장되나요?","acceptedAnswer":{"@type":"Answer","text":"보장하지 않습니다. 실시간 가능 대수는 제공기관 데이터 기준이며 현장 진입 시점의 실제 상황과 차이가 날 수 있습니다."}},{"@type":"Question","name":"경차나 전기차 할인은 자동으로 확정 적용되나요?","acceptedAnswer":{"@type":"Answer","text":"아니요. 선택한 할인율을 적용한 참고 계산이며 실제 할인 적용 여부는 주차장별 정책, 증빙자료, 결제 방식에 따라 다를 수 있습니다."}},{"@type":"Question","name":"API 키가 없어도 페이지를 테스트할 수 있나요?","acceptedAnswer":{"@type":"Answer","text":"예. 개발과 화면 확인을 위해 샘플 주차장 데이터와 거리 기반 fallback 계산을 제공합니다. 실제 운영 데이터는 Cloudflare Pages 환경변수와 API 연동 후 확인해야 합니다."}}]}</script>
+    <link rel="stylesheet" href="../assets/css/base.css">
+    <link rel="stylesheet" href="../assets/css/layout.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="../index.html" aria-label="한눈계산 홈">
+        <span class="brand-mark">한</span>
+        <span><strong>한눈계산</strong><small>생활 계산기</small></span>
+      </a>
+      <nav class="site-nav" aria-label="주요 메뉴">
+        <a href="../index.html#calculators" data-tool-drawer>다른 계산기</a>
+        <a href="exchange-rate.html">환율</a>
+        <a href="ev-vs-gas.html">차량비</a>
+        <a href="../about.html">소개</a>
+        <a href="../contact.html">문의</a>
+      </nav>
+    </header>
+    <main>
+      <section class="hero-band parking-hero">
+        <div class="container">
+          <div class="section-intro">
+            <p class="eyebrow">생활·차량 계산기</p>
+            <h1>주차비 예산 지도</h1>
+            <p class="lead">목적지 주변 주차장의 예상 요금, 차량 이동시간, 빈자리, 만차 위험도, 데이터 신뢰도를 계산해 비교합니다.</p>
+            <p class="fine-print strong-note">가장 가까운 주차장이 아니라, 내 일정과 차량 이동 기준으로 가장 합리적인 주차장을 계산합니다.</p>
+          </div>
+          <section class="parking-app-shell" data-parking-budget-map aria-label="주차비 예산 지도 입력 및 결과">
+            <div class="parking-workspace">
+              <div class="parking-left-panel">
+                <form id="parking-search-form" class="tool-panel parking-input-panel">
+                  <div class="step-label">1단계 · 목적지와 일정</div>
+                  <div class="field">
+                    <label for="parking-destination">목적지</label>
+                    <div class="parking-inline-search">
+                      <input id="parking-destination" type="search" placeholder="예: 코엑스, 서울역, 강남역" autocomplete="off" required>
+                      <button class="primary-button" type="submit">검색</button>
+                    </div>
+                    <p id="parking-search-status" class="fine-print" aria-live="polite">목적지를 검색하면 주변 샘플 주차장 또는 API 결과를 비교합니다.</p>
+                  </div>
+                  <div id="parking-place-results" class="parking-place-results" aria-label="목적지 검색 결과"></div>
+                  <div class="field-row parking-date-grid">
+                    <div class="field"><label for="parking-visit-date">방문일</label><input id="parking-visit-date" type="date" required></div>
+                    <div class="field"><label for="parking-arrival-time">입차 시간</label><input id="parking-arrival-time" type="time" value="13:30" required></div>
+                    <div class="field"><label for="parking-departure-time">출차 시간</label><input id="parking-departure-time" type="time" value="17:30" required></div>
+                  </div>
+                  <div class="quick-duration-row" aria-label="주차시간 빠른 선택">
+                    <button type="button" data-parking-duration="30">30분</button><button type="button" data-parking-duration="60">1시간</button><button type="button" data-parking-duration="120">2시간</button><button type="button" data-parking-duration="180">3시간</button><button type="button" data-parking-duration="240" class="active">4시간</button><button type="button" data-parking-duration="day">일주차</button>
+                  </div>
+                  <div class="step-label">2단계 · 출발지와 차량 조건</div>
+                  <div class="field">
+                    <label for="parking-origin">출발지</label>
+                    <div class="parking-inline-search">
+                      <input id="parking-origin" type="text" placeholder="선택 사항: 강남역, 현재 위치 등">
+                      <button id="parking-current-location" class="subtle-button" type="button">현재 위치 사용</button>
+                    </div>
+                    <p id="parking-origin-status" class="fine-print">출발지를 입력하지 않으면 목적지에서 주차장까지의 거리 기준으로 비교합니다.</p>
+                  </div>
+                  <div class="field-row parking-date-grid">
+                    <div class="field"><label for="parking-vehicle-type">차량 조건</label><select id="parking-vehicle-type"><option value="general">일반</option><option value="compact">경차 할인 참고</option><option value="disabled">장애인 할인 참고</option><option value="ev">전기차 할인 참고</option><option value="manual">직접 할인율</option></select></div>
+                    <div class="field" id="parking-manual-discount-field" hidden><label for="parking-manual-discount">직접 할인율</label><div class="input-with-unit"><input id="parking-manual-discount" type="number" min="0" max="100" step="1" value="0"><span class="unit">%</span></div></div>
+                    <div class="field"><label for="parking-sort">정렬</label><select id="parking-sort"><option value="recommended">추천순</option><option value="cheap">저렴한순</option><option value="drive">차량시간순</option><option value="available">빈자리순</option><option value="confidence">신뢰도순</option></select></div>
+                  </div>
+                  <div class="parking-filter-row" aria-label="주차장 필터">
+                    <label><input type="checkbox" id="parking-filter-public"> 공영만</label><label><input type="checkbox" id="parking-filter-free"> 무료</label><label><input type="checkbox" id="parking-filter-daypass"> 일주차</label><label><input type="checkbox" id="parking-filter-realtime"> 실시간</label><label><input type="checkbox" id="parking-filter-lowrisk"> 낮은 위험</label>
+                  </div>
+                  <button id="parking-recommend-button" class="primary-button wide-button" type="button">주차장 찾기</button>
+                </form>
+                <section class="tool-panel parking-summary-panel" aria-label="추천 요약">
+                  <div class="parking-summary-bar"><strong id="parking-summary-title">코엑스 · 4시간 · 일반</strong><span id="parking-summary-subtitle">추천 결과를 계산하면 지도와 목록에 표시됩니다.</span></div>
+                  <div id="parking-status" class="status-message" aria-live="polite"></div>
+                </section>
+                <section id="parking-result-list" class="parking-result-list" aria-label="추천 주차장 목록"></section>
+              </div>
+              <div class="parking-map-column">
+                <section class="parking-map-card" aria-label="주차장 지도">
+                  <div id="parking-map" class="parking-map" role="img" aria-label="목적지 주변 주차장 지도"><div class="parking-map-fallback"><strong>지도 준비 중</strong><span>카카오맵 키가 없으면 샘플 지도 위에 가격 마커를 표시합니다.</span></div></div>
+                  <div id="parking-map-markers" class="parking-map-markers" aria-hidden="true"></div>
+                </section>
+              </div>
+            </div>
+            <section class="parking-bottom-sheet" aria-label="모바일 추천 주차장 요약"><div class="parking-sheet-handle" aria-hidden="true"></div><div id="parking-mobile-results" class="parking-mobile-results"></div></section>
+          </section>
+        </div>
+      </section>
+      <section class="content-band"><div class="container calculator-guide parking-guide"><p class="eyebrow">주차비 계산 가이드</p><h2>주차비 예산 지도를 이렇게 활용하세요.</h2><div class="guide-grid"><article><h3>이 계산기는 무엇을 계산하나요?</h3><p>목적지 주변 주차장의 예상 요금, 내 출발지 기준 차량 이동시간, 실시간 빈자리 여부, 만차 위험도와 데이터 신뢰도를 함께 비교합니다.</p></article><article><h3>주차비 계산 기준</h3><p>기본요금과 추가요금을 기준으로 선택한 주차시간의 예상 금액을 계산하고, 일주차권이 더 유리한 시점이 있으면 함께 표시합니다.</p></article><article><h3>일주차 전환점</h3><p>시간요금 누적액이 일주차권 요금 이상이 되는 최소 시간을 계산합니다. 일주차 정보가 없으면 전환점은 표시하지 않습니다.</p></article><article><h3>공영·무료·실시간 필터</h3><p>공영주차장 우선, 무료 주차 가능성, 일주차 가능 여부, 실시간 빈자리 제공 여부를 필터로 좁혀 볼 수 있습니다.</p></article><article><h3>할인 계산 방식</h3><p>경차, 장애인, 전기차 또는 직접 입력 할인율을 적용한 참고 금액을 표시합니다. 실제 할인은 현장 정책과 증빙 확인에 따라 달라질 수 있습니다.</p></article><article><h3>데이터 신뢰도</h3><p>요금, 운영시간, 좌표, 기준일, 실시간 정보가 충분할수록 신뢰도를 높게 표시합니다. 정보가 일부 누락된 주차장은 현장 확인이 필요합니다.</p></article></div></div></section>
+      <section class="content-band muted"><div class="container"><div class="info-card warning-card"><h2>사용 시 주의사항</h2><p>본 결과는 공공데이터 및 실시간 제공 데이터를 바탕으로 계산한 예상 주차비입니다. 실제 요금, 할인 적용 여부, 운영시간, 주차 가능 여부는 현장 사정에 따라 달라질 수 있습니다. 방문 전 주차장 또는 관리기관에 확인해 주세요.</p><p>실시간 가능 대수는 제공기관 데이터 기준이며 실제 현장 상황과 차이가 있을 수 있습니다. 경차, 장애인, 전기차 할인은 주차장별 정책에 따라 다를 수 있으며, 선택한 할인율은 참고 계산용입니다.</p></div></div></section>
+      <section class="content-band" id="faq"><div class="container faq-section"><p class="eyebrow">자주 묻는 질문</p><h2>주차비 예산 지도 FAQ</h2><details><summary>주차비 예산 지도는 실제 주차요금을 보장하나요?</summary><p>아니요. 공공데이터와 입력값을 바탕으로 한 참고용 예상 금액입니다. 실제 요금, 할인, 운영시간은 현장 정책에 따라 달라질 수 있습니다.</p></details><details><summary>실시간 빈자리가 있으면 주차 가능이 보장되나요?</summary><p>보장하지 않습니다. 실시간 가능 대수는 제공기관 데이터 기준이며 현장 진입 시점의 실제 상황과 차이가 날 수 있습니다.</p></details><details><summary>경차나 전기차 할인은 자동으로 확정 적용되나요?</summary><p>아니요. 선택한 할인율을 적용한 참고 계산이며 실제 할인 적용 여부는 주차장별 정책, 증빙자료, 결제 방식에 따라 다를 수 있습니다.</p></details><details><summary>API 키가 없어도 페이지를 테스트할 수 있나요?</summary><p>예. 개발과 화면 확인을 위해 샘플 주차장 데이터와 거리 기반 fallback 계산을 제공합니다. 실제 운영 데이터는 Cloudflare Pages 환경변수와 API 연동 후 확인해야 합니다.</p></details></div></section>
+    </main>
+    <footer class="site-footer"><div><strong>한눈계산</strong><p>모든 계산 결과는 참고용이며, 실제 판단은 공식 기관 기준을 확인해야 합니다.</p></div><nav aria-label="푸터 링크"><a href="../about.html">소개</a><a href="../contact.html">문의하기</a><a href="../privacy.html">개인정보 처리방침</a><a href="../disclaimer.html">면책 고지</a><a href="../licenses.html">오픈소스 라이선스</a></nav></footer>
+    <script type="module" src="../assets/js/app.js?v=20260617-parking-budget-map"></script>
+  </body>
+</html>
