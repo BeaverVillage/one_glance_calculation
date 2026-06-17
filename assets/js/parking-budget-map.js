@@ -18,7 +18,12 @@ const state = {
   map: null,
   kakaoMarkers: [],
   kakaoDestinationMarker: null,
-  mapMode: "fallback"
+  mapMode: "fallback",
+  lastHolidayContext: null,
+  lastMobilityMode: "distance-fallback",
+  lastMobilityNote: "",
+  lastMobilitySource: "거리 기반 추정",
+  originQuery: ""
 };
 
 const won = new Intl.NumberFormat("ko-KR");
@@ -54,6 +59,8 @@ export function initParkingBudgetMap() {
       publicOnly: document.querySelector("#parking-filter-public"),
       freeOnly: document.querySelector("#parking-filter-free"),
       dayPassOnly: document.querySelector("#parking-filter-daypass"),
+      openOnly: document.querySelector("#parking-filter-open"),
+      discountOnly: document.querySelector("#parking-filter-discount"),
       realtimeOnly: document.querySelector("#parking-filter-realtime"),
       lowRiskOnly: document.querySelector("#parking-filter-lowrisk")
     }
@@ -85,6 +92,7 @@ function bindEvents(els) {
     calculateAndRender(els);
   });
   [els.visitDate, els.arrival, els.departure, els.manualDiscount, els.sort].forEach((el) => el.addEventListener("change", () => calculateAndRender(els)));
+  els.origin.addEventListener("change", () => { state.originQuery = ""; calculateAndRender(els); });
   Object.values(els.filters).forEach((el) => el.addEventListener("change", () => calculateAndRender(els)));
   document.querySelectorAll("[data-parking-duration]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -171,6 +179,40 @@ function useCurrentLocation(els) {
   }, { enableHighAccuracy: false, timeout: 8000 });
 }
 
+async function resolveOriginFromInput(els) {
+  const query = els.origin.value.trim();
+  if (!query) {
+    state.origin = null;
+    state.originQuery = "";
+    els.originStatus.textContent = "출발지를 입력하지 않으면 목적지에서 주차장까지의 거리 기준으로 비교합니다.";
+    return;
+  }
+  if (query === "현재 위치" && state.origin) return;
+  if (state.origin && state.originQuery === query) return;
+  try {
+    const res = await fetch(`${API_BASE}/places?q=${encodeURIComponent(query)}`);
+    if (!res.ok) throw new Error("origin places api failed");
+    const data = await res.json();
+    const place = data.places?.[0];
+    if (!place) throw new Error("origin not found");
+    state.origin = { name: place.name, address: place.address, lat: Number(place.lat), lng: Number(place.lng) };
+    state.originQuery = query;
+    els.originStatus.textContent = `${place.name}을 출발지로 보고 차량 소요시간을 참고 계산합니다.`;
+  } catch (_) {
+    const lower = query.toLowerCase();
+    const place = SAMPLE_PLACES.find((item) => `${item.name} ${item.address}`.toLowerCase().includes(lower));
+    if (place) {
+      state.origin = { ...place };
+      state.originQuery = query;
+      els.originStatus.textContent = `${place.name} 샘플 위치를 출발지로 보고 차량 소요시간을 참고 계산합니다.`;
+    } else {
+      state.origin = null;
+      state.originQuery = "";
+      els.originStatus.textContent = "출발지 검색 결과를 찾지 못해 목적지 주변 거리 기준으로 비교합니다.";
+    }
+  }
+}
+
 function buildInput(els) {
   const arrivalAt = `${els.visitDate.value}T${els.arrival.value}:00+09:00`;
   const departureAt = `${els.visitDate.value}T${els.departure.value}:00+09:00`;
@@ -189,6 +231,8 @@ function buildInput(els) {
       publicOnly: els.filters.publicOnly.checked,
       freeOnly: els.filters.freeOnly.checked,
       dayPassOnly: els.filters.dayPassOnly.checked,
+      openOnly: els.filters.openOnly.checked,
+      discountOnly: els.filters.discountOnly.checked,
       realtimeOnly: els.filters.realtimeOnly.checked,
       lowRiskOnly: els.filters.lowRiskOnly.checked
     }
@@ -196,6 +240,7 @@ function buildInput(els) {
 }
 
 async function calculateAndRender(els) {
+  await resolveOriginFromInput(els);
   const input = buildInput(els);
   if (!input.duration) {
     els.status.textContent = "출차 시간이 입차 시간보다 늦어야 합니다.";
@@ -208,8 +253,24 @@ async function calculateAndRender(els) {
     if (!res.ok) throw new Error("recommend api failed");
     const data = await res.json();
     rows = data.recommended || [];
+    state.lastDataMode = data.summary?.dataMode || "api";
+    state.lastDataSources = data.summary?.dataSources || [];
+    state.lastRealtimeMode = data.summary?.realtimeMode || "sample-fallback";
+    state.lastRealtimeNote = data.summary?.realtimeNote || "";
+    state.lastHolidayContext = data.summary?.holidayContext || null;
+    state.lastMobilityMode = data.summary?.mobilityMode || "distance-fallback";
+    state.lastMobilityNote = data.summary?.mobilityNote || "";
+    state.lastMobilitySource = data.summary?.mobilitySource || "거리 기반 추정";
   } catch (_) {
     rows = fallbackRecommend(input);
+    state.lastDataMode = "sample-fallback";
+    state.lastDataSources = [];
+    state.lastRealtimeMode = "sample-fallback";
+    state.lastRealtimeNote = "샘플 실시간 데이터를 사용합니다.";
+    state.lastHolidayContext = buildClientHolidayContext(input.arrivalAt);
+    state.lastMobilityMode = "distance-fallback";
+    state.lastMobilityNote = input.origin ? "브라우저 fallback 계산으로 차량 소요시간을 추정합니다." : "출발지가 없어 목적지 주변 거리 기준으로 표시합니다.";
+    state.lastMobilitySource = "거리 기반 추정";
   }
   state.results = rows;
   renderResults(els, input);
@@ -217,6 +278,7 @@ async function calculateAndRender(els) {
 }
 
 function fallbackRecommend(input) {
+  input.holidayContext = input.holidayContext || state.lastHolidayContext || buildClientHolidayContext(input.arrivalAt);
   const realtimeMap = new Map(state.realtime.map((item) => [item.parkingLotId, item]));
   const withDistance = state.lots
     .filter((lot) => lot.lat && lot.lng)
@@ -237,7 +299,8 @@ function enrichLot(lot, input, realtime) {
   const risk = calculateRisk(lot, realtime, input.arrivalAt);
   const confidence = calculateConfidence(lot, realtime);
   const score = scoreLot(lot, fee, drivingMinutes, risk, confidence);
-  return { ...lot, ...fee, distanceFromDestinationKm, drivingDistanceKm, drivingMinutes, realtimeAvailable: realtime?.availableSpaces ?? null, realtimeCapacity: realtime?.totalSpaces ?? lot.capacity ?? null, realtimeObservedAt: realtime?.observedAt ?? null, fullRisk: risk.level, fullRiskLabel: risk.label, fullRiskReason: risk.reason, dataConfidence: confidence.level, dataConfidenceLabel: confidence.label, score };
+  const hasDiscountBenefit = Boolean(Number(lot.compactDiscountRate) || Number(lot.disabledDiscountRate) || Number(lot.evDiscountRate) || Number(input.manualDiscountRate));
+  return { ...lot, ...fee, hasDiscountBenefit, distanceFromDestinationKm, drivingDistanceKm, drivingMinutes, drivingMode: input.origin ? "distance-fallback" : "destination-distance", drivingSource: input.origin ? "거리 기반 추정" : "목적지 거리 기준", drivingNote: input.origin ? "Kakao Mobility 연결 전 브라우저에서 거리 기반으로 추정합니다." : "출발지 없이 목적지에서 주차장까지의 거리 기준으로 표시합니다.", realtimeAvailable: realtime?.availableSpaces ?? null, realtimeCapacity: realtime?.totalSpaces ?? lot.capacity ?? null, realtimeObservedAt: realtime?.observedAt ?? null, fullRisk: risk.level, fullRiskLabel: risk.label, fullRiskReason: risk.reason, dataConfidence: confidence.level, dataConfidenceLabel: confidence.label, score };
 }
 
 function estimateFee(lot, input) {
@@ -248,7 +311,8 @@ function estimateFee(lot, input) {
   const parkingFee = timeFee == null ? null : hasDayPass ? Math.min(timeFee, dayPassFee) : timeFee;
   const discountRate = getDiscountRate(lot, input.vehicleType, input.manualDiscountRate);
   const discountedFee = parkingFee == null ? null : Math.max(0, Math.round((parkingFee * (1 - discountRate / 100)) / 10) * 10);
-  return { parkingFee, discountedFee, durationMinutes: minutes, dayPassBetterAfterMinutes: dayPassBreakEven(lot), isOpen: isOpen(lot, input.arrivalAt, input.departureAt), isFree: parkingFee === 0, discountRate };
+  const openInfo = isOpenDuring(lot, input.arrivalAt, input.departureAt, input.holidayContext || null);
+  return { parkingFee, discountedFee, durationMinutes: minutes, dayPassBetterAfterMinutes: dayPassBreakEven(lot), isOpen: openInfo.isOpen, openReason: openInfo.reason, openWindow: openInfo, openDayType: openInfo.dayType, openDayTypeLabel: openInfo.dayTypeLabel, holidayName: openInfo.holidayName || "", isFree: parkingFee === 0, discountRate };
 }
 
 function calculateTimeFee(lot, minutes) {
@@ -281,17 +345,40 @@ function getDiscountRate(lot, type, manual) {
   return 0;
 }
 
-function isOpen(lot, arrivalAt) {
+function buildClientHolidayContext(arrivalAt) {
   const date = new Date(arrivalAt);
+  if (Number.isNaN(date.getTime())) return { dayType: "weekday", dayTypeLabel: "평일", isHoliday: false, holidayName: "", mode: "client-calendar-fallback", note: "방문일 해석이 어려워 평일 기준으로 표시합니다." };
   const day = date.getDay();
-  const open = day === 0 ? lot.holidayOpen : day === 6 ? lot.saturdayOpen : lot.weekdayOpen;
-  const close = day === 0 ? lot.holidayClose : day === 6 ? lot.saturdayClose : lot.weekdayClose;
-  if (!open || !close) return false;
-  if (open === "00:00" && close === "23:59") return true;
-  const current = date.getHours() * 60 + date.getMinutes();
-  const start = toMin(open);
-  const end = toMin(close);
-  return end < start ? current >= start || current <= end : current >= start && current <= end;
+  if (day === 0) return { dayType: "holiday", dayTypeLabel: "공휴일", isHoliday: true, holidayName: "일요일", mode: "client-calendar-fallback", note: "Functions 공휴일 API 연결 전에는 일요일 기준으로 공휴일 운영시간을 적용합니다." };
+  if (day === 6) return { dayType: "saturday", dayTypeLabel: "토요일", isHoliday: false, holidayName: "", mode: "client-calendar-fallback", note: "Functions 공휴일 API 연결 전에는 토요일 운영시간을 적용합니다." };
+  return { dayType: "weekday", dayTypeLabel: "평일", isHoliday: false, holidayName: "", mode: "client-calendar-fallback", note: "Functions 공휴일 API 연결 전에는 평일 운영시간을 적용합니다." };
+}
+
+function operatingWindowFor(lot, arrivalAt, holidayContext) {
+  const context = holidayContext || buildClientHolidayContext(arrivalAt);
+  if (context.dayType === "holiday") return { open: lot.holidayOpen, close: lot.holidayClose, ...context };
+  if (context.dayType === "saturday") return { open: lot.saturdayOpen, close: lot.saturdayClose, ...context };
+  return { open: lot.weekdayOpen, close: lot.weekdayClose, ...context };
+}
+
+function isOpenDuring(lot, arrivalAt, departureAt, holidayContext = null) {
+  const arrival = new Date(arrivalAt);
+  const departure = new Date(departureAt);
+  if (Number.isNaN(arrival.getTime()) || Number.isNaN(departure.getTime())) return { isOpen: false, reason: "방문 시간이 올바르지 않습니다." };
+  const window = operatingWindowFor(lot, arrivalAt, holidayContext);
+  const open = window.open;
+  const close = window.close;
+  if (!open || !close) return { isOpen: false, reason: `${window.dayTypeLabel || "방문일"} 운영시간 정보가 부족합니다.`, ...window };
+  if (open === "00:00" && close === "23:59") return { isOpen: true, reason: `${window.dayTypeLabel || "방문일"} 24시간 운영으로 표시됩니다.`, ...window };
+  const start = arrival.getHours() * 60 + arrival.getMinutes();
+  let end = departure.getHours() * 60 + departure.getMinutes();
+  const openMin = toMin(open);
+  const closeMin = toMin(close);
+  if (departure.getTime() > arrival.getTime() && departure.toDateString() !== arrival.toDateString()) end += 1440;
+  const closeAdjusted = closeMin < openMin ? closeMin + 1440 : closeMin;
+  const startAdjusted = start < openMin && closeMin < openMin ? start + 1440 : start;
+  const fits = startAdjusted >= openMin && end <= closeAdjusted;
+  return { isOpen: fits, reason: fits ? `${window.dayTypeLabel || "방문일"} 운영시간 기준 이용 가능으로 표시됩니다.` : `${window.dayTypeLabel || "방문일"} 운영시간 일부가 선택 시간 밖일 수 있습니다.`, ...window };
 }
 
 function calculateRisk(lot, realtime, arrivalAt) {
@@ -345,6 +432,8 @@ function applyFilters(rows, filters) {
     if (filters.publicOnly && row.publicPrivateType !== "공영") return false;
     if (filters.freeOnly && !row.isFree) return false;
     if (filters.dayPassOnly && !(Number(row.dayPassFee) > 0)) return false;
+    if (filters.openOnly && !row.isOpen) return false;
+    if (filters.discountOnly && !row.hasDiscountBenefit) return false;
     if (filters.realtimeOnly && row.realtimeAvailable == null) return false;
     if (filters.lowRiskOnly && row.fullRisk !== "low") return false;
     return true;
@@ -364,8 +453,12 @@ function renderResults(els, input) {
   const durationText = formatDuration(input.duration);
   const vehicleText = vehicleLabel(input.vehicleType);
   els.summaryTitle.textContent = `${state.destination.name} · ${durationText} · ${vehicleText}`;
-  els.summarySubtitle.textContent = state.results.length ? `${state.results.length}개 주차장 비교 · 추천 1순위 ${state.results[0].name} · 실제 요금과 가능 여부는 현장 확인 필요` : "조건에 맞는 주차장이 없습니다.";
-  els.status.textContent = state.results.length ? "추천 결과를 계산했습니다. 실시간·할인 정보는 참고용입니다." : "조건에 맞는 주차장이 없습니다. 필터를 줄이거나 검색 반경을 넓혀보세요.";
+  const dataModeText = state.lastDataMode === "public-adapter" ? "공공데이터 어댑터 우선" : "샘플 데이터 기준";
+  const realtimeModeText = state.lastRealtimeMode === "seoul-realtime-adapter" ? "서울 실시간 주차대수 반영" : "샘플 실시간 기준";
+  const holidayText = state.lastHolidayContext?.holidayName ? `${state.lastHolidayContext.dayTypeLabel}(${state.lastHolidayContext.holidayName})` : (state.lastHolidayContext?.dayTypeLabel || "방문일");
+  const mobilityText = state.lastMobilityMode === "kakao-mobility-destinations" ? "Kakao Mobility 차량시간 반영" : "거리 기반 차량시간 추정";
+  els.summarySubtitle.textContent = state.results.length ? `${state.results.length}개 주차장 비교 · 추천 1순위 ${state.results[0].name} · ${holidayText} 운영시간 · ${dataModeText} · ${realtimeModeText} · ${mobilityText}` : "조건에 맞는 주차장이 없습니다.";
+  els.status.textContent = state.results.length ? `추천 결과를 계산했습니다. 운영시간은 ${holidayText} 기준, 차량 소요시간은 ${mobilityText}으로 참고 판정합니다. (${dataModeText}, ${realtimeModeText})` : "조건에 맞는 주차장이 없습니다. 필터를 줄이거나 검색 반경을 넓혀보세요.";
   const cards = state.results.map((row) => resultCard(row)).join("");
   els.resultList.innerHTML = cards;
   els.mobileResults.innerHTML = cards || `<p class="fine-print">표시할 추천 주차장이 없습니다.</p>`;
@@ -383,16 +476,18 @@ function resultCard(row) {
   const price = row.discountedFee == null ? "정보 부족" : row.discountedFee === 0 ? "무료" : `${won.format(row.discountedFee)}원`;
   const original = row.parkingFee != null && row.parkingFee !== row.discountedFee ? `<span>할인 전 ${won.format(row.parkingFee)}원</span>` : "";
   const available = row.realtimeAvailable == null ? "실시간 정보 없음" : `현재 가능 ${row.realtimeAvailable}면`;
+  const observed = row.realtimeObservedAt ? ` · 관측 ${formatObservedAt(row.realtimeObservedAt)}` : "";
   const dayPass = row.dayPassBetterAfterMinutes ? `${formatDuration(row.dayPassBetterAfterMinutes)} 이상이면 일주차가 유리합니다.` : "일주차 정보 없음";
+  const driveSource = row.drivingMode === "kakao-mobility" ? "Kakao Mobility" : (row.drivingSource || "거리 기반 추정");
   const reason = recommendationReason(row);
   const roleLabel = row.rank === 1 ? "추천 1순위" : row.discountedFee === cheapestFee() ? "가장 저렴" : row.dayPassBetterAfterMinutes ? "장시간 주차 유리" : "후보 주차장";
   return `<article class="parking-result-card risk-${row.fullRisk}" data-parking-card-id="${escapeHtml(row.id)}">
     <div class="parking-result-head"><span class="rank-badge">${roleLabel}</span><strong>${escapeHtml(row.name)}</strong><em>${escapeHtml(row.publicPrivateType)} · ${escapeHtml(row.parkingType || "주차장")} · 점수 ${row.score}</em></div>
     <div class="parking-price-row"><strong>${price}</strong>${original}</div>
     <p class="parking-reason">${escapeHtml(reason)}</p>
-    <div class="parking-card-metrics"><span>차량 ${row.drivingMinutes ?? "-"}분 · ${row.drivingDistanceKm ?? "-"}km</span><span>${available}</span><span>${row.fullRiskLabel}</span><span>${row.dataConfidenceLabel}</span></div>
+    <div class="parking-card-metrics"><span>차량 ${row.drivingMinutes ?? "-"}분 · ${row.drivingDistanceKm ?? "-"}km · ${escapeHtml(driveSource)}</span><span>${row.openDayTypeLabel || "방문일"} · ${row.isOpen ? "선택 시간 운영 가능" : "운영시간 확인 필요"}</span><span>${available}${observed}</span><span>${row.fullRiskLabel}</span><span>${row.dataConfidenceLabel}</span></div>
     <div class="parking-card-actions"><span class="parking-card-link-note">지도 가격 마커와 같은 계산 결과</span><button class="subtle-button" type="button" data-parking-detail>상세 보기</button></div>
-    <div class="parking-card-detail"><p><strong>일주차 전환점</strong> ${dayPass}</p><p><strong>요금 기준</strong> 기본 ${row.baseMinutes ?? "-"}분 ${formatFee(row.baseFee)}, 추가 ${row.additionalMinutes ?? "-"}분당 ${formatFee(row.additionalFee)}</p><p><strong>할인 반영</strong> ${row.discountRate ? `${row.discountRate}% 참고 할인 적용` : "선택한 할인 없음"}</p><p><strong>운영정보</strong> 평일 ${row.weekdayOpen || "-"}~${row.weekdayClose || "-"}, 토요일 ${row.saturdayOpen || "-"}~${row.saturdayClose || "-"}</p><p><strong>데이터</strong> 출처 ${escapeHtml(row.source || "샘플")}, 기준일 ${row.dataDate || "확인 필요"}</p><p class="fine-print">실제 요금, 할인 적용 여부, 주차 가능 여부는 현장 사정에 따라 달라질 수 있습니다.</p></div>
+    <div class="parking-card-detail"><p><strong>일주차 전환점</strong> ${dayPass}</p><p><strong>요금 기준</strong> 기본 ${row.baseMinutes ?? "-"}분 ${formatFee(row.baseFee)}, 추가 ${row.additionalMinutes ?? "-"}분당 ${formatFee(row.additionalFee)}</p><p><strong>할인 반영</strong> ${row.discountRate ? `${row.discountRate}% 참고 할인 적용` : "선택한 할인 없음"}</p><p><strong>운영정보</strong> ${escapeHtml(row.openReason || "선택 시간 기준 운영 여부를 참고로 판정합니다.")} · 평일 ${row.weekdayOpen || "-"}~${row.weekdayClose || "-"}, 토요일 ${row.saturdayOpen || "-"}~${row.saturdayClose || "-"}, 공휴일 ${row.holidayOpen || "-"}~${row.holidayClose || "-"}</p><p><strong>차량 소요시간</strong> ${row.drivingMinutes ?? "-"}분 · ${row.drivingDistanceKm ?? "-"}km · ${escapeHtml(driveSource)}${row.drivingNote ? ` · ${escapeHtml(row.drivingNote)}` : ""}</p><p><strong>데이터</strong> 출처 ${escapeHtml(row.source || "샘플")}, 기준일 ${row.dataDate || "확인 필요"}</p><p class="fine-print">실제 요금, 할인 적용 여부, 주차 가능 여부는 현장 사정에 따라 달라질 수 있습니다.</p></div>
   </article>`;
 }
 
@@ -525,6 +620,7 @@ function cheapestFee() {
 }
 
 function recommendationReason(row) {
+  if (!row.isOpen) return "선택한 시간 일부가 운영시간 밖일 수 있어 방문 전 확인이 필요합니다.";
   if (row.discountedFee == null) return "요금 정보가 부족해 현장 확인이 필요합니다.";
   if (row.discountedFee === 0) return "무료 가능성이 있는 후보입니다. 운영시간과 실제 무료 조건을 확인해 보세요.";
   if (row.rank === 1) return `${formatDuration(row.durationMinutes)} 기준 요금, 이동 조건, 데이터 신뢰도를 함께 고려한 추천 후보입니다.`;
@@ -556,5 +652,10 @@ function valueOrMax(value) { return value == null ? Number.MAX_SAFE_INTEGER : Nu
 function confidenceValue(value) { return value === "high" ? 3 : value === "medium" ? 2 : 1; }
 function formatDuration(minutes) { return minutes >= 60 ? `${Math.floor(minutes / 60)}시간${minutes % 60 ? ` ${minutes % 60}분` : ""}` : `${minutes}분`; }
 function formatFee(value) { return value == null ? "정보 없음" : `${won.format(value)}원`; }
+function formatObservedAt(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "확인 필요";
+  return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
 function vehicleLabel(type) { return { general: "일반", compact: "경차", disabled: "장애인", ev: "전기차", manual: "직접 할인" }[type] || "일반"; }
 function escapeHtml(value) { return String(value ?? "").replace(/[&<>"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[char])); }

@@ -37,12 +37,12 @@ export function calculateDayPassBetterAfterMinutes(lot) {
 export function estimateParkingFee(lot, input) {
   const minutes = durationMinutes(input.arrivalAt, input.departureAt);
   if (!minutes) return { parkingLotId: lot.id, parkingFee: null, discountedFee: null, durationMinutes: null, confidence: 'low', isOpen: false, reason: '출차 시간이 입차 시간보다 늦어야 합니다.' };
-  const openInfo = isOpenDuring(lot, input.arrivalAt, input.departureAt);
+  const openInfo = isOpenDuring(lot, input.arrivalAt, input.departureAt, input.holidayContext || null);
   const timeFee = calculateTimeFee(lot, minutes);
   const dayPassFee = Number(lot.dayPassFee);
   const hasDayPass = Number.isFinite(dayPassFee) && dayPassFee > 0;
   const parkingFee = timeFee == null ? null : hasDayPass ? Math.min(timeFee, dayPassFee) : timeFee;
   const discountRate = getDiscountRate(lot, input.vehicleType, input.manualDiscountRate);
   const discountedFee = parkingFee == null ? null : Math.max(0, Math.round((parkingFee * (1 - discountRate / 100)) / 10) * 10);
-  return { parkingLotId: lot.id, parkingFee, discountedFee, durationMinutes: minutes, dayPassBetterAfterMinutes: calculateDayPassBetterAfterMinutes(lot), isOpen: openInfo.isOpen, openReason: openInfo.reason, isFree: parkingFee === 0, discountRate, confidence: parkingFee == null ? 'low' : 'medium' };
+  return { parkingLotId: lot.id, parkingFee, discountedFee, durationMinutes: minutes, dayPassBetterAfterMinutes: calculateDayPassBetterAfterMinutes(lot), isOpen: openInfo.isOpen, openReason: openInfo.reason, openWindow: openInfo, openDayType: openInfo.dayType, openDayTypeLabel: openInfo.dayTypeLabel, holidayName: openInfo.holidayName || '', isFree: parkingFee === 0, discountRate, confidence: parkingFee == null ? 'low' : 'medium' };
 }

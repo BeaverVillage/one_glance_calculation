@@ -2,19 +2,24 @@ import { distanceKm, estimateDrivingMinutes } from './distance.js';
 import { estimateParkingFee } from './fee.js';
 import { calculateFullRisk } from './risk.js';
 import { calculateConfidence } from './confidence.js';
-export function enrichLots({ lots, realtimeStatuses = [], destination, origin, input }) {
+export function enrichLots({ lots, realtimeStatuses = [], routeEstimates = [], destination, origin, input }) {
   const realtimeMap = new Map(realtimeStatuses.map((item) => [item.parkingLotId, item]));
+  const routeMap = new Map(routeEstimates.map((item) => [item.parkingLotId, item]));
   return lots.map((lot) => {
     const realtime = realtimeMap.get(lot.id) || null;
+    const route = routeMap.get(lot.id) || null;
     const fee = estimateParkingFee(lot, input);
     const walkKm = destination ? distanceKm(destination, lot) : null;
     const driveKm = origin ? distanceKm(origin, lot) : walkKm;
-    const drivingDistanceKm = driveKm == null ? null : Math.round(driveKm * 10) / 10;
-    const drivingMinutes = driveKm == null ? null : estimateDrivingMinutes(driveKm);
+    const fallbackDistanceKm = driveKm == null ? null : Math.round(driveKm * 10) / 10;
+    const fallbackMinutes = driveKm == null ? null : estimateDrivingMinutes(driveKm);
+    const drivingDistanceKm = route?.distanceKm ?? fallbackDistanceKm;
+    const drivingMinutes = route?.durationMinutes ?? fallbackMinutes;
     const risk = calculateFullRisk(lot, realtime, input.arrivalAt);
     const dataConfidence = calculateConfidence(lot, realtime);
     const score = scoreLot({ lot, fee, drivingMinutes, risk, dataConfidence });
-    return { ...lot, ...fee, distanceFromDestinationKm: walkKm == null ? null : Math.round(walkKm * 10) / 10, drivingMinutes, drivingDistanceKm, realtimeAvailable: realtime?.availableSpaces ?? null, realtimeCapacity: realtime?.totalSpaces ?? lot.capacity ?? null, realtimeObservedAt: realtime?.observedAt ?? null, fullRisk: risk.level, fullRiskLabel: risk.label, fullRiskReason: risk.reason, dataConfidence: dataConfidence.level, dataConfidenceLabel: dataConfidence.label, score };
+    const hasDiscountBenefit = Boolean(Number(lot.compactDiscountRate) || Number(lot.disabledDiscountRate) || Number(lot.evDiscountRate) || Number(input.manualDiscountRate));
+    return { ...lot, ...fee, hasDiscountBenefit, distanceFromDestinationKm: walkKm == null ? null : Math.round(walkKm * 10) / 10, drivingMinutes, drivingDistanceKm, drivingMode: route?.mode || (origin ? 'distance-fallback' : 'destination-distance'), drivingSource: route?.source || (origin ? '거리 기반 추정' : '목적지 거리 기준'), drivingNote: route?.note || '', realtimeAvailable: realtime?.availableSpaces ?? null, realtimeCapacity: realtime?.totalSpaces ?? lot.capacity ?? null, realtimeObservedAt: realtime?.observedAt ?? null, fullRisk: risk.level, fullRiskLabel: risk.label, fullRiskReason: risk.reason, dataConfidence: dataConfidence.level, dataConfidenceLabel: dataConfidence.label, score };
   });
 }
 function scoreLot({ lot, fee, drivingMinutes, risk, dataConfidence }) {
@@ -38,6 +43,8 @@ export function applyFilters(rows, filters = {}) {
     if (filters.dayPassOnly && !(Number(row.dayPassFee) > 0)) return false;
     if (filters.realtimeOnly && row.realtimeAvailable == null) return false;
     if (filters.lowRiskOnly && row.fullRisk !== 'low') return false;
+    if (filters.openOnly && !row.isOpen) return false;
+    if (filters.discountOnly && !row.hasDiscountBenefit) return false;
     return true;
   });
 }

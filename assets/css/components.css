@@ -6784,3 +6784,29 @@ body {
     scroll-margin-top: 16px;
   }
 }
+
+/* Parking 2차 MVP refinements */
+.parking-filter-note {
+  margin-top: -4px;
+  color: #5f6f68;
+}
+.parking-result-card .parking-card-metrics span:nth-child(2) {
+  font-weight: 700;
+  color: #146c5f;
+}
+.parking-result-card:not(.risk-high) .parking-card-metrics span:nth-child(2) {
+  background: rgba(20, 108, 95, 0.08);
+  border-radius: 999px;
+  padding: 4px 8px;
+}
+@media (max-width: 640px) {
+  .parking-filter-note {
+    margin-top: 0;
+    font-size: 0.82rem;
+  }
+  .parking-card-metrics span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: keep-all;
+  }
+}
