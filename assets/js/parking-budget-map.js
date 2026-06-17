@@ -73,6 +73,7 @@ export function initParkingBudgetMap() {
     map: document.querySelector("#parking-map"),
     markerLayer: document.querySelector("#parking-map-markers"),
     mapRefresh: document.querySelector("#parking-map-research-button"),
+    mobileMapJump: document.querySelector("#parking-mobile-map-jump"),
     filters: {
       publicOnly: document.querySelector("#parking-filter-public"),
       freeOnly: document.querySelector("#parking-filter-free"),
@@ -159,6 +160,10 @@ function bindEvents(els) {
     await handleParkingSearch(els);
   });
   els.recommend.addEventListener("click", () => handleParkingSearch(els));
+  els.mobileMapJump?.addEventListener("click", () => {
+    const target = document.querySelector(".parking-dashboard__map") || els.map;
+    if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
   els.mapRefresh?.addEventListener("click", () => researchCurrentMapArea(els));
   els.vehicleType.addEventListener("change", () => {
     els.manualDiscountField.hidden = els.vehicleType.value !== "manual";

@@ -8572,3 +8572,48 @@ body {
     overflow: hidden;
   }
 }
+
+
+/* Mobile-only parking input clipping fix and map jump button 2026-06-17 */
+.parking-mobile-map-jump {
+  display: none !important;
+}
+
+@media (max-width: 640px) {
+  .parking-control-card--schedule {
+    overflow: hidden !important;
+  }
+
+  .parking-control-card--schedule .parking-date-grid,
+  .parking-control-card--schedule .field {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .parking-control-card--schedule input[type="date"],
+  .parking-control-card--schedule input[type="time"] {
+    display: block !important;
+    width: calc(100% - 14px) !important;
+    max-width: calc(100% - 14px) !important;
+    min-width: 0 !important;
+    inline-size: calc(100% - 14px) !important;
+    min-inline-size: 0 !important;
+    justify-self: start !important;
+    box-sizing: border-box !important;
+    padding: 0.68rem 0.72rem !important;
+    font-size: 1rem !important;
+    line-height: 1.2 !important;
+    text-align: center !important;
+  }
+
+  .parking-mobile-map-jump {
+    display: inline-flex !important;
+    grid-column: 1 / -1;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    margin: 0.35rem 0 0;
+  }
+}
