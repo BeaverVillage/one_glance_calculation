@@ -8521,3 +8521,54 @@ body {
   font-weight: 900;
   line-height: 1.25;
 }
+
+/* Parking scoped correction 2026-06-17: PC map/legal flow + mobile date/time overflow only. */
+@media (min-width: 1024px) {
+  .parking-dashboard__main {
+    height: clamp(620px, calc(100vh - 180px), 780px) !important;
+    min-height: 620px !important;
+    overflow: visible !important;
+  }
+
+  .parking-dashboard__results,
+  .parking-dashboard__map {
+    height: 100% !important;
+    min-height: 0 !important;
+  }
+
+  .parking-dashboard__map {
+    display: grid !important;
+    grid-template-rows: auto minmax(0, 1fr) auto !important;
+    gap: 1rem !important;
+    align-content: stretch !important;
+    overflow: visible !important;
+  }
+
+  .parking-dashboard__map .parking-map-card {
+    height: 100% !important;
+    min-height: 0 !important;
+  }
+
+  .parking-map-legal {
+    position: relative;
+    z-index: 1;
+    margin-top: 0 !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .parking-control-card--schedule,
+  .parking-control-card--schedule .parking-date-grid,
+  .parking-control-card--schedule .field,
+  .parking-control-card--schedule input[type="date"],
+  .parking-control-card--schedule input[type="time"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .parking-control-card--schedule .parking-date-grid {
+    overflow: hidden;
+  }
+}
