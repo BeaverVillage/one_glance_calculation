@@ -1,4 +1,11 @@
-﻿const DEFAULT_PLACE = { name: "코엑스", address: "서울 강남구 영동대로 513", lat: 37.511, lng: 127.059 };
+const DEFAULT_PLACE = { name: "코엑스", address: "서울 강남구 영동대로 513", lat: 37.511, lng: 127.059 };
+const SAMPLE_PLACES = [
+  DEFAULT_PLACE,
+  { name: "강남역", address: "서울 강남구 강남대로 396", lat: 37.4979, lng: 127.0276 },
+  { name: "서울역", address: "서울 용산구 한강대로 405", lat: 37.5547, lng: 126.9707 },
+  { name: "홍대입구", address: "서울 마포구 양화로 160", lat: 37.5572, lng: 126.9245 },
+  { name: "인천공항", address: "인천 중구 공항로 272", lat: 37.4602, lng: 126.4407 }
+];
 const API_BASE = "/api/parking";
 
 const state = {
@@ -9,7 +16,9 @@ const state = {
   realtime: [],
   results: [],
   map: null,
-  kakaoMarkers: []
+  kakaoMarkers: [],
+  kakaoDestinationMarker: null,
+  mapMode: "fallback"
 };
 
 const won = new Intl.NumberFormat("ko-KR");
@@ -108,9 +117,9 @@ async function searchDestination(els) {
     state.places = data.places?.length ? data.places : [DEFAULT_PLACE];
   } catch (_) {
     const lower = query.toLowerCase();
-    const localPlaces = [DEFAULT_PLACE, { name: "강남역", address: "서울 강남구 강남대로 396", lat: 37.4979, lng: 127.0276 }, { name: "서울역", address: "서울 용산구 한강대로 405", lat: 37.5547, lng: 126.9707 }];
-    state.places = localPlaces.filter((place) => `${place.name} ${place.address}`.toLowerCase().includes(lower));
-    if (!state.places.length) state.places = localPlaces;
+    state.places = SAMPLE_PLACES.filter((place) => `${place.name} ${place.address}`.toLowerCase().includes(lower));
+    if (!state.places.length) state.places = SAMPLE_PLACES;
+    els.searchStatus.textContent = "목적지 검색 API를 사용할 수 없어 샘플 목적지 기준으로 계산합니다.";
   }
   state.destination = state.places[0];
   renderPlaces(els);
@@ -206,9 +215,13 @@ async function calculateAndRender(els) {
 
 function fallbackRecommend(input) {
   const realtimeMap = new Map(state.realtime.map((item) => [item.parkingLotId, item]));
-  const rows = state.lots
-    .filter((lot) => distanceKm(input.destination, lot) * 1000 <= input.radius)
-    .map((lot) => enrichLot(lot, input, realtimeMap.get(lot.id) || null));
+  const withDistance = state.lots
+    .filter((lot) => lot.lat && lot.lng)
+    .map((lot) => ({ ...lot, distanceFromDestinationKmRaw: distanceKm(input.destination, lot) }))
+    .sort((a, b) => a.distanceFromDestinationKmRaw - b.distanceFromDestinationKmRaw);
+  const nearby = withDistance.filter((lot) => lot.distanceFromDestinationKmRaw * 1000 <= input.radius);
+  const base = nearby.length ? nearby : withDistance.slice(0, 8);
+  const rows = base.map((lot) => enrichLot(lot, input, realtimeMap.get(lot.id) || null));
   return sortRows(applyFilters(rows, input.filters), input.sort).map((row, index) => ({ ...row, rank: index + 1 }));
 }
 
@@ -348,7 +361,7 @@ function renderResults(els, input) {
   const durationText = formatDuration(input.duration);
   const vehicleText = vehicleLabel(input.vehicleType);
   els.summaryTitle.textContent = `${state.destination.name} · ${durationText} · ${vehicleText}`;
-  els.summarySubtitle.textContent = `${state.results.length}개 주차장 비교 · 실제 요금과 가능 여부는 현장 확인 필요`;
+  els.summarySubtitle.textContent = state.results.length ? `${state.results.length}개 주차장 비교 · 추천 1순위 ${state.results[0].name} · 실제 요금과 가능 여부는 현장 확인 필요` : "조건에 맞는 주차장이 없습니다.";
   els.status.textContent = state.results.length ? "추천 결과를 계산했습니다. 실시간·할인 정보는 참고용입니다." : "조건에 맞는 주차장이 없습니다. 필터를 줄이거나 검색 반경을 넓혀보세요.";
   const cards = state.results.map((row) => resultCard(row)).join("");
   els.resultList.innerHTML = cards;
@@ -364,45 +377,75 @@ function renderResults(els, input) {
 }
 
 function resultCard(row) {
-  const price = row.discountedFee == null ? "계산 불가" : `${won.format(row.discountedFee)}원`;
-  const original = row.parkingFee != null && row.parkingFee !== row.discountedFee ? `<span>기준 ${won.format(row.parkingFee)}원</span>` : "";
+  const price = row.discountedFee == null ? "정보 부족" : row.discountedFee === 0 ? "무료" : `${won.format(row.discountedFee)}원`;
+  const original = row.parkingFee != null && row.parkingFee !== row.discountedFee ? `<span>할인 전 ${won.format(row.parkingFee)}원</span>` : "";
   const available = row.realtimeAvailable == null ? "실시간 정보 없음" : `현재 가능 ${row.realtimeAvailable}면`;
   const dayPass = row.dayPassBetterAfterMinutes ? `${formatDuration(row.dayPassBetterAfterMinutes)} 이상이면 일주차가 유리합니다.` : "일주차 정보 없음";
+  const reason = recommendationReason(row);
+  const roleLabel = row.rank === 1 ? "추천 1순위" : row.discountedFee === cheapestFee() ? "가장 저렴" : row.dayPassBetterAfterMinutes ? "장시간 주차 유리" : "후보 주차장";
   return `<article class="parking-result-card risk-${row.fullRisk}">
-    <div class="parking-result-head"><span class="rank-badge">추천 ${row.rank}위</span><strong>${escapeHtml(row.name)}</strong><em>${escapeHtml(row.publicPrivateType)} · 점수 ${row.score}</em></div>
+    <div class="parking-result-head"><span class="rank-badge">${roleLabel}</span><strong>${escapeHtml(row.name)}</strong><em>${escapeHtml(row.publicPrivateType)} · ${escapeHtml(row.parkingType || "주차장")} · 점수 ${row.score}</em></div>
     <div class="parking-price-row"><strong>${price}</strong>${original}</div>
+    <p class="parking-reason">${escapeHtml(reason)}</p>
     <div class="parking-card-metrics"><span>차량 ${row.drivingMinutes ?? "-"}분 · ${row.drivingDistanceKm ?? "-"}km</span><span>${available}</span><span>${row.fullRiskLabel}</span><span>${row.dataConfidenceLabel}</span></div>
     <div class="parking-card-actions"><button class="subtle-button" type="button" data-parking-detail>상세 보기</button></div>
-    <div class="parking-card-detail"><p><strong>일주차 전환점</strong> ${dayPass}</p><p><strong>요금 기준</strong> 기본 ${row.baseMinutes ?? "-"}분 ${formatFee(row.baseFee)}, 추가 ${row.additionalMinutes ?? "-"}분당 ${formatFee(row.additionalFee)}</p><p><strong>운영정보</strong> 평일 ${row.weekdayOpen || "-"}~${row.weekdayClose || "-"}, 토요일 ${row.saturdayOpen || "-"}~${row.saturdayClose || "-"}</p><p><strong>데이터</strong> 출처 ${escapeHtml(row.source || "샘플")}, 기준일 ${row.dataDate || "확인 필요"}</p><p class="fine-print">실제 요금, 할인 적용 여부, 주차 가능 여부는 현장 사정에 따라 달라질 수 있습니다.</p></div>
+    <div class="parking-card-detail"><p><strong>일주차 전환점</strong> ${dayPass}</p><p><strong>요금 기준</strong> 기본 ${row.baseMinutes ?? "-"}분 ${formatFee(row.baseFee)}, 추가 ${row.additionalMinutes ?? "-"}분당 ${formatFee(row.additionalFee)}</p><p><strong>할인 반영</strong> ${row.discountRate ? `${row.discountRate}% 참고 할인 적용` : "선택한 할인 없음"}</p><p><strong>운영정보</strong> 평일 ${row.weekdayOpen || "-"}~${row.weekdayClose || "-"}, 토요일 ${row.saturdayOpen || "-"}~${row.saturdayClose || "-"}</p><p><strong>데이터</strong> 출처 ${escapeHtml(row.source || "샘플")}, 기준일 ${row.dataDate || "확인 필요"}</p><p class="fine-print">실제 요금, 할인 적용 여부, 주차 가능 여부는 현장 사정에 따라 달라질 수 있습니다.</p></div>
   </article>`;
 }
 
 async function loadKakaoMap(els) {
   try {
-    const res = await fetch(`${API_BASE}/config`);
-    if (!res.ok) throw new Error("config failed");
-    const data = await res.json();
-    if (!data.kakaoMapJsKey) throw new Error("no key");
-    await injectKakaoScript(data.kakaoMapJsKey);
-    if (!window.kakao?.maps) throw new Error("kakao unavailable");
-    window.kakao.maps.load(() => {
-      const center = new window.kakao.maps.LatLng(state.destination.lat, state.destination.lng);
-      state.map = new window.kakao.maps.Map(els.map, { center, level: 4 });
-      renderMap(els);
-    });
-  } catch (_) {
-    els.map.classList.add("is-fallback");
+    const key = await resolveKakaoMapKey();
+    if (!key) throw new Error("KAKAO_MAP_JS_KEY가 설정되지 않았습니다.");
+    await injectKakaoScript(key);
+    if (!window.kakao?.maps?.load) throw new Error("카카오맵 SDK 객체를 찾지 못했습니다.");
+    await new Promise((resolve) => window.kakao.maps.load(resolve));
+    const center = new window.kakao.maps.LatLng(state.destination.lat, state.destination.lng);
+    state.map = new window.kakao.maps.Map(els.map, { center, level: 4 });
+    state.mapMode = "kakao";
+    els.map.classList.remove("is-fallback");
+    updateMapFallbackNotice(els, "카카오맵 연결됨", "목적지 주변 주차장 후보를 지도에서 비교해 보세요.");
     renderMap(els);
+  } catch (error) {
+    state.map = null;
+    state.mapMode = "fallback";
+    els.map.classList.add("is-fallback");
+    const message = error?.message || "지도 API를 불러오지 못했습니다.";
+    updateMapFallbackNotice(els, "샘플 지도 계산 모드", `카카오맵을 불러오지 못해 샘플 위치로 예상 요금을 표시합니다. ${message}`);
+    renderMap(els);
+  }
+}
+
+async function resolveKakaoMapKey() {
+  const fromWindow = window.HANNUNCALC_CONFIG?.KAKAO_MAP_JS_KEY || window.KAKAO_MAP_JS_KEY;
+  if (fromWindow) return fromWindow;
+  const meta = document.querySelector('meta[name="kakao-map-js-key"]')?.content?.trim();
+  if (meta) return meta;
+  try {
+    const res = await fetch(`${API_BASE}/config`, { cache: "no-store" });
+    if (!res.ok) return "";
+    const data = await res.json();
+    return data.kakaoMapJsKey || "";
+  } catch (_) {
+    return "";
   }
 }
 
 function injectKakaoScript(key) {
   return new Promise((resolve, reject) => {
-    if (window.kakao?.maps) return resolve();
+    if (window.kakao?.maps?.load) return resolve();
+    const existing = document.querySelector("script[data-kakao-map-sdk]");
+    if (existing) {
+      existing.addEventListener("load", resolve, { once: true });
+      existing.addEventListener("error", () => reject(new Error("카카오맵 SDK 스크립트 로드 실패")), { once: true });
+      return;
+    }
     const script = document.createElement("script");
-    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${encodeURIComponent(key)}&autoload=false&libraries=services`;
+    script.dataset.kakaoMapSdk = "true";
+    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${encodeURIComponent(key)}&libraries=services&autoload=false`;
+    script.async = true;
     script.onload = resolve;
-    script.onerror = reject;
+    script.onerror = () => reject(new Error("카카오맵 SDK 스크립트 로드 실패: JavaScript 키, 도메인 등록, 네트워크/CSP 설정을 확인하세요."));
     document.head.append(script);
   });
 }
@@ -411,10 +454,21 @@ function renderMap(els) {
   if (state.map && window.kakao?.maps) {
     state.kakaoMarkers.forEach((marker) => marker.setMap(null));
     state.kakaoMarkers = [];
+    if (state.kakaoDestinationMarker) state.kakaoDestinationMarker.setMap(null);
     const center = new window.kakao.maps.LatLng(state.destination.lat, state.destination.lng);
     state.map.setCenter(center);
+    state.kakaoDestinationMarker = new window.kakao.maps.CustomOverlay({
+      position: center,
+      content: `<span class="parking-destination-marker">목적지</span>`,
+      yAnchor: 1.2
+    });
+    state.kakaoDestinationMarker.setMap(state.map);
     state.results.slice(0, 50).forEach((row) => {
-      const marker = new window.kakao.maps.CustomOverlay({ position: new window.kakao.maps.LatLng(row.lat, row.lng), content: `<button class="parking-map-label">${row.discountedFee == null ? "정보없음" : row.discountedFee === 0 ? "무료" : won.format(row.discountedFee) + "원"}</button>`, yAnchor: 1 });
+      const marker = new window.kakao.maps.CustomOverlay({
+        position: new window.kakao.maps.LatLng(row.lat, row.lng),
+        content: `<button class="parking-map-label ${row.rank === 1 ? "is-best" : ""}" type="button">${row.discountedFee == null ? "정보부족" : row.discountedFee === 0 ? "무료" : won.format(row.discountedFee) + "원"}</button>`,
+        yAnchor: 1
+      });
       marker.setMap(state.map);
       state.kakaoMarkers.push(marker);
     });
@@ -442,6 +496,30 @@ function renderFallbackMarkers(els) {
     const label = row.discountedFee == null ? "정보없음" : row.discountedFee === 0 ? "무료" : `${won.format(row.discountedFee)}원`;
     return `<button class="parking-map-label ${row.rank === 1 ? "is-best" : ""}" style="left:${p.left};top:${p.top}" type="button">${label}</button>`;
   }).join("") + `<span class="parking-destination-marker" style="left:50%;top:50%">목적지</span>`;
+}
+
+
+function updateMapFallbackNotice(els, title, message) {
+  const box = els.map.querySelector(".parking-map-fallback");
+  if (!box) return;
+  const strong = box.querySelector("strong");
+  const span = box.querySelector("span");
+  if (strong) strong.textContent = title;
+  if (span) span.textContent = message;
+}
+
+function cheapestFee() {
+  const fees = state.results.map((row) => row.discountedFee).filter((value) => value != null);
+  return fees.length ? Math.min(...fees) : null;
+}
+
+function recommendationReason(row) {
+  if (row.discountedFee == null) return "요금 정보가 부족해 현장 확인이 필요합니다.";
+  if (row.discountedFee === 0) return "무료 가능성이 있는 후보입니다. 운영시간과 실제 무료 조건을 확인해 보세요.";
+  if (row.rank === 1) return `${formatDuration(row.durationMinutes)} 기준 요금, 이동 조건, 데이터 신뢰도를 함께 고려한 추천 후보입니다.`;
+  if (row.dayPassBetterAfterMinutes) return `일 최대 요금이 있어 ${formatDuration(row.dayPassBetterAfterMinutes)} 이상 장시간 주차에 유리할 수 있습니다.`;
+  if (row.publicPrivateType === "공영") return "공영주차장으로 할인 조건을 확인해 볼 만한 후보입니다.";
+  return "목적지 주변에서 비교 가능한 후보입니다. 실제 요금과 운영시간은 현장 기준을 확인하세요.";
 }
 
 function durationMinutes(arrivalAt, departureAt) {

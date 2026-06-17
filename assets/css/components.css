@@ -6361,3 +6361,326 @@ body {
     font-size: 0.74rem;
   }
 }
+
+/* Parking budget map MVP finishing pass 2026-06-17 */
+.parking-app-shell,
+.parking-app-shell * {
+  box-sizing: border-box;
+}
+
+.parking-workspace {
+  grid-template-columns: minmax(360px, 420px) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.parking-left-panel,
+.parking-map-column,
+.parking-input-panel,
+.parking-summary-panel,
+.parking-map-card,
+.parking-result-card,
+.parking-bottom-sheet {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.parking-input-panel input,
+.parking-input-panel select,
+.parking-input-panel button,
+.parking-bottom-sheet button {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.parking-inline-search > * {
+  min-width: 0;
+}
+
+.parking-map-card {
+  min-height: 640px;
+  isolation: isolate;
+}
+
+.parking-map {
+  overflow: hidden;
+}
+
+.parking-map.is-fallback {
+  background:
+    radial-gradient(circle at 18% 22%, rgba(20, 108, 95, 0.12), transparent 26%),
+    radial-gradient(circle at 78% 70%, rgba(49, 130, 206, 0.12), transparent 28%),
+    linear-gradient(135deg, #e8f5f0 0%, #eef4ff 48%, #f8fafc 100%);
+}
+
+.parking-map.is-fallback::before {
+  border-top-color: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 62px 0 rgba(255, 255, 255, 0.64), 0 128px 0 rgba(255, 255, 255, 0.48);
+}
+
+.parking-map.is-fallback::after {
+  border-top-color: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 -74px 0 rgba(255, 255, 255, 0.44), 0 86px 0 rgba(255, 255, 255, 0.52);
+}
+
+.parking-map-fallback {
+  z-index: 2;
+  max-width: calc(100% - 32px);
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+}
+
+.parking-map:not(.is-fallback) .parking-map-fallback {
+  display: none;
+}
+
+.parking-map-label,
+.parking-destination-marker {
+  max-width: min(168px, 46vw);
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.parking-reason {
+  margin: -0.2rem 0 0;
+  color: #334155;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+}
+
+.parking-card-actions .subtle-button {
+  min-height: 36px;
+  padding: 0.45rem 0.72rem;
+}
+
+.parking-card-detail p {
+  margin: 0;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+}
+
+.parking-result-card.risk-high {
+  border-color: rgba(192, 86, 33, 0.26);
+}
+
+.parking-result-card.risk-low {
+  border-color: rgba(20, 108, 95, 0.24);
+}
+
+.parking-guide .guide-grid {
+  align-items: stretch;
+}
+
+.parking-guide .guide-grid article {
+  display: grid;
+  align-content: start;
+  gap: 0.45rem;
+  border-radius: 16px;
+}
+
+.parking-guide .guide-grid article h3,
+.parking-guide .guide-grid article p {
+  margin: 0;
+}
+
+.parking-guide .guide-grid article:last-child {
+  border: 1px solid rgba(178, 106, 0, 0.22);
+  background: #fff8e7;
+}
+
+.parking-place-chip strong,
+.parking-place-chip span,
+.parking-card-metrics span,
+.parking-result-head strong,
+.parking-result-head em {
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+}
+
+@media (max-width: 1024px) {
+  .parking-workspace {
+    grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
+    gap: 18px;
+  }
+
+  .parking-map-card {
+    min-height: 560px;
+  }
+}
+
+@media (max-width: 860px) {
+  .parking-workspace {
+    grid-template-columns: 1fr;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .parking-map-column {
+    position: relative;
+    top: auto;
+  }
+
+  .parking-result-list {
+    display: none;
+  }
+
+  .parking-bottom-sheet {
+    position: relative;
+    bottom: auto;
+    z-index: 1;
+    display: block;
+    max-height: none;
+    margin: 1rem 0 0;
+    border-radius: 18px;
+    box-shadow: 0 12px 28px rgba(15, 35, 55, 0.12);
+    overflow: visible;
+  }
+}
+
+@media (max-width: 640px) {
+  main,
+  .calculator-page,
+  .parking-hero {
+    padding-bottom: calc(140px + env(safe-area-inset-bottom));
+  }
+
+  .parking-hero .container,
+  .parking-app-shell,
+  .parking-workspace,
+  .parking-left-panel,
+  .parking-map-column,
+  .parking-input-panel,
+  .parking-summary-panel,
+  .parking-map-card,
+  .parking-result-card,
+  .parking-bottom-sheet {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .parking-app-shell {
+    margin-top: 1rem;
+  }
+
+  .parking-input-panel,
+  .parking-summary-panel,
+  .parking-result-card {
+    padding: 1rem;
+    border-radius: 16px;
+  }
+
+  .parking-date-grid,
+  .parking-inline-search {
+    grid-template-columns: 1fr !important;
+    gap: 0.65rem;
+  }
+
+  .quick-duration-row,
+  .parking-filter-row,
+  .parking-place-results {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    gap: 0.45rem;
+    margin: 0.65rem 0 0.85rem;
+    padding-bottom: 0;
+  }
+
+  .quick-duration-row button,
+  .parking-filter-row label,
+  .parking-place-chip {
+    flex: 1 1 calc(50% - 0.45rem);
+    min-width: 0;
+    min-height: 38px;
+    white-space: normal;
+  }
+
+  .parking-place-chip {
+    width: 100%;
+  }
+
+  .parking-filter-row label {
+    justify-content: flex-start;
+    font-size: 0.9rem;
+  }
+
+  .parking-map-card {
+    min-height: 360px;
+    border-radius: 16px;
+  }
+
+  .parking-map {
+    min-height: 320px;
+  }
+
+  .parking-map-fallback {
+    width: min(92%, 340px);
+    padding: 0.85rem;
+    font-size: 0.9rem;
+  }
+
+  .parking-map-label,
+  .parking-destination-marker {
+    min-width: 48px;
+    max-width: 132px;
+    min-height: 30px;
+    padding: 0.3rem 0.48rem;
+    font-size: 0.72rem;
+  }
+
+  .parking-card-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .parking-price-row strong {
+    font-size: 1.42rem;
+  }
+
+  .parking-result-head strong {
+    font-size: 1rem;
+  }
+
+  .parking-bottom-sheet {
+    padding: 0.8rem;
+  }
+
+  .parking-card-actions {
+    justify-content: stretch;
+  }
+
+  .parking-card-actions .subtle-button,
+  .parking-inline-search .primary-button,
+  .parking-inline-search .subtle-button,
+  .wide-button {
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 390px) {
+  .quick-duration-row button,
+  .parking-filter-row label {
+    flex-basis: 100%;
+  }
+
+  .parking-map-card {
+    min-height: 330px;
+  }
+}
+
+/* Parking MVP layout fix: prevent generic .tool-panel two-column form from overlapping map */
+.parking-input-panel,
+.parking-summary-panel {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 1rem;
+  width: 100%;
+}
+
+.parking-map-card {
+  display: block !important;
+}
