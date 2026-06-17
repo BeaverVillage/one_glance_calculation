@@ -42,7 +42,7 @@ export function enrichLots({ lots, realtimeStatuses = [], destination, input }) 
 }
 
 function scoreLot({ lot, fee, risk, dataConfidence, mode = 'recommended', distanceFromDestinationKm = null, filters = {} }) {
-  const feeScore = lot.pricingStatus === 'needs-check' || lot.hasFeeInfo === false || fee.discountedFee == null ? 6 : Math.max(0, 42 - fee.discountedFee / 800);
+  const feeScore = fee.discountedFee == null ? 18 : Math.max(0, 42 - fee.discountedFee / 800);
   const nearScore = distanceFromDestinationKm == null ? 8 : Math.max(0, 30 - distanceFromDestinationKm * 9);
   const riskScore = risk.level === 'low' ? 14 : risk.level === 'medium' ? 6 : risk.level === 'high' ? -12 : 0;
   const confidenceScore = dataConfidence.level === 'high' ? 11 : dataConfidence.level === 'medium' ? 5 : -6;

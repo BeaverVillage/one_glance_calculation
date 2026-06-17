@@ -6,8 +6,6 @@ const SAMPLE_PLACES = [
   { name: "홍대입구", address: "서울 마포구 양화로 160", lat: 37.5572, lng: 126.9245 },
   { name: "인천공항", address: "인천 중구 공항로 272", lat: 37.4602, lng: 126.4407 },
   { name: "건국대학교 서울캠퍼스", address: "서울 광진구 능동로 120", lat: 37.5408, lng: 127.0793 },
-  { name: "회기역 파전골목", address: "서울 동대문구 회기로 일대", lat: 37.5901, lng: 127.0566 },
-  { name: "왕십리역", address: "서울 성동구 왕십리광장로 17", lat: 37.5615, lng: 127.0379 },
   { name: "부산역", address: "부산 동구 중앙대로 206", lat: 35.1151, lng: 129.0403 },
   { name: "대구역", address: "대구 북구 태평로 161", lat: 35.8763, lng: 128.5966 },
   { name: "광주송정역", address: "광주 광산구 상무대로 201", lat: 35.1375, lng: 126.7914 },
@@ -85,6 +83,7 @@ export function initParkingBudgetMap() {
   };
 
   setupDefaults(els);
+  setupMobileOptionsToggle();
   bindEvents(els);
   loadMockData().then(() => {
     renderPlaces(els);
@@ -103,12 +102,49 @@ function syncPreferenceCards(els) {
 }
 
 function setupDefaults(els) {
-  const today = new Date();
-  els.visitDate.value = today.toISOString().slice(0, 10);
+  const now = new Date();
+  const departure = new Date(now);
+  departure.setHours(departure.getHours() + 4);
+  els.visitDate.value = formatDateInput(now);
+  els.arrival.value = formatTimeInput(now);
+  els.departure.value = formatDateInput(departure) === els.visitDate.value ? formatTimeInput(departure) : "23:59";
   els.destination.value = DEFAULT_PLACE.name;
   syncPreferenceCards(els);
 }
 
+function setupMobileOptionsToggle() {
+  const card = document.querySelector(".parking-control-card--options");
+  if (!card || card.dataset.mobileToggleReady === "true") return;
+  const label = card.querySelector(".step-label");
+  if (!label) return;
+
+  const toggle = document.createElement("button");
+  toggle.type = "button";
+  toggle.className = "parking-options-toggle";
+  toggle.setAttribute("aria-expanded", "false");
+  toggle.innerHTML = '<span>3단계 · 차량/할인 조건</span><strong>열기</strong>';
+
+  const body = document.createElement("div");
+  body.className = "parking-options-body";
+  let node = label.nextSibling;
+  while (node) {
+    const next = node.nextSibling;
+    body.appendChild(node);
+    node = next;
+  }
+
+  card.append(toggle, body);
+  card.classList.add("is-collapsed");
+  card.dataset.mobileToggleReady = "true";
+
+  toggle.addEventListener("click", () => {
+    const open = card.classList.toggle("is-open");
+    card.classList.toggle("is-collapsed", !open);
+    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    const stateText = toggle.querySelector("strong");
+    if (stateText) stateText.textContent = open ? "접기" : "열기";
+  });
+}
 function bindEvents(els) {
   els.form.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -448,7 +484,7 @@ function calculateConfidence(lot, realtime) {
 }
 
 function scoreLot(lot, fee, risk, confidence, mode = "recommended", distanceFromDestinationKm = null, filters = {}) {
-  const feeScore = lot.pricingStatus === 'needs-check' || lot.hasFeeInfo === false || fee.discountedFee == null ? 6 : Math.max(0, 42 - fee.discountedFee / 800);
+  const feeScore = fee.discountedFee == null ? 18 : Math.max(0, 42 - fee.discountedFee / 800);
   const nearScore = distanceFromDestinationKm == null ? 8 : Math.max(0, 30 - distanceFromDestinationKm * 9);
   const riskScore = risk.level === "low" ? 14 : risk.level === "medium" ? 6 : risk.level === "high" ? -12 : 0;
   const confidenceScore = confidence.level === "high" ? 11 : confidence.level === "medium" ? 5 : -6;
@@ -523,16 +559,12 @@ function renderResults(els, input) {
 function bindResultCardEvents(container, els) {
   container.querySelectorAll("[data-parking-card-id]").forEach((card) => {
     card.addEventListener("click", (event) => {
-      const interactive = event.target.closest("button, a, details, summary, input, select, textarea");
-      if (interactive) return;
-      pinParkingCard(card.dataset.parkingCardId, els, { scroll: false });
+      if (event.target.closest("button, a, summary, details, input, select, textarea")) return;
+      pinParkingCard(card.dataset.parkingCardId, els, { scrollToMap: window.innerWidth <= 860 });
     });
   });
   container.querySelectorAll("[data-parking-pin-clear]").forEach((button) => {
-    button.addEventListener("click", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      event.stopPropagation();
+    button.addEventListener("click", () => {
       state.pinnedParkingId = "";
       applyPinnedParkingState(els);
     });
@@ -540,7 +572,6 @@ function bindResultCardEvents(container, els) {
   container.querySelectorAll("[data-parking-detail-toggle]").forEach((button) => {
     button.addEventListener("click", (event) => {
       event.preventDefault();
-      event.stopPropagation();
       const card = button.closest(".parking-result-card");
       const detail = card?.querySelector("[data-parking-card-detail]");
       if (!card || !detail) return;
@@ -554,9 +585,8 @@ function bindResultCardEvents(container, els) {
 }
 
 function renderResultCard(row) {
-  const needsFeeCheck = row.pricingStatus === "needs-check" || row.hasFeeInfo === false || row.discountedFee == null;
-  const price = needsFeeCheck ? "요금 확인 필요" : row.discountedFee === 0 ? "무료" : `${won.format(row.discountedFee)}원`;
-  const original = !needsFeeCheck && row.parkingFee != null && row.parkingFee !== row.discountedFee ? `<span>할인 전 ${won.format(row.parkingFee)}원</span>` : "";
+  const price = row.discountedFee == null ? "정보 부족" : row.discountedFee === 0 ? "무료" : `${won.format(row.discountedFee)}원`;
+  const original = row.parkingFee != null && row.parkingFee !== row.discountedFee ? `<span>할인 전 ${won.format(row.parkingFee)}원</span>` : "";
   const dayPass = row.dayPassBetterAfterMinutes ? `${formatDuration(row.dayPassBetterAfterMinutes)} 이상이면 일주차가 유리할 수 있습니다.` : "일주차 전환점 정보 없음";
   const realtime = realtimeAvailabilityText(row);
   const distance = row.distanceFromDestinationKm == null ? "거리 정보 없음" : `목적지에서 약 ${formatDistance(row.distanceFromDestinationKm)}`;
@@ -572,8 +602,8 @@ function renderResultCard(row) {
     ${pinned ? `<p class="parking-pinned-badge">지도에서 선택한 주차장입니다.</p>` : ""}
     <button type="button" class="parking-detail-toggle" data-parking-detail-toggle aria-expanded="false">상세 보기 ▼</button>
     <div class="parking-card-detail" data-parking-card-detail hidden>
-      <p><strong>요금 기준</strong> ${needsFeeCheck ? "요금 정보가 없어 현장 확인이 필요한 후보입니다." : `${formatDuration(row.durationMinutes)} 기준 예상 요금입니다.`}</p>
-      <p><strong>기본/추가 요금</strong> ${needsFeeCheck ? "요금 정보 없음 · 방문 전 주차장 안내를 확인하세요." : `기본 ${row.baseMinutes ?? "-"}분 ${formatFee(row.baseFee)}, 추가 ${row.additionalMinutes ?? "-"}분당 ${formatFee(row.additionalFee)}`}</p>
+      <p><strong>요금 기준</strong> ${formatDuration(row.durationMinutes)} 기준 예상 요금입니다.</p>
+      <p><strong>기본/추가 요금</strong> 기본 ${row.baseMinutes ?? "-"}분 ${formatFee(row.baseFee)}, 추가 ${row.additionalMinutes ?? "-"}분당 ${formatFee(row.additionalFee)}</p>
       <p><strong>일주차 전환점</strong> ${dayPass}</p>
       <p><strong>할인 반영</strong> ${row.discountRate ? `${row.discountRate}% 참고 할인 적용` : "선택한 할인 없음"}</p>
       <p><strong>운영정보</strong> ${escapeHtml(row.openReason || "선택 시간 기준 운영 여부를 참고로 판정합니다.")}</p>
@@ -595,9 +625,8 @@ function realtimeAvailabilityText(row) {
 function renderDataBadges(els, input) {
   if (!els.dataBadges) return;
   const badges = [];
-  const isPublic = ["public-adapter", "hybrid-public-sample", "hybrid-public-national-cache", "hybrid-cache-kakao-local", "national-cache-fallback", "national-cache-expanded"].includes(state.lastDataMode);
-  badges.push(isPublic ? "공공·캐시 데이터" : "참고 데이터");
-  if (String(state.lastDataMode || "").includes("kakao")) badges.push("카카오 후보 보강");
+  const isPublic = state.lastDataMode === "public-adapter" || state.lastDataMode === "hybrid-public-sample";
+  badges.push(isPublic ? "공공데이터" : "참고 데이터");
   badges.push(state.lastRealtimeMode === "seoul-realtime-adapter" ? "실시간 일부 반영" : "실시간 일부 없음");
   if (state.lastDataMode === "hybrid-public-sample" || state.lastDataMode === "sample-fallback") badges.push("보조 데이터 사용");
   if (state.lastHolidayContext?.dayTypeLabel) badges.push(`${state.lastHolidayContext.dayTypeLabel} 운영시간`);
@@ -745,8 +774,8 @@ function renderMap(els) {
       button.type = "button";
       button.dataset.parkingMarkerId = row.id;
       button.title = `${row.name} · ${label}`;
-      button.innerHTML = `<span>${label}</span>`;
-      button.addEventListener("click", () => pinParkingCard(row.id, els, { scroll: true }));
+      button.innerHTML = markerContent(row, label);
+      button.addEventListener("click", () => pinParkingCard(row.id, els, { popup: true }));
       const marker = new window.kakao.maps.CustomOverlay({
         position: new window.kakao.maps.LatLng(row.lat, row.lng),
         content: button,
@@ -777,29 +806,64 @@ function renderFallbackMarkers(els) {
   els.markerLayer.innerHTML = rows.map((row) => {
     const p = pos(row);
     const label = markerLabel(row);
-    return `<button class="parking-map-label ${row.rank === 1 ? "is-best" : ""} ${state.pinnedParkingId === row.id ? "is-selected" : ""}" style="left:${p.left};top:${p.top}" type="button" data-parking-marker-id="${escapeHtml(row.id)}" title="${escapeHtml(row.name)} · ${label}"><span>${label}</span></button>`;
+    return `<button class="parking-map-label ${row.rank === 1 ? "is-best" : ""} ${state.pinnedParkingId === row.id ? "is-selected" : ""}" style="left:${p.left};top:${p.top}" type="button" data-parking-marker-id="${escapeHtml(row.id)}" title="${escapeHtml(row.name)} · ${label}">${markerContent(row, label)}</button>`;
   }).join("") + `<span class="parking-destination-marker" style="left:50%;top:50%">목적지</span>`;
   els.markerLayer.querySelectorAll("[data-parking-marker-id]").forEach((button) => {
-    button.addEventListener("click", () => pinParkingCard(button.dataset.parkingMarkerId, els, { scroll: true }));
+    button.addEventListener("click", () => pinParkingCard(button.dataset.parkingMarkerId, els, { popup: true }));
   });
 }
 
+function markerContent(row, label) {
+  const rank = Number.isFinite(Number(row.rank)) ? Number(row.rank) : "";
+  const rankHtml = rank ? `<b class="parking-marker-rank" aria-label="추천 순위 ${rank}위">${rank}</b>` : "";
+  return `${rankHtml}<span>${escapeHtml(label)}</span>`;
+}
 function markerLabel(row) {
-  if (row.pricingStatus === "needs-check" || row.hasFeeInfo === false || row.discountedFee == null) return "요금확인";
+  if (row.discountedFee == null) return "정보없음";
   if (row.discountedFee === 0) return "무료";
   return `${won.format(row.discountedFee)}원`;
 }
 
-function pinParkingCard(id, els, { scroll = false } = {}) {
+function pinParkingCard(id, els, { scroll = false, popup = false, scrollToMap = false } = {}) {
   state.pinnedParkingId = id || "";
   applyPinnedParkingState(els);
-  const safeId = typeof CSS !== "undefined" && CSS.escape ? CSS.escape(state.pinnedParkingId) : state.pinnedParkingId.replace(/"/g, "\\\"");
+  const safeId = typeof CSS !== "undefined" && CSS.escape ? CSS.escape(state.pinnedParkingId) : String(state.pinnedParkingId).replace(/"/g, '\\"');
   const target = document.querySelector(`[data-parking-card-id="${safeId}"]`);
+  if (scrollToMap) document.querySelector(".parking-dashboard__map")?.scrollIntoView({ behavior: "smooth", block: "start" });
   if (scroll) target?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   target?.classList.add("is-highlighted");
   setTimeout(() => target?.classList.remove("is-highlighted"), 1200);
+  if (popup) showParkingMapPopup(id, els);
 }
 
+function showParkingMapPopup(id, els) {
+  const row = state.results.find((item) => item.id === id);
+  const mapCard = document.querySelector(".parking-map-card");
+  if (!row || !mapCard) return;
+  mapCard.querySelector(".parking-map-popup")?.remove();
+  const price = row.discountedFee == null ? markerLabel(row) : row.discountedFee === 0 ? markerLabel(row) : `${won.format(row.discountedFee)}원`;
+  const distance = row.distanceFromDestinationKm == null ? "거리 정보 없음" : `목적지에서 약 ${formatDistance(row.distanceFromDestinationKm)}`;
+  const realtime = realtimeAvailabilityText(row);
+  const popup = document.createElement("article");
+  popup.className = "parking-map-popup";
+  popup.setAttribute("role", "dialog");
+  popup.setAttribute("aria-label", `${row.name} 주차장 요약`);
+  popup.innerHTML = [
+    '<button type="button" class="parking-map-popup__close" aria-label="지도 주차장 요약 닫기">×</button>',
+    '<div class="parking-map-popup__head">',
+    `<span>${row.rank || "-"}위</span>`,
+    `<strong>${escapeHtml(row.name)}</strong>`,
+    '</div>',
+    `<p class="parking-map-popup__meta">${escapeHtml(row.publicPrivateType || "구분 확인")} · ${escapeHtml(row.fullRiskLabel || "위험도 확인 필요")}</p>`,
+    `<p class="parking-map-popup__price">${escapeHtml(price)}</p>`,
+    `<p class="parking-map-popup__detail">${escapeHtml(distance)} · ${escapeHtml(realtime)}</p>`,
+    `<p class="parking-map-popup__detail">${escapeHtml(row.dataConfidenceLabel || "신뢰도 확인 필요")}</p>`,
+    '<button type="button" class="subtle-button tiny" data-popup-scroll-card>추천 카드 보기</button>'
+  ].join("");
+  popup.querySelector(".parking-map-popup__close")?.addEventListener("click", () => popup.remove());
+  popup.querySelector("[data-popup-scroll-card]")?.addEventListener("click", () => pinParkingCard(id, els, { scroll: true }));
+  mapCard.append(popup);
+}
 function applyPinnedParkingState(els) {
   document.querySelectorAll("[data-parking-card-id]").forEach((card) => {
     card.classList.toggle("is-pinned", Boolean(state.pinnedParkingId) && card.dataset.parkingCardId === state.pinnedParkingId);
@@ -820,7 +884,7 @@ function updateMapFallbackNotice(els, title, message) {
 
 function recommendationReason(row) {
   if (!row.isOpen) return "선택한 시간 일부가 운영시간 밖일 수 있어 방문 전 확인이 필요합니다.";
-  if (row.pricingStatus === "needs-check" || row.hasFeeInfo === false || row.discountedFee == null) return "요금 정보가 없어 방문 전 확인이 필요한 후보입니다.";
+  if (row.discountedFee == null) return "요금 정보가 부족해 현장 확인이 필요합니다.";
   if (row.discountedFee === 0) return "무료 가능성이 있는 후보입니다. 운영시간과 실제 무료 조건을 확인해 보세요.";
   if (row.rank === 1) return `${formatDuration(row.durationMinutes)} 기준 가장 합리적인 후보입니다.`;
   if (row.dayPassBetterAfterMinutes) return `장시간 주차에 유리할 수 있습니다.`;
@@ -845,6 +909,8 @@ function distanceKm(a, b) {
 }
 function toMin(value) { const [h, m] = value.split(":").map(Number); return h * 60 + m; }
 function pad(value) { return String(value).padStart(2, "0"); }
+function formatDateInput(date) { return date.getFullYear() + "-" + pad(date.getMonth() + 1) + "-" + pad(date.getDate()); }
+function formatTimeInput(date) { return pad(date.getHours()) + ":" + pad(date.getMinutes()); }
 function round1(value) { return Math.round(value * 10) / 10; }
 function clamp(value, min, max) { return Math.min(max, Math.max(min, Number(value) || 0)); }
 function valueOrMax(value) { return value == null ? Number.MAX_SAFE_INTEGER : Number(value); }

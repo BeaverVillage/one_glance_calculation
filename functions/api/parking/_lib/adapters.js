@@ -5,7 +5,6 @@ const DEFAULT_SEOUL_BASE = 'http://openapi.seoul.go.kr:8088';
 const DEFAULT_SEOUL_PARK_INFO_SERVICE = 'GetParkInfo';
 const DEFAULT_SEOUL_REALTIME_SERVICE = 'GetParkingInfo';
 const MAX_DATASET_RETURN = 80;
-const LOCAL_SUPPLEMENT_THRESHOLD = 8;
 
 export async function resolveParkingLotDataset({ env = {}, destination = null, radius = 3000, query = '' } = {}) {
   const radiusMeters = normalizeRadiusMeters(radius);
@@ -30,15 +29,6 @@ export async function resolveParkingLotDataset({ env = {}, destination = null, r
     errors.push(publicData.error);
   }
 
-  const kakaoLocal = destination
-    ? await safeFetch('kakao-local-parking', () => fetchKakaoLocalParkingLots(env, { destination, radius: radiusMeters }))
-    : { ok: true, lots: [], source: null };
-  if (kakaoLocal.ok) {
-    if (kakaoLocal.source) sources.push(kakaoLocal.source);
-  } else {
-    errors.push(kakaoLocal.error);
-  }
-
   const dedupedExternal = dedupeLots(externalLots);
   const externalWithDistance = addDistances(dedupedExternal, destination);
   const externalNearby = filterByRadius(externalWithDistance, radiusMeters);
@@ -46,43 +36,35 @@ export async function resolveParkingLotDataset({ env = {}, destination = null, r
   const cacheWithDistance = addDistances(nationalCache, destination);
   const cacheNearby = filterByRadius(cacheWithDistance, radiusMeters);
   const expandedCacheNearby = cacheNearby.length ? cacheNearby : filterByRadius(cacheWithDistance, Math.min(3000, Math.max(radiusMeters, 3000)));
-  const kakaoWithDistance = addDistances(kakaoLocal.ok ? kakaoLocal.lots : [], destination);
-  const kakaoNearby = filterByRadius(kakaoWithDistance, radiusMeters);
   const sampleWithDistance = addDistances(sampleParkingLots, destination);
   const sampleNearby = filterByRadius(sampleWithDistance, radiusMeters);
 
-  let selectedLots = dedupeLots([...externalNearby, ...cacheNearby]);
-  let mode = externalNearby.length ? (cacheNearby.length ? 'hybrid-public-national-cache' : 'public-adapter') : (cacheNearby.length ? 'national-cache-fallback' : 'public-adapter-empty');
+  let selectedLots = externalNearby;
+  let mode = externalNearby.length ? 'public-adapter' : 'public-adapter-empty';
   let fallbackReason = '';
   let effectiveRadiusMeters = radiusMeters;
 
-  if (!selectedLots.length && expandedCacheNearby.length) {
-    selectedLots = dedupeLots([...expandedCacheNearby]);
-    mode = 'national-cache-expanded';
-    fallbackReason = '기본 반경 내 후보가 없어 전국 주차장 캐시에서 확장 반경 후보를 사용했습니다.';
-    effectiveRadiusMeters = Math.min(3000, Math.max(radiusMeters, 3000));
-  }
-
-  if (selectedLots.length < LOCAL_SUPPLEMENT_THRESHOLD && kakaoNearby.length) {
-    selectedLots = dedupeLots([...selectedLots, ...kakaoNearby]);
-    mode = selectedLots.some((lot) => lot.source === '카카오 Local API')
-      ? (selectedLots.some((lot) => lot.hasFeeInfo !== false) ? 'hybrid-cache-kakao-local' : 'kakao-local-fallback')
-      : mode;
-    fallbackReason = selectedLots.some((lot) => lot.source === '카카오 Local API')
-      ? '전국 주차장 캐시 후보가 적어 카카오 Local API 주차장 후보를 요금 확인 필요 후보로 함께 표시했습니다.'
-      : fallbackReason;
-  }
-
-  if (!selectedLots.length && sampleNearby.length) {
-    selectedLots = dedupeLots([...sampleNearby]);
-    mode = 'sample-fallback';
-    fallbackReason = externalWithDistance.length || cacheWithDistance.length
-      ? '연동 데이터와 전국 캐시의 반경 후보가 없어 로컬 샘플 후보를 사용했습니다.'
-      : '연동 가능한 후보가 없어 로컬 샘플 후보를 사용했습니다.';
-  } else if (!selectedLots.length) {
-    fallbackReason = externalWithDistance.length || cacheWithDistance.length
-      ? '데이터는 조회됐지만 현재 반경 내 주차장이 없습니다.'
-      : '연동 가능한 주차장 후보가 없습니다.';
+  if (externalNearby.length < 3 && expandedCacheNearby.length) {
+    selectedLots = dedupeLots([...externalNearby, ...expandedCacheNearby]);
+    mode = externalNearby.length ? 'hybrid-public-national-cache' : 'national-cache-fallback';
+    fallbackReason = externalNearby.length
+      ? '공공데이터 반경 후보가 적어 전국 주차장 캐시 후보를 함께 사용했습니다.'
+      : externalWithDistance.length
+        ? '공공데이터는 조회됐지만 현재 반경 내 주차장이 없어 전국 주차장 캐시 후보를 사용했습니다.'
+        : '연동 가능한 공공데이터 후보가 없어 전국 주차장 캐시 후보를 사용했습니다.';
+    if (!externalNearby.length && !cacheNearby.length && expandedCacheNearby.length) effectiveRadiusMeters = Math.min(3000, Math.max(radiusMeters, 3000));
+  } else if (externalNearby.length < 3 && sampleNearby.length) {
+    selectedLots = dedupeLots([...externalNearby, ...sampleNearby]);
+    mode = externalNearby.length ? 'hybrid-public-sample' : 'sample-fallback';
+    fallbackReason = externalNearby.length
+      ? '공공데이터 반경 후보가 적어 로컬 샘플 후보를 함께 사용했습니다.'
+      : externalWithDistance.length
+        ? '공공데이터는 조회됐지만 현재 반경 내 주차장이 없어 로컬 샘플 후보를 사용했습니다.'
+        : '연동 가능한 공공데이터 후보가 없어 로컬 샘플 후보를 사용했습니다.';
+  } else if (!externalNearby.length) {
+    fallbackReason = externalWithDistance.length
+      ? '공공데이터는 조회됐지만 현재 반경 내 주차장이 없습니다.'
+      : '연동 가능한 공공데이터 후보가 없습니다.';
   }
 
   selectedLots = filterByRadius(addDistances(selectedLots, destination), effectiveRadiusMeters)
@@ -98,8 +80,6 @@ export async function resolveParkingLotDataset({ env = {}, destination = null, r
     sampleNearby,
     cacheNearby,
     expandedCacheNearby,
-    kakaoLocal: kakaoLocal.ok ? kakaoLocal : null,
-    kakaoNearby,
     selectedLots
   });
 
@@ -173,7 +153,7 @@ function filterByRadius(lots, radiusMeters) {
   });
 }
 
-function buildDatasetStats({ sources, externalLots, dedupedExternal, externalWithDistance, externalNearby, sampleNearby, cacheNearby, expandedCacheNearby, kakaoLocal = null, kakaoNearby = [], selectedLots }) {
+function buildDatasetStats({ sources, externalLots, dedupedExternal, externalWithDistance, externalNearby, sampleNearby, cacheNearby, expandedCacheNearby, selectedLots }) {
   const sourceById = new Map(sources.filter(Boolean).map((source) => [source.id, source]));
   const seoul = sourceById.get('seoul-open-data') || {};
   const publicData = sourceById.get('public-data-parking') || {};
@@ -186,8 +166,6 @@ function buildDatasetStats({ sources, externalLots, dedupedExternal, externalWit
     nearbyCount: externalNearby.length,
     nationalCacheNearbyCount: cacheNearby?.length || 0,
     expandedCacheNearbyCount: expandedCacheNearby?.length || 0,
-    kakaoFetchedCount: Number(kakaoLocal?.source?.count || 0),
-    kakaoNearbyCount: kakaoNearby?.length || 0,
     sampleNearbyCount: sampleNearby.length,
     returnedCount: selectedLots.length
   };
@@ -276,88 +254,6 @@ async function fetchPublicParkingLots(env, { query = '' } = {}) {
     ok: true,
     source: { id: 'public-data-parking', name: '공공데이터포털 전국주차장정보표준데이터', service: 'tn_pubr_prkplce_info_api', count: filtered.length, fetchedCount: allRows.length, normalizedCount: normalized.length, pagesFetched: maxPages },
     lots: filtered
-  };
-}
-
-async function fetchKakaoLocalParkingLots(env, { destination = null, radius = 1500 } = {}) {
-  const key = env.KAKAO_REST_API_KEY || '';
-  if (!key || !destination || !Number.isFinite(Number(destination.lat)) || !Number.isFinite(Number(destination.lng))) {
-    return { ok: true, lots: [], source: null };
-  }
-  const radiusMeters = normalizeRadiusMeters(radius);
-  const rows = [];
-  for (let page = 1; page <= 3; page += 1) {
-    const url = new URL('https://dapi.kakao.com/v2/local/search/keyword.json');
-    url.searchParams.set('query', '주차장');
-    url.searchParams.set('x', String(destination.lng));
-    url.searchParams.set('y', String(destination.lat));
-    url.searchParams.set('radius', String(radiusMeters));
-    url.searchParams.set('sort', 'distance');
-    url.searchParams.set('size', '15');
-    url.searchParams.set('page', String(page));
-    const res = await fetch(url.toString(), {
-      headers: { Authorization: 'KakaoAK ' + key },
-      cf: { cacheTtl: 300, cacheEverything: true }
-    });
-    if (!res.ok) throw new Error(`카카오 Local 주차장 검색 실패: ${res.status}`);
-    const data = await res.json();
-    const docs = data?.documents || [];
-    rows.push(...docs);
-    if (data?.meta?.is_end || docs.length < 15) break;
-  }
-  const lots = rows.map(normalizeKakaoParkingPlace).filter(Boolean);
-  return {
-    ok: true,
-    source: { id: 'kakao-local-parking', name: '카카오 Local API 주차장 검색', service: 'keyword.json', count: rows.length, normalizedCount: lots.length },
-    lots
-  };
-}
-
-function normalizeKakaoParkingPlace(doc) {
-  const name = doc?.place_name || '';
-  const lat = toNumber(doc?.y, null);
-  const lng = toNumber(doc?.x, null);
-  if (!name || !isValidLatLng(lat, lng)) return null;
-  const address = doc.road_address_name || doc.address_name || '';
-  return {
-    id: 'KAKAO_' + slug(doc.id || name),
-    name,
-    publicPrivateType: '요금 확인 필요',
-    parkingType: '주차장',
-    roadAddress: doc.road_address_name || '',
-    jibunAddress: doc.address_name || '',
-    lat,
-    lng,
-    capacity: null,
-    operatingDays: '현장 확인',
-    weekdayOpen: '',
-    weekdayClose: '',
-    saturdayOpen: '',
-    saturdayClose: '',
-    holidayOpen: '',
-    holidayClose: '',
-    feeType: '요금 확인 필요',
-    baseMinutes: null,
-    baseFee: null,
-    additionalMinutes: null,
-    additionalFee: null,
-    dayPassMinutes: null,
-    dayPassFee: null,
-    monthlyFee: null,
-    paymentMethods: '현장 확인',
-    notes: '카카오 Local API 장소 검색으로 보강한 후보입니다. 요금 정보는 방문 전 확인이 필요합니다.',
-    agencyName: '카카오 Local API',
-    phone: doc.phone || '',
-    hasDisabledSpaces: null,
-    dataDate: new Date().toISOString().slice(0, 10),
-    source: '카카오 Local API',
-    region: normalizeRegion(address),
-    realtimeKey: null,
-    disabledDiscountRate: 0,
-    compactDiscountRate: 0,
-    evDiscountRate: 0,
-    pricingStatus: 'needs-check',
-    hasFeeInfo: false
   };
 }
 
@@ -652,6 +548,5 @@ export const __parkingAdapterTest = {
   dedupeLots,
   filterByRadius,
   addDistances,
-  loadNationalParkingCache,
-  normalizeKakaoParkingPlace
+  loadNationalParkingCache
 };

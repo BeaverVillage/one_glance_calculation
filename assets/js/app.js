@@ -1,4 +1,4 @@
-import { calculateReport } from "./calculator.js?v=20260614-cache-fix";
+﻿import { calculateReport } from "./calculator.js?v=20260614-cache-fix";
 import { initBmiCalculator } from "./bmi-calculator.js?v=20260614-cache-fix";
 import { initCaffeineSleepCalculator } from "./caffeine-sleep.js?v=20260614-cache-fix";
 import { initCigaretteCostCalculator } from "./cigarette-cost.js?v=20260614-cache-fix";
@@ -6,7 +6,7 @@ import { initApplianceElectricityCalculator } from "./appliance-electricity.js?v
 import { initAustraliaPayCalculator } from "./australia-pay.js?v=20260616-mobile-exchange-whv-final";
 import { initAustraliaWhv88DaysCalculator } from "./australia-whv-88-days.js?v=20260616-mobile-exchange-whv-final";
 import { initExchangeRateCalculator } from "./exchange-rate.js?v=20260616-mobile-exchange-whv-final";
-import { initParkingBudgetMap } from "./parking-budget-map.js?v=20260617-parking-final-local-supplement";
+import { initParkingBudgetMap } from "./parking-budget-map.js?v=20260617-parking-map-fix3";
 import { initLoanInterestCalculator } from "./loan-interest.js?v=20260614-cache-fix";
 import { initNetSalaryCalculator } from "./net-salary.js?v=20260614-cache-fix";
 import { initPercentileCalculator } from "./percentile.js?v=20260614-cache-fix";
@@ -123,7 +123,7 @@ const state = {
 
 const els = {};
 
-document.addEventListener("DOMContentLoaded", async () => {
+async function initApp() {
   initResponsiveNav();
   initToolDrawer();
   initAffiliateAds();
@@ -157,11 +157,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   } catch (error) {
     showLoadError(error);
   }
-});
+}
 
 window.addEventListener("pageshow", () => {
   sortCalculatorRankSections();
 });
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initApp, { once: true });
+} else {
+  initApp();
+}
 
 function initResponsiveNav() {
   const navs = document.querySelectorAll(".site-nav");
@@ -321,9 +327,8 @@ function initToolDrawer() {
     const trigger = event.target.closest("[data-tool-drawer]");
     if (!trigger) return;
     event.preventDefault();
-    event.stopPropagation();
     openDrawer();
-  }, true);
+  });
 
   drawer.querySelector(".tool-drawer-close")?.addEventListener("click", closeDrawer);
   backdrop.addEventListener("click", closeDrawer);
@@ -612,3 +617,7 @@ function showLoadError(error) {
   els.decisionBadge.className = "decision-badge warn";
   els.decisionCopy.textContent = "잠시 후 다시 시도해 주세요. 문제가 계속되면 문의 페이지로 알려 주세요.";
 }
+
+
+
+
