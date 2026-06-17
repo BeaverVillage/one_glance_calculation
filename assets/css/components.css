@@ -6810,3 +6810,169 @@ body {
     word-break: keep-all;
   }
 }
+
+/* Parking recommendation mode UX step */
+.parking-sort-field select {
+  min-height: 44px;
+}
+.parking-preference-panel {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.85rem;
+  border: 1px solid rgba(20, 108, 95, 0.16);
+  border-radius: 16px;
+  background: #f7fbfa;
+}
+.parking-preference-head {
+  display: grid;
+  gap: 0.2rem;
+}
+.parking-preference-head strong {
+  color: #102033;
+  font-size: 0.98rem;
+}
+.parking-preference-head span {
+  color: #607085;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+.parking-preference-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+.parking-preference-card {
+  display: grid;
+  gap: 0.2rem;
+  width: 100%;
+  min-width: 0;
+  padding: 0.7rem 0.75rem;
+  border: 1px solid #d6e0ea;
+  border-radius: 14px;
+  background: #fff;
+  color: #17324d;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+}
+.parking-preference-card strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+  line-height: 1.25;
+}
+.parking-preference-card span {
+  color: #64748b;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+}
+.parking-preference-card.active {
+  border-color: #146c5f;
+  background: #e7f5f1;
+  box-shadow: 0 0 0 3px rgba(20, 108, 95, 0.1);
+}
+.parking-preference-card.active strong::before {
+  content: "✓";
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #146c5f;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+.parking-score-reason {
+  margin: -0.35rem 0 0;
+  color: #475569;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+}
+.parking-map-label {
+  display: inline-grid;
+  gap: 1px;
+  align-items: center;
+  justify-items: center;
+}
+.parking-map-label small {
+  color: inherit;
+  font-size: 0.68rem;
+  font-weight: 800;
+  opacity: 0.86;
+  line-height: 1.05;
+}
+@media (min-width: 861px) {
+  .parking-preference-card:last-child {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 640px) {
+  .parking-preference-panel {
+    padding: 0.75rem;
+    border-radius: 14px;
+  }
+  .parking-preference-grid {
+    grid-template-columns: 1fr;
+  }
+  .parking-preference-card {
+    padding: 0.68rem 0.72rem;
+  }
+  .parking-sort-field {
+    display: none;
+  }
+}
+
+/* Parking MVP marker selection and recommendation card UX */
+.parking-map-label.is-selected {
+  border-color: #0f766e;
+  background: #0f766e;
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.18), 0 14px 26px rgba(15, 35, 55, 0.2);
+  transform: translate(-50%, -50%) scale(1.04);
+}
+.parking-result-card.is-pinned {
+  border-color: #0f766e;
+  background: linear-gradient(180deg, #f0fdfa 0%, #ffffff 60%);
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.14), 0 18px 34px rgba(15, 35, 55, 0.12);
+}
+.parking-pin-badge {
+  display: none;
+  width: fit-content;
+  padding: 0.22rem 0.5rem;
+  border-radius: 999px;
+  background: #0f766e;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+.parking-result-card.is-pinned .parking-pin-badge {
+  display: inline-flex;
+}
+.parking-action-buttons {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.parking-unpin-button {
+  display: none;
+}
+.parking-result-card.is-pinned .parking-unpin-button {
+  display: inline-flex;
+}
+@media (max-width: 640px) {
+  .parking-action-buttons {
+    justify-content: flex-start;
+  }
+  .parking-card-actions {
+    grid-template-columns: 1fr;
+  }
+}

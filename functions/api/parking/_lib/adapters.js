@@ -1,7 +1,6 @@
 import { distanceKm } from './distance.js';
 
 const DEFAULT_SEOUL_BASE = 'http://openapi.seoul.go.kr:8088';
-const DEFAULT_PUBLIC_DATA_BASE = '';
 const DEFAULT_SEOUL_PARK_INFO_SERVICE = 'GetParkInfo';
 const DEFAULT_SEOUL_REALTIME_SERVICE = 'GetParkingInfo';
 
@@ -88,11 +87,11 @@ async function safeFetch(name, task) {
 async function fetchSeoulParkingLots(env, { query = '' } = {}) {
   const key = env.SEOUL_OPEN_API_KEY || '';
   if (!key) return { ok: true, lots: [], source: null };
-  const base = (env.SEOUL_OPEN_API_BASE || DEFAULT_SEOUL_BASE).replace(/\/$/, '');
-  const service = env.SEOUL_PARK_INFO_API_NAME || DEFAULT_SEOUL_PARK_INFO_SERVICE;
+  const base = DEFAULT_SEOUL_BASE;
+  const service = DEFAULT_SEOUL_PARK_INFO_SERVICE;
   const keyword = query ? '/' + encodeURIComponent(query) : '';
   const url = `${base}/${encodeURIComponent(key)}/json/${encodeURIComponent(service)}/1/100${keyword}`;
-  const res = await fetch(url, { cf: { cacheTtl: apiCacheTtl(env, 300), cacheEverything: true } });
+  const res = await fetch(url, { cf: { cacheTtl: 300, cacheEverything: true } });
   if (!res.ok) throw new Error(`서울 열린데이터 ${service} 호출 실패: ${res.status}`);
   const data = await res.json();
   const rows = data?.[service]?.row || data?.GetParkInfo?.row || data?.GetParkingInfo?.row || data?.getParkInfo?.row || data?.row || [];
@@ -104,12 +103,12 @@ async function fetchSeoulParkingLots(env, { query = '' } = {}) {
 }
 
 async function fetchSeoulRealtimeParking(env) {
-  const key = env.SEOUL_OPEN_API_KEY || env.SEOUL_REALTIME_PARKING_API_KEY || '';
+  const key = env.SEOUL_OPEN_API_KEY || '';
   if (!key) return { ok: true, statuses: [], source: null };
-  const base = (env.SEOUL_OPEN_API_BASE || DEFAULT_SEOUL_BASE).replace(/\/$/, '');
-  const service = env.SEOUL_REALTIME_PARKING_API_NAME || DEFAULT_SEOUL_REALTIME_SERVICE;
+  const base = DEFAULT_SEOUL_BASE;
+  const service = DEFAULT_SEOUL_REALTIME_SERVICE;
   const url = `${base}/${encodeURIComponent(key)}/json/${encodeURIComponent(service)}/1/1000`;
-  const res = await fetch(url, { cf: { cacheTtl: apiCacheTtl(env, 60, 'PARKING_REALTIME_CACHE_TTL_SECONDS'), cacheEverything: true } });
+  const res = await fetch(url, { cf: { cacheTtl: 60, cacheEverything: true } });
   if (!res.ok) throw new Error(`서울 실시간 주차대수 ${service} 호출 실패: ${res.status}`);
   const data = await res.json();
   const rows = data?.[service]?.row || data?.GetParkingInfo?.row || data?.RealtimeCityParking?.row || data?.row || [];
@@ -121,23 +120,12 @@ async function fetchSeoulRealtimeParking(env) {
 }
 
 async function fetchPublicParkingLots(env, { query = '' } = {}) {
-  const key = env.PUBLIC_DATA_API_KEY || '';
-  const endpoint = env.PUBLIC_DATA_PARKING_API_URL || env.PUBLIC_DATA_PARKING_ENDPOINT || DEFAULT_PUBLIC_DATA_BASE;
-  if (!key || !endpoint) return { ok: true, lots: [], source: null };
-  const url = new URL(endpoint);
-  if (!url.searchParams.has('serviceKey')) url.searchParams.set('serviceKey', key);
-  if (!url.searchParams.has('_type')) url.searchParams.set('_type', 'json');
-  if (!url.searchParams.has('numOfRows')) url.searchParams.set('numOfRows', '100');
-  if (query && !url.searchParams.has('keyword')) url.searchParams.set('keyword', query);
-  const res = await fetch(url.toString(), { cf: { cacheTtl: apiCacheTtl(env, 300), cacheEverything: true } });
-  if (!res.ok) throw new Error(`공공데이터포털 주차장 API 호출 실패: ${res.status}`);
-  const data = await res.json();
-  const rows = unwrapPublicDataRows(data);
-  return {
-    ok: true,
-    source: { id: 'public-data-portal', name: '공공데이터포털 주차장 API', count: rows.length },
-    lots: rows.map(normalizePublicDataParkingRow).filter(Boolean)
-  };
+  // 전국주차장정보표준데이터는 제공 방식이 배포 환경마다 다를 수 있어
+  // 이번 MVP에서는 실제 endpoint를 하드코딩하지 않고 로컬/샘플 데이터 fallback을 우선 사용합니다.
+  // PUBLIC_DATA_API_KEY는 향후 데이터 수집/캐시 파이프라인에서 사용합니다.
+  void env;
+  void query;
+  return { ok: true, lots: [], source: null };
 }
 
 function unwrapPublicDataRows(data) {
@@ -289,11 +277,6 @@ function matchRealtimeStatuses(lots, statuses) {
     });
   }
   return dedupeStatuses(matched);
-}
-
-function apiCacheTtl(env, fallback = 300, key = 'PARKING_API_CACHE_TTL_SECONDS') {
-  const value = Number(env?.[key] || env?.PARKING_API_CACHE_TTL_SECONDS);
-  return Number.isFinite(value) && value >= 0 ? value : fallback;
 }
 
 function hasNumber(value) {

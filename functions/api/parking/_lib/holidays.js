@@ -69,15 +69,14 @@ export async function resolveHolidayContext({ env = {}, dateString } = {}) {
 
 async function fetchKoreanPublicHolidays(env, parts) {
   const key = env.HOLIDAY_API_KEY || env.PUBLIC_DATA_API_KEY || '';
-  const base = (env.HOLIDAY_API_BASE || DEFAULT_HOLIDAY_BASE).replace(/\/$/, '');
-  const service = env.HOLIDAY_API_NAME || DEFAULT_HOLIDAY_SERVICE;
+  const base = DEFAULT_HOLIDAY_BASE;
+  const service = DEFAULT_HOLIDAY_SERVICE;
   const url = new URL(`${base}/${service}`);
   url.searchParams.set('serviceKey', normalizeServiceKey(key));
   url.searchParams.set('solYear', parts.year);
   url.searchParams.set('solMonth', parts.month);
   url.searchParams.set('_type', 'json');
-  const ttl = apiCacheTtl(env, 86400, 'HOLIDAY_API_CACHE_TTL_SECONDS');
-  const res = await fetch(url.toString(), { cf: { cacheTtl: ttl, cacheEverything: true } });
+  const res = await fetch(url.toString(), { cf: { cacheTtl: 86400, cacheEverything: true } });
   if (!res.ok) throw new Error(`한국천문연구원 특일 정보 호출 실패: ${res.status}`);
   const text = await res.text();
   return parseHolidayResponse(text);
@@ -168,7 +167,3 @@ export function isOpenDuring(lot, arrivalAt, departureAt, holidayContext = null)
   };
 }
 
-function apiCacheTtl(env, fallback, key = 'PARKING_API_CACHE_TTL_SECONDS') {
-  const value = Number(env[key]);
-  return Number.isFinite(value) && value > 0 ? value : fallback;
-}
