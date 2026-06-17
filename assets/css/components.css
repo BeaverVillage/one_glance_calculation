@@ -8617,3 +8617,46 @@ body {
     margin: 0.35rem 0 0;
   }
 }
+
+/* Parking mobile schedule input width fix 2026-06-17: only shrink date/time boxes to prevent right-edge clipping. */
+@media (max-width: 640px) {
+  .parking-control-card--schedule .parking-date-grid {
+    grid-template-columns: 1fr !important;
+    justify-items: stretch !important;
+    overflow: visible !important;
+  }
+
+  .parking-control-card--schedule .field {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow: visible !important;
+  }
+
+  #parking-visit-date,
+  #parking-arrival-time,
+  #parking-departure-time {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    display: block !important;
+    width: calc(100% - 40px) !important;
+    max-width: calc(100% - 40px) !important;
+    min-width: 0 !important;
+    inline-size: calc(100% - 40px) !important;
+    min-inline-size: 0 !important;
+    justify-self: start !important;
+    margin-right: 0 !important;
+    box-sizing: border-box !important;
+    padding-left: 0.65rem !important;
+    padding-right: 0.65rem !important;
+    overflow: hidden !important;
+    text-align: center !important;
+  }
+
+  #parking-visit-date::-webkit-date-and-time-value,
+  #parking-arrival-time::-webkit-date-and-time-value,
+  #parking-departure-time::-webkit-date-and-time-value {
+    min-width: 0 !important;
+    text-align: center !important;
+  }
+}
