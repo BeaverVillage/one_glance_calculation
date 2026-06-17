@@ -61,7 +61,7 @@
             <div class="parking-workspace">
               <div class="parking-left-panel">
                 <form id="parking-search-form" class="tool-panel parking-input-panel">
-                  <div class="step-label">1단계 · 목적지와 일정</div>
+                  <div class="step-label">1단계 · 어디에 가나요?</div>
                   <div class="field">
                     <label for="parking-destination">목적지</label>
                     <div class="parking-inline-search">
@@ -71,6 +71,7 @@
                     <p id="parking-search-status" class="fine-print" aria-live="polite">목적지를 검색하면 주변 샘플 주차장 또는 API 결과를 비교합니다.</p>
                   </div>
                   <div id="parking-place-results" class="parking-place-results" aria-label="목적지 검색 결과"></div>
+                  <div class="step-label">2단계 · 언제, 얼마나 주차하나요?</div>
                   <div class="field-row parking-date-grid">
                     <div class="field"><label for="parking-visit-date">방문일</label><input id="parking-visit-date" type="date" required></div>
                     <div class="field"><label for="parking-arrival-time">입차 시간</label><input id="parking-arrival-time" type="time" value="13:30" required></div>
@@ -79,7 +80,7 @@
                   <div class="quick-duration-row" aria-label="주차시간 빠른 선택">
                     <button type="button" data-parking-duration="30">30분</button><button type="button" data-parking-duration="60">1시간</button><button type="button" data-parking-duration="120">2시간</button><button type="button" data-parking-duration="180">3시간</button><button type="button" data-parking-duration="240" class="active">4시간</button><button type="button" data-parking-duration="day">일주차</button>
                   </div>
-                  <div class="step-label">2단계 · 출발지와 차량 조건</div>
+                  <div class="step-label">3단계 · 할인/차량 조건이 있나요?</div>
                   <div class="field">
                     <label for="parking-origin">출발지</label>
                     <div class="parking-inline-search">
@@ -106,7 +107,7 @@
               </div>
               <div class="parking-map-column">
                 <section class="parking-map-card" aria-label="주차장 지도">
-                  <div id="parking-map" class="parking-map is-fallback" role="img" aria-label="목적지 주변 주차장 지도"><div class="parking-map-fallback"><strong>샘플 지도 계산 모드</strong><span>카카오맵을 불러오지 못하면 샘플 위치 기준으로 예상 주차비를 표시합니다.</span></div></div>
+                  <div id="parking-map" class="parking-map is-fallback" role="img" aria-label="목적지 주변 주차장 지도"><div class="parking-map-fallback"><strong>샘플 지도 계산 모드</strong><span>카카오맵 연결 전에도 샘플 위치 기준으로 예상 주차비와 추천 주차장을 비교할 수 있습니다.</span></div><div class="parking-map-legend" aria-hidden="true"><span>● 목적지</span><span>● 추천 1위</span><span>가격 pill = 예상 주차비</span></div></div>
                   <div id="parking-map-markers" class="parking-map-markers" aria-hidden="true"></div>
                 </section>
               </div>
@@ -115,10 +116,11 @@
           </section>
         </div>
       </section>
-      <section class="content-band"><div class="container calculator-guide parking-guide"><p class="eyebrow">주차비 계산 가이드</p><h2>주차비 계산 지도를 이렇게 활용하세요.</h2><div class="guide-grid"><article><h3>목적지 주차비 계산기는 무엇을 도와주나요?</h3><p>목적지 주변 주차장의 예상 요금, 거리, 할인 조건, 일주차 전환점을 한 화면에서 비교해 주차 선택을 돕습니다. 단순히 가장 가까운 곳만 보여주는 것이 아니라 내 방문 시간과 차량 조건을 함께 계산합니다.</p></article><article><h3>가까운 주차장이 항상 합리적이지 않은 이유</h3><p>목적지 바로 옆 주차장은 편하지만 기본요금이나 추가요금이 높을 수 있습니다. 조금 떨어진 공영주차장은 이동 시간이 늘어도 장시간 주차나 할인 조건에서 유리할 수 있습니다.</p></article><article><h3>주차비 계산 기준</h3><p>기본요금과 추가요금 단위를 기준으로 주차시간에 따른 시간요금을 계산합니다. 일 최대 요금이나 일주차권 정보가 있으면 시간요금과 비교해 더 낮은 예상 금액을 표시합니다.</p></article><article><h3>할인과 일 최대 요금 반영 방식</h3><p>경차, 장애인, 전기차 또는 직접 입력 할인율을 선택하면 예상 요금에 참고용으로 반영합니다. 실제 할인은 주차장별 증빙 조건과 결제 방식에 따라 달라질 수 있습니다.</p></article><article><h3>지도와 가격 마커를 보는 방법</h3><p>지도 위 가격 pill은 선택한 주차시간 기준 예상 금액입니다. 추천 1위는 강조 색상으로 표시하고, 지도 API를 불러오지 못한 경우에도 샘플 지도에서 가격 마커를 확인할 수 있습니다.</p></article><article><h3>실시간 정보와 참고 데이터의 차이</h3><p>1차 MVP는 샘플 주차장 데이터와 제한된 실시간 예시를 활용합니다. 실시간 빈자리, 만차 위험도, 실제 운영시간은 제공기관 데이터와 현장 상황에 따라 달라질 수 있습니다.</p></article><article><h3>주의사항</h3><p>이 계산기는 실제 요금이나 주차 가능 여부를 보장하지 않는 참고용 서비스입니다. 실제 요금, 할인, 운영시간, 주차 가능 여부는 방문 전 주차장 또는 관리기관 안내를 확인해 주세요.</p></article><article><h3>향후 확장 구조</h3><p>공공데이터 주차장 API, 카카오모빌리티 차량 소요시간, 서울 실시간 빈자리, 만차 위험도 고도화는 이후 단계에서 붙일 수 있도록 API adapter와 TODO 구조를 분리합니다.</p></article></div></div></section>
+      <section class="content-band"><div class="container calculator-guide parking-guide"><p class="eyebrow">주차비 계산 가이드</p><h2>주차비 계산 지도를 이렇게 활용하세요.</h2><div class="guide-grid"><article><h3>주차비 계산 지도는 무엇을 도와주나요?</h3><p>목적지 주변 주차장의 예상 요금, 거리, 할인 조건, 일주차 전환점을 한 화면에서 비교해 주차 선택을 돕습니다. 단순히 가장 가까운 곳만 보여주는 것이 아니라 내 방문 시간과 차량 조건을 함께 계산합니다.</p></article><article><h3>가까운 주차장이 항상 합리적이지 않은 이유</h3><p>목적지 바로 옆 주차장은 편하지만 기본요금이나 추가요금이 높을 수 있습니다. 조금 떨어진 공영주차장은 이동 시간이 늘어도 장시간 주차나 할인 조건에서 유리할 수 있습니다.</p></article><article><h3>주차비 계산 기준</h3><p>기본요금과 추가요금 단위를 기준으로 주차시간에 따른 시간요금을 계산합니다. 일 최대 요금이나 일주차권 정보가 있으면 시간요금과 비교해 더 낮은 예상 금액을 표시합니다.</p></article><article><h3>할인과 일 최대 요금 반영 방식</h3><p>경차, 장애인, 전기차 또는 직접 입력 할인율을 선택하면 예상 요금에 참고용으로 반영합니다. 실제 할인은 주차장별 증빙 조건과 결제 방식에 따라 달라질 수 있습니다.</p></article><article><h3>지도와 가격 마커를 보는 방법</h3><p>지도 위 가격 pill은 선택한 주차시간 기준 예상 금액입니다. 추천 1위는 강조 색상으로 표시하고, 지도 API를 불러오지 못한 경우에도 샘플 지도에서 가격 마커를 확인할 수 있습니다.</p></article><article><h3>실시간 정보와 참고 데이터의 차이</h3><p>1차 MVP는 샘플 주차장 데이터와 제한된 실시간 예시를 활용합니다. 실시간 빈자리, 만차 위험도, 실제 운영시간은 제공기관 데이터와 현장 상황에 따라 달라질 수 있습니다.</p></article><article><h3>주의사항</h3><p>이 계산기는 실제 요금이나 주차 가능 여부를 보장하지 않는 참고용 서비스입니다. 실제 요금, 할인, 운영시간, 주차 가능 여부는 방문 전 주차장 또는 관리기관 안내를 확인해 주세요.</p></article><article><h3>향후 확장 구조</h3><p>공공데이터 주차장 API, 카카오모빌리티 차량 소요시간, 서울 실시간 빈자리, 만차 위험도 고도화는 이후 단계에서 붙일 수 있도록 API adapter와 TODO 구조를 분리합니다.</p></article></div></div></section>
       <section class="content-band" id="faq"><div class="container faq-section"><p class="eyebrow">자주 묻는 질문</p><h2>주차비 계산 지도 자주 묻는 질문</h2><details><summary>주차비 계산 지도는 실제 주차요금을 보장하나요?</summary><p>아니요. 목적지, 방문 시간, 샘플 또는 연동 데이터, 입력한 할인 조건을 바탕으로 한 참고용 예상 금액입니다. 실제 요금, 할인, 운영시간은 현장 정책에 따라 달라질 수 있습니다.</p></details><details><summary>목적지만 입력하면 실제 주차비가 확정되나요?</summary><p>확정되지 않습니다. 이 도구는 주변 후보의 예상 요금과 조건을 비교해 선택을 돕는 서비스이며, 최종 요금은 주차장 현장 안내와 결제 시점 기준을 확인해야 합니다.</p></details><details><summary>카카오맵이 안 뜨면 계산을 사용할 수 없나요?</summary><p>아니요. 카카오맵 API 키가 없거나 도메인 설정이 필요할 때는 샘플 지도와 가격 마커로 예상 요금을 비교할 수 있습니다. 실제 지도 운영에는 Kakao Developers의 JavaScript 키와 Web 플랫폼 도메인 등록이 필요합니다.</p></details><details><summary>공영주차장 할인은 어떻게 반영되나요?</summary><p>경차, 장애인, 전기차 또는 직접 입력 할인율을 선택하면 예상 요금에 참고용으로 반영합니다. 실제 할인 적용 여부와 증빙 조건은 주차장별 정책을 확인해야 합니다.</p></details><details><summary>일주차가 시간제보다 유리한 경우는 언제인가요?</summary><p>시간요금 누적액이 일 최대 요금 또는 일주차 요금 이상이 되는 시점부터 일주차가 더 유리할 수 있습니다. 계산 결과에는 가능한 경우 일주차 전환점을 함께 표시합니다.</p></details><details><summary>실시간 빈자리 정보도 반영되나요?</summary><p>1차 MVP에서는 샘플 실시간 데이터와 요금 기준 비교를 제공합니다. 서울 실시간 빈자리와 만차 위험도 고도화는 추후 API 연동 단계에서 확장할 수 있도록 구조를 분리해 두었습니다.</p></details><details><summary>현재 위치를 사용하지 않아도 계산할 수 있나요?</summary><p>네. 출발지를 입력하지 않아도 목적지에서 주차장까지의 거리와 요금 기준으로 비교합니다. 출발지를 입력하거나 현재 위치를 허용하면 차량 이동 조건을 참고 계산에 반영합니다.</p></details></div></section>
     </main>
     <footer class="site-footer"><div><strong>한눈계산</strong><p>모든 계산 결과는 참고용이며, 실제 판단은 공식 기관 기준을 확인해야 합니다.</p></div><nav aria-label="푸터 링크"><a href="../about.html">소개</a><a href="../contact.html">문의하기</a><a href="../privacy.html">개인정보 처리방침</a><a href="../disclaimer.html">면책 고지</a><a href="../licenses.html">오픈소스 라이선스</a></nav></footer>
+    <script src="../assets/config/public-config.js?v=20260617-parking-mvp-final" defer></script>
     <script type="module" src="../assets/js/app.js?v=20260617-parking-budget-map"></script>
   </body>
 </html>
