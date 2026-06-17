@@ -16,7 +16,7 @@ function error(message, status = 400) {
   return json({ error: message }, { status, cacheControl: 'no-store' });
 }
 
-export async function onRequestPost({ request }) {
+export async function onRequestPost({ request, env }) {
   let body;
   try {
     body = await request.json();
@@ -32,7 +32,7 @@ export async function onRequestPost({ request }) {
     : body.lot
       ? [body.lot]
       : body.parkingLotIds?.length
-        ? mergeCandidateLots().filter((lot) => new Set(body.parkingLotIds).has(lot.id))
+        ? (await mergeCandidateLots({ env, assetBaseUrl: request.url })).filter((lot) => new Set(body.parkingLotIds).has(lot.id))
         : parkingLots.slice(0, 20);
 
   if (!lots.length) return error('계산할 주차장 후보가 없습니다.', 404);
@@ -41,9 +41,10 @@ export async function onRequestPost({ request }) {
   });
 }
 
-function mergeCandidateLots() {
+async function mergeCandidateLots({ env = {}, assetBaseUrl = '' } = {}) {
   const seen = new Set();
-  return [...parkingLots, ...getNationalParkingLots()].filter((lot) => {
+  const nationalLots = await getNationalParkingLots({ env, assetBaseUrl });
+  return [...parkingLots, ...nationalLots].filter((lot) => {
     if (!lot?.id || seen.has(lot.id)) return false;
     seen.add(lot.id);
     return true;

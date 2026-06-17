@@ -18,7 +18,7 @@ export async function onRequestPost({ request, env }) {
   const radius = normalizeRadiusMeters(body.radius || 1500);
   const holidayContext = await resolveHolidayContext({ env, dateString: body.arrivalAt });
   const input = { ...body, radius, sort: normalizeSort(body.sort), holidayContext };
-  const dataset = await resolveParkingLotDataset({ env, destination: body.destination, radius, query: body.destination?.name || '' });
+  const dataset = await resolveParkingLotDataset({ env, destination: body.destination, radius, query: body.destination?.name || '', assetBaseUrl: request.url });
   const effectiveRadius = Number(dataset.meta?.effectiveRadius || radius);
 
   const candidates = dataset.lots

@@ -1,4 +1,4 @@
-﻿import { resolveParkingLotDataset } from './_lib/adapters.js';
+import { resolveParkingLotDataset } from './_lib/adapters.js';
 import { distanceKm } from './_lib/distance.js';
 
 function json(data, init = {}) {
@@ -14,7 +14,7 @@ export async function onRequestGet({ request, env }) {
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) return error('목적지 좌표가 필요합니다.');
 
   const center = { lat, lng };
-  const dataset = await resolveParkingLotDataset({ env, destination: center, radius, query: url.searchParams.get('q') || '' });
+  const dataset = await resolveParkingLotDataset({ env, destination: center, radius, query: url.searchParams.get('q') || '', assetBaseUrl: request.url });
   const effectiveRadius = Number(dataset.meta?.effectiveRadius || radius);
   const lots = dataset.lots
     .filter((lot) => Number.isFinite(Number(lot.lat)) && Number.isFinite(Number(lot.lng)))

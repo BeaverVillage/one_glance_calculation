@@ -1,6 +1,6 @@
 import { distanceKm } from './distance.js';
 import { parkingLots as sampleParkingLots, nationalParkingLots as fallbackNationalParkingLots } from './mock-data.js';
-import { nationalParkingLots as generatedNationalParkingLots, nationalParkingMeta as generatedNationalParkingMeta } from './generated-national-parking-lots.js';
+import { nationalParkingMeta as generatedNationalParkingMeta } from './generated-national-parking-lots.js';
 
 const DEFAULT_SEOUL_BASE = 'http://openapi.seoul.go.kr:8088';
 const DEFAULT_SEOUL_PARK_INFO_SERVICE = 'GetParkInfo';
@@ -22,11 +22,14 @@ let publicDataCache = {
 };
 
 let nationalRuntimeCache = {
-  lots: null,
+  index: null,
+  indexPromise: null,
+  chunkLots: new Map(),
+  chunkPromises: new Map(),
   meta: null
 };
 
-export async function resolveParkingLotDataset({ env = {}, destination = null, radius = 3000, query = '' } = {}) {
+export async function resolveParkingLotDataset({ env = {}, destination = null, radius = 3000, query = '', assetBaseUrl = '' } = {}) {
   const startedAt = Date.now();
   const radiusMeters = normalizeRadiusMeters(radius);
   const sources = [];
@@ -34,8 +37,9 @@ export async function resolveParkingLotDataset({ env = {}, destination = null, r
   const adapterQuery = destination ? '' : query;
 
   const nationalStartedAt = Date.now();
-  const nationalLots = loadNationalParkingCache({ query: adapterQuery });
-  const nationalMeta = getNationalParkingCacheMeta();
+  const nationalResult = await loadNationalParkingCache({ env, assetBaseUrl, destination, radius: radiusMeters, query: adapterQuery });
+  const nationalLots = nationalResult.lots;
+  const nationalMeta = nationalResult.meta;
   const nationalWithDistance = addDistances(nationalLots, destination);
   const cacheNearby = filterByRadius(nationalWithDistance, radiusMeters);
   const expandedRadiusMeters = Math.min(3000, Math.max(radiusMeters, 3000));
@@ -120,7 +124,7 @@ export async function resolveParkingLotDataset({ env = {}, destination = null, r
       fallbackReason,
       effectiveRadius: effectiveRadiusMeters,
       note: selectedLots.length
-        ? mode === 'national-cache'
+        ? mode === 'national-cache' || mode === 'national-chunk-cache'
           ? '전국 주차장 캐시에서 읽은 반경 내 후보를 사용했습니다.'
           : fallbackReason
         : fallbackReason || '조건에 맞는 주차장 후보가 없습니다.'
@@ -194,7 +198,7 @@ function filterByRadius(lots, radiusMeters) {
 
 function buildDatasetStats({ sources, publicDataSource, publicDataLots = [], cacheLots = [], cacheWithDistance = [], cacheNearby = [], expandedCacheNearby = [], sampleNearby = [], selectedLots = [], cacheLoadMs = 0, searchMs = 0, publicFallbackUsed = false }) {
   const sourceById = new Map(sources.filter(Boolean).map((source) => [source.id, source]));
-  const national = sourceById.get('national-json-cache') || sourceById.get('national-cache') || sourceById.get('national-mock-fallback') || {};
+  const national = sourceById.get('national-chunk-cache') || sourceById.get('national-json-cache') || sourceById.get('national-cache') || sourceById.get('national-mock-fallback') || {};
   const publicData = publicDataSource || sourceById.get('public-data-parking') || {};
   return {
     dataSource: national.id || publicData.id || '',
@@ -220,56 +224,176 @@ function buildDatasetStats({ sources, publicDataSource, publicDataLots = [], cac
   };
 }
 
-export function getNationalParkingLots({ query = '' } = {}) {
-  return loadNationalParkingCache({ query });
+export async function getNationalParkingLots({ env = {}, assetBaseUrl = '', destination = null, radius = 1500, query = '' } = {}) {
+  const result = await loadNationalParkingCache({ env, assetBaseUrl, destination, radius, query });
+  return result.lots;
 }
 
-function loadNationalParkingCache({ query = '' } = {}) {
-  if (!nationalRuntimeCache.lots) {
-    const primaryLots = Array.isArray(generatedNationalParkingLots) ? generatedNationalParkingLots : [];
-    const fallbackLots = Array.isArray(fallbackNationalParkingLots) ? fallbackNationalParkingLots : [];
-    const usingGeneratedCache = primaryLots.length > 0;
-    const sourceLots = usingGeneratedCache ? primaryLots : fallbackLots;
-    const cacheMode = usingGeneratedCache ? 'generated-module' : 'mock-data-fallback';
-    const sourceLabel = usingGeneratedCache ? '전국 주차장 정규화 캐시' : '로컬 fallback 주차장 캐시';
-    const normalizedRows = sourceLots.map((lot) => normalizeParkingLotLike(lot, { source: lot.source || sourceLabel }));
-    const normalized = normalizedRows.filter(Boolean);
-    const deduped = dedupeLots(normalized);
-    const missingCoordinateCount = normalizedRows.length - normalized.length;
-    const generatedMeta = generatedNationalParkingMeta?.meta || generatedNationalParkingMeta || {};
-    nationalRuntimeCache.lots = deduped;
-    nationalRuntimeCache.meta = {
-      totalCount: sourceLots.length,
-      normalizedCount: normalized.length,
-      withCoordinateCount: deduped.length,
-      missingCoordinateCount,
-      source: {
-        id: usingGeneratedCache ? 'national-json-cache' : 'national-mock-fallback',
-        name: sourceLabel,
-        service: usingGeneratedCache ? 'generated-national-parking-lots.js' : 'mock-data.js',
-        count: deduped.length,
-        rawCount: sourceLots.length,
+async function loadNationalParkingCache({ env = {}, assetBaseUrl = '', destination = null, radius = 1500, query = '' } = {}) {
+  const startedAt = Date.now();
+  const fallbackLots = Array.isArray(fallbackNationalParkingLots) ? fallbackNationalParkingLots : [];
+  const normalizedFallback = () => {
+    const rows = fallbackLots.map((lot) => normalizeParkingLotLike(lot, { source: lot.source || '로컬 fallback 주차장 캐시' }));
+    const normalized = rows.filter(Boolean);
+    return {
+      lots: dedupeLots(normalized),
+      meta: {
+        totalCount: fallbackLots.length,
         normalizedCount: normalized.length,
-        withCoordinateCount: deduped.length,
-        missingCoordinateCount,
-        cacheMode,
-        cacheVersion: generatedNationalParkingMeta?.version || '',
-        generatedAt: generatedMeta.generatedAt || generatedMeta.createdAt || generatedNationalParkingMeta?.generatedAt || ''
+        withCoordinateCount: normalized.length,
+        missingCoordinateCount: rows.length - normalized.length,
+        source: {
+          id: 'national-mock-fallback',
+          name: '로컬 fallback 주차장 캐시',
+          service: 'mock-data.js',
+          count: normalized.length,
+          rawCount: fallbackLots.length,
+          normalizedCount: normalized.length,
+          withCoordinateCount: normalized.length,
+          missingCoordinateCount: rows.length - normalized.length,
+          cacheMode: 'mock-data-fallback',
+          generatedAt: ''
+        }
       }
     };
-    if (deduped.length < 100) {
-      console.warn?.('[parking-data] national cache has fewer than 100 lots. Run tools/build-parking-cache.mjs with PUBLIC_DATA_API_KEY before production deploy.', 'count:', deduped.length, 'cacheMode:', cacheMode);
-    }
-  }
+  };
 
-  const keyword = String(query || '').trim().toLowerCase();
-  if (!keyword) return nationalRuntimeCache.lots;
-  return nationalRuntimeCache.lots.filter((lot) => `${lot.name} ${lot.roadAddress || ''} ${lot.jibunAddress || ''} ${lot.region || ''} ${lot.district || ''}`.toLowerCase().includes(keyword));
+  try {
+    const index = await loadNationalParkingIndex(env, assetBaseUrl);
+    const cellKeys = getNearbyParkingCellKeys(destination, normalizeRadiusMeters(radius), index);
+    const chunkLots = await loadParkingChunksForKeys(env, assetBaseUrl, index, cellKeys);
+    const normalizedRows = chunkLots.map((lot) => normalizeParkingLotLike(lot, { source: lot.source || '전국 주차장 정적 chunk 캐시' }));
+    const normalized = normalizedRows.filter(Boolean);
+    const keyword = String(query || '').trim().toLowerCase();
+    const filtered = keyword
+      ? normalized.filter((lot) => `${lot.name} ${lot.roadAddress || ''} ${lot.jibunAddress || ''} ${lot.region || ''} ${lot.district || ''}`.toLowerCase().includes(keyword))
+      : normalized;
+    const deduped = dedupeLots(filtered);
+    const meta = {
+      totalCount: Number(index.totalLots || index.meta?.totalLots || normalized.length || 0),
+      normalizedCount: Number(index.normalizedItems || index.meta?.normalizedItems || normalized.length || 0),
+      withCoordinateCount: Number(index.withCoordinates || index.meta?.withCoordinates || index.totalLots || 0),
+      missingCoordinateCount: Number(index.missingCoordinates || index.meta?.missingCoordinates || 0),
+      source: {
+        id: 'national-chunk-cache',
+        name: '전국 주차장 정적 chunk 캐시',
+        service: 'assets/data/parking/index.json',
+        count: Number(index.totalLots || index.meta?.totalLots || deduped.length || 0),
+        loadedCount: deduped.length,
+        rawCount: chunkLots.length,
+        normalizedCount: normalized.length,
+        withCoordinateCount: deduped.length,
+        missingCoordinateCount: normalizedRows.length - normalized.length,
+        cacheMode: 'static-asset-chunks',
+        chunkType: index.chunkType || index.meta?.chunkType || 'grid',
+        chunkCount: cellKeys.length,
+        totalChunkCount: Object.keys(index.chunks || {}).length,
+        cacheVersion: index.version || generatedNationalParkingMeta?.version || '',
+        generatedAt: index.generatedAt || index.meta?.generatedAt || generatedNationalParkingMeta?.generatedAt || ''
+      }
+    };
+    nationalRuntimeCache.meta = meta;
+    console.info?.('[parking-data] source: national-chunk-cache', 'totalLots:', meta.totalCount, 'loadedChunks:', cellKeys.length, 'loadedLots:', deduped.length, 'loadMs:', Date.now() - startedAt);
+    return { lots: deduped, meta };
+  } catch (error) {
+    console.warn?.('[parking-data] national chunk cache unavailable. falling back to mock data.', error?.message || String(error));
+    const fallback = normalizedFallback();
+    nationalRuntimeCache.meta = fallback.meta;
+    return fallback;
+  }
 }
 
 function getNationalParkingCacheMeta() {
-  if (!nationalRuntimeCache.meta) loadNationalParkingCache();
   return nationalRuntimeCache.meta || { totalCount: 0, normalizedCount: 0, withCoordinateCount: 0, missingCoordinateCount: 0, source: null };
+}
+
+async function loadNationalParkingIndex(env = {}, assetBaseUrl = '') {
+  if (nationalRuntimeCache.index) return nationalRuntimeCache.index;
+  if (nationalRuntimeCache.indexPromise) return nationalRuntimeCache.indexPromise;
+  nationalRuntimeCache.indexPromise = loadParkingAssetJson(env, assetBaseUrl, '/assets/data/parking/index.json')
+    .then((index) => {
+      if (!index || !index.chunks || typeof index.chunks !== 'object') throw new Error('parking index is invalid');
+      nationalRuntimeCache.index = index;
+      nationalRuntimeCache.indexPromise = null;
+      return index;
+    })
+    .catch((error) => {
+      nationalRuntimeCache.indexPromise = null;
+      throw error;
+    });
+  return nationalRuntimeCache.indexPromise;
+}
+
+async function loadParkingChunksForKeys(env, assetBaseUrl, index, cellKeys) {
+  const chunks = index.chunks || {};
+  const keys = cellKeys.filter((key) => chunks[key]?.file);
+  if (!keys.length) return [];
+  const loaded = await Promise.all(keys.map((key) => loadParkingChunk(env, assetBaseUrl, chunks[key].file, key)));
+  return loaded.flat();
+}
+
+async function loadParkingChunk(env, assetBaseUrl, file, key) {
+  if (nationalRuntimeCache.chunkLots.has(key)) return nationalRuntimeCache.chunkLots.get(key);
+  if (nationalRuntimeCache.chunkPromises.has(key)) return nationalRuntimeCache.chunkPromises.get(key);
+  const path = '/assets/data/parking/' + String(file || '').replace(/^\/+/, '');
+  const promise = loadParkingAssetJson(env, assetBaseUrl, path)
+    .then((payload) => {
+      const lots = Array.isArray(payload?.lots) ? payload.lots : (Array.isArray(payload) ? payload : []);
+      nationalRuntimeCache.chunkLots.set(key, lots);
+      nationalRuntimeCache.chunkPromises.delete(key);
+      return lots;
+    })
+    .catch((error) => {
+      nationalRuntimeCache.chunkPromises.delete(key);
+      console.warn?.('[parking-data] failed to load parking chunk:', key, error?.message || String(error));
+      return [];
+    });
+  nationalRuntimeCache.chunkPromises.set(key, promise);
+  return promise;
+}
+
+async function loadParkingAssetJson(env = {}, assetBaseUrl = '', assetPath = '') {
+  const path = String(assetPath || '').startsWith('/') ? String(assetPath) : '/' + String(assetPath || '');
+  if (env?.ASSETS?.fetch) {
+    const base = assetBaseUrl || 'https://assets.local/';
+    const res = await env.ASSETS.fetch(new Request(new URL(path, base).toString()));
+    if (res.ok) return res.json();
+    throw new Error(`asset ${path} fetch failed: ${res.status}`);
+  }
+  if (assetBaseUrl && typeof fetch === 'function') {
+    const res = await fetch(new URL(path, assetBaseUrl).toString(), { cf: { cacheTtl: 21600, cacheEverything: true } });
+    if (res.ok) return res.json();
+  }
+  if (typeof process !== 'undefined' && process.versions?.node) {
+    const { readFile } = await import('node:fs/promises');
+    const { resolve } = await import('node:path');
+    const text = await readFile(resolve(process.cwd(), path.replace(/^\//, '')), 'utf8');
+    return JSON.parse(text);
+  }
+  throw new Error(`asset ${path} is unavailable`);
+}
+
+function getNearbyParkingCellKeys(destination, radiusMeters, index = {}) {
+  const chunks = index.chunks || {};
+  if (!destination || !isValidLatLng(destination.lat, destination.lng)) return Object.keys(chunks).slice(0, 0);
+  const cellSize = Number(index.cellSize || index.meta?.cellSize || 0.1);
+  const lat = Number(destination.lat);
+  const lng = Number(destination.lng);
+  const radius = normalizeRadiusMeters(radiusMeters);
+  const latDelta = radius / 111320;
+  const lngDelta = radius / Math.max(1, 111320 * Math.cos((lat * Math.PI) / 180));
+  const minLatCell = Math.floor((lat - latDelta) / cellSize);
+  const maxLatCell = Math.floor((lat + latDelta) / cellSize);
+  const minLngCell = Math.floor((lng - lngDelta) / cellSize);
+  const maxLngCell = Math.floor((lng + lngDelta) / cellSize);
+  const keys = [];
+  for (let latCell = minLatCell; latCell <= maxLatCell; latCell += 1) {
+    for (let lngCell = minLngCell; lngCell <= maxLngCell; lngCell += 1) {
+      const key = `${latCell}_${lngCell}`;
+      if (chunks[key]) keys.push(key);
+    }
+  }
+  return keys;
 }
 
 function normalizeCachedLots(lots) {
@@ -828,41 +952,29 @@ function normalizeName(value) {
 function dedupeLots(lots) {
   const result = [];
   const seenIds = new Set();
-  const seenByNameGrid = new Map();
-  const cellSize = 0.001; // about 90~110m in Korea; checked only within nearby cells below.
-
+  const seenApprox = new Set();
+  const seenNameCells = new Map();
   for (const lot of lots) {
     if (!lot) continue;
     const id = String(lot.id || '').trim();
     if (id && seenIds.has(id)) continue;
-
-    const normalizedName = normalizeName(lot.name);
-    let duplicate = false;
-
-    if (normalizedName && isValidLatLng(lot.lat, lot.lng)) {
-      const latCell = Math.round(Number(lot.lat) / cellSize);
-      const lngCell = Math.round(Number(lot.lng) / cellSize);
-      for (let dy = -1; dy <= 1 && !duplicate; dy += 1) {
-        for (let dx = -1; dx <= 1 && !duplicate; dx += 1) {
-          const bucketKey = `${normalizedName}:${latCell + dy}:${lngCell + dx}`;
-          const bucket = seenByNameGrid.get(bucketKey);
-          if (!bucket) continue;
-          duplicate = bucket.some((existing) => distanceKm(existing, lot) <= 0.05);
-        }
-      }
-      if (duplicate) continue;
-
-      const ownBucketKey = `${normalizedName}:${latCell}:${lngCell}`;
-      const ownBucket = seenByNameGrid.get(ownBucketKey) || [];
-      ownBucket.push(lot);
-      seenByNameGrid.set(ownBucketKey, ownBucket);
-    } else if (normalizedName) {
-      const bucketKey = `${normalizedName}:no-coordinate`;
-      if (seenByNameGrid.has(bucketKey)) continue;
-      seenByNameGrid.set(bucketKey, [lot]);
-    }
-
+    const lat = Number(lot.lat);
+    const lng = Number(lot.lng);
+    const name = normalizeName(lot.name);
+    const approxKey = Number.isFinite(lat) && Number.isFinite(lng) ? `${name}|${Math.round(lat * 10000)}|${Math.round(lng * 10000)}` : `${name}|no-coord`;
+    if (seenApprox.has(approxKey)) continue;
+    const cellKey = Number.isFinite(lat) && Number.isFinite(lng) ? `${name}|${Math.round(lat * 1000)}|${Math.round(lng * 1000)}` : `${name}|no-cell`;
+    const bucket = seenNameCells.get(cellKey) || [];
+    const duplicate = bucket.some((existing) => {
+      if (!name || name !== normalizeName(existing.name)) return false;
+      if (!isValidLatLng(existing.lat, existing.lng) || !isValidLatLng(lat, lng)) return true;
+      return distanceKm(existing, lot) <= 0.05;
+    });
+    if (duplicate) continue;
     if (id) seenIds.add(id);
+    seenApprox.add(approxKey);
+    bucket.push(lot);
+    seenNameCells.set(cellKey, bucket);
     result.push(lot);
   }
   return result;
