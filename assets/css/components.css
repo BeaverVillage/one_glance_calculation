@@ -8660,3 +8660,82 @@ body {
     text-align: center !important;
   }
 }
+
+
+/* Parking result card compact actions and Kakao map link 2026-06-17 */
+.parking-result-card {
+  gap: 0.62rem !important;
+}
+
+.parking-price-row {
+  padding: 0.42rem 0.68rem !important;
+  margin: -0.08rem 0 -0.02rem !important;
+}
+
+.parking-price-row strong {
+  line-height: 1.12 !important;
+}
+
+.parking-reason {
+  line-height: 1.38 !important;
+}
+
+.parking-card-metrics {
+  gap: 0.34rem !important;
+}
+
+.parking-card-metrics .parking-metric-chip {
+  min-height: 27px !important;
+  padding: 0.32rem 0.52rem !important;
+}
+
+.parking-card-actions,
+.parking-map-popup__actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.parking-kakao-map-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0.48rem 0.76rem;
+  border: 1px solid rgba(30, 79, 122, 0.22);
+  border-radius: 999px;
+  background: #f8fbff;
+  color: #1e4f7a;
+  font-size: 0.84rem;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.parking-kakao-map-link:hover {
+  background: #eef6ff;
+}
+
+.parking-kakao-map-link.tiny {
+  min-height: 34px;
+  padding: 0.44rem 0.68rem;
+  font-size: 0.82rem;
+}
+
+.parking-map-popup .subtle-button {
+  margin-top: 0;
+}
+
+@media (min-width: 861px) {
+  .parking-card-metrics .metric-confidence-high,
+  .parking-card-metrics .metric-confidence-medium,
+  .parking-card-metrics .metric-confidence-low {
+    order: 4;
+  }
+}
+
+@media (max-width: 430px) {
+  .parking-price-row {
+    padding: 0.4rem 0.62rem !important;
+  }
+}

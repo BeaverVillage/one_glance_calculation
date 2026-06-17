@@ -671,6 +671,17 @@ function bindResultCardEvents(container, els) {
   });
 }
 
+function kakaoMapUrl(row) {
+  const url = row?.kakaoPlaceUrl || (row?.isKakaoLocalCandidate ? row?.sourceUrl : "");
+  if (!url) return "";
+  return /^https?:\/\/place\.map\.kakao\.com\//.test(url) || /^https?:\/\/map\.kakao\.com\//.test(url) ? url : "";
+}
+
+function renderKakaoMapLink(row, className = "parking-kakao-map-link") {
+  const url = kakaoMapUrl(row);
+  return url ? `<a class="${className}" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">카카오맵 보기</a>` : "";
+}
+
 function renderResultCard(row) {
   const price = row.discountedFee == null ? "정보 부족" : row.discountedFee === 0 ? "무료" : `${won.format(row.discountedFee)}원`;
   const original = row.parkingFee != null && row.parkingFee !== row.discountedFee ? `<span>할인 전 ${won.format(row.parkingFee)}원</span>` : "";
@@ -687,7 +698,7 @@ function renderResultCard(row) {
     <p class="parking-reason">${escapeHtml(reason)}</p>
     <div class="parking-card-metrics"><span class="parking-metric-chip metric-distance">${distance}</span><span class="parking-metric-chip metric-availability">${realtime}</span><span class="parking-metric-chip ${riskClass}">${row.fullRiskLabel}</span><span class="parking-metric-chip ${confidenceClass}">${row.dataConfidenceLabel}</span></div>
     ${pinned ? `<p class="parking-pinned-badge">지도에서 선택한 주차장입니다.</p>` : ""}
-    <button type="button" class="parking-detail-toggle" data-parking-detail-toggle aria-expanded="false">상세 보기 ▼</button>
+    <div class="parking-card-actions"><button type="button" class="parking-detail-toggle" data-parking-detail-toggle aria-expanded="false">상세 보기 ▼</button>${renderKakaoMapLink(row)}</div>
     <div class="parking-card-detail" data-parking-card-detail hidden>
       <p><strong>요금 기준</strong> ${formatDuration(row.durationMinutes)} 기준 예상 요금입니다.</p>
       <p><strong>기본/추가 요금</strong> 기본 ${row.baseMinutes ?? "-"}분 ${formatFee(row.baseFee)}, 추가 ${row.additionalMinutes ?? "-"}분당 ${formatFee(row.additionalFee)}</p>
@@ -945,7 +956,7 @@ function showParkingMapPopup(id, els) {
     `<p class="parking-map-popup__price">${escapeHtml(price)}</p>`,
     `<p class="parking-map-popup__detail">${escapeHtml(distance)} · ${escapeHtml(realtime)}</p>`,
     `<p class="parking-map-popup__detail">${escapeHtml(row.dataConfidenceLabel || "신뢰도 확인 필요")}</p>`,
-    '<button type="button" class="subtle-button tiny" data-popup-scroll-card>추천 카드 보기</button>'
+    `<div class="parking-map-popup__actions"><button type="button" class="subtle-button tiny" data-popup-scroll-card>추천 카드 보기</button>${renderKakaoMapLink(row, "parking-kakao-map-link tiny")}</div>`
   ].join("");
   popup.querySelector(".parking-map-popup__close")?.addEventListener("click", () => popup.remove());
   popup.querySelector("[data-popup-scroll-card]")?.addEventListener("click", () => pinParkingCard(id, els, { scroll: true }));
