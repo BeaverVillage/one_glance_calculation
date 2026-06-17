@@ -12,6 +12,11 @@ const numOfRows = Number(process.env.PUBLIC_DATA_NUM_OF_ROWS || 1000);
 const hardMaxPages = Number(process.env.PUBLIC_DATA_HARD_MAX_PAGES || 300);
 const maxPages = Number(process.env.PUBLIC_DATA_MAX_PAGES || hardMaxPages);
 const cellSize = Number(process.env.PARKING_CACHE_CELL_SIZE || 0.1);
+const geocodeMissing = process.env.PARKING_GEOCODE_MISSING === '1' || process.argv.includes('--geocode-missing');
+const kakaoRestKey = process.env.KAKAO_REST_API_KEY || '';
+const kakaoGeocodeLimit = Number(process.env.PARKING_GEOCODE_LIMIT || 0);
+const kakaoGeocodeDelayMs = Number(process.env.PARKING_GEOCODE_DELAY_MS || 120);
+const geocodeCacheFile = process.env.PARKING_GEOCODE_CACHE || path.resolve(projectRoot, 'tools/.parking-geocode-cache.json');
 
 function pick(row, keys) { for (const key of keys) if (row[key] != null && String(row[key]).trim() !== '') return row[key]; return ''; }
 function num(value, fallback = null) {
@@ -49,12 +54,16 @@ function isValidLatLng(lat, lng) {
   return Number.isFinite(y) && Number.isFinite(x) && y >= 32 && y <= 39.5 && x >= 124 && x <= 132.5;
 }
 
-function normalize(row) {
+function normalize(row, geocoded = null) {
   const name = pick(row, ['prkplceNm', 'prkplce_nm', 'parkingLotName', 'parkingLotNm', 'parkNm', '주차장명', 'PARKING_NAME', 'name']);
   const roadAddress = pick(row, ['rdnmadr', 'roadAddress', 'roadNmAddress', '소재지도로명주소', 'ROAD_ADDR']);
   const jibunAddress = pick(row, ['lnmadr', 'jibunAddress', 'lotnoAddress', '소재지지번주소', 'JIBUN_ADDR']);
-  const lat = coord(pick(row, ['latitude', 'lat', '위도', 'LAT', 'y', 'Y좌표', '위도값']));
-  const lng = coord(pick(row, ['longitude', 'lng', '경도', 'LNG', 'x', 'X좌표', '경도값']));
+  let lat = coord(pick(row, ['latitude', 'lat', '위도', 'LAT', 'y', 'Y좌표', '위도값']));
+  let lng = coord(pick(row, ['longitude', 'lng', '경도', 'LNG', 'x', 'X좌표', '경도값']));
+  if (!isValidLatLng(lat, lng) && geocoded && isValidLatLng(geocoded.lat, geocoded.lng)) {
+    lat = Number(geocoded.lat);
+    lng = Number(geocoded.lng);
+  }
   if (!name || !isValidLatLng(lat, lng)) return null;
   const feeText = pick(row, ['parkingchrgeInfo', 'parkingChargeInfo', 'parkingchrgeSe', 'feeType', '요금정보', '유무료구분']);
   const baseMinutes = num(pick(row, ['basicTime', 'parkingBasicTime', 'prkBasicTime', '주차기본시간', '기본시간']), null);
@@ -90,6 +99,8 @@ function normalize(row) {
     dataDate: pick(row, ['referenceDate', 'dataDate', '데이터기준일자']) || '',
     sourceUpdatedAt: pick(row, ['referenceDate', 'dataDate', '데이터기준일자']) || '',
     source: '공공데이터포털 전국주차장정보표준데이터',
+    coordinateSource: geocoded?.source || 'csv',
+    geocoded: Boolean(geocoded),
     pricingStatus: pricingStatus({ feeType, baseMinutes, baseFee, additionalMinutes, additionalFee, dayPassFee }),
     realtimeAvailable: null,
     realtimeKey: null,
@@ -222,9 +233,101 @@ async function writeOutputs(lots, meta) {
   await writeFile(path.resolve(projectRoot, 'functions/api/parking/_lib/generated-national-parking-lots.js'), '// This file is generated metadata only. Large parking lot data lives in /assets/data/parking/cells/*.json.\nexport const nationalParkingMeta = ' + JSON.stringify(smallMeta, null, 2) + ';\n', 'utf8');
   return { chunkCount: Object.keys(chunkMeta).length, largestChunk: Math.max(...Object.values(chunks).map((arr) => arr.length)) };
 }
+
+function rowAddress(row) {
+  return String(pick(row, ['rdnmadr', 'roadAddress', 'roadNmAddress', '소재지도로명주소', 'ROAD_ADDR']) || pick(row, ['lnmadr', 'jibunAddress', 'lotnoAddress', '소재지지번주소', 'JIBUN_ADDR']) || '').trim();
+}
+function rowName(row) {
+  return String(pick(row, ['prkplceNm', 'prkplce_nm', 'parkingLotName', 'parkingLotNm', 'parkNm', '주차장명', 'PARKING_NAME', 'name']) || '').trim();
+}
+function rowHasValidCoordinate(row) {
+  const lat = coord(pick(row, ['latitude', 'lat', '위도', 'LAT', 'y', 'Y좌표', '위도값']));
+  const lng = coord(pick(row, ['longitude', 'lng', '경도', 'LNG', 'x', 'X좌표', '경도값']));
+  return isValidLatLng(lat, lng);
+}
+function geocodeKeyForRow(row) {
+  const address = rowAddress(row);
+  const name = rowName(row);
+  return `${address}|${name}`.replace(/\s+/g, ' ').trim();
+}
+async function readGeocodeCache() {
+  try { return JSON.parse(await readFile(geocodeCacheFile, 'utf8')); }
+  catch (_) { return {}; }
+}
+async function writeGeocodeCache(cache) {
+  await mkdir(path.dirname(geocodeCacheFile), { recursive: true });
+  await writeFile(geocodeCacheFile, JSON.stringify(cache, null, 2), 'utf8');
+}
+async function sleep(ms) { return new Promise((resolve) => setTimeout(resolve, ms)); }
+async function kakaoGet(url) {
+  const res = await fetch(url.toString(), { headers: { Authorization: `KakaoAK ${kakaoRestKey}` } });
+  if (!res.ok) throw new Error(`Kakao Local API failed: ${res.status}`);
+  return res.json();
+}
+async function geocodeAddressWithKakao(row) {
+  const address = rowAddress(row);
+  const name = rowName(row);
+  if (!address) return null;
+
+  const addressUrl = new URL('https://dapi.kakao.com/v2/local/search/address.json');
+  addressUrl.searchParams.set('query', address);
+  const addressData = await kakaoGet(addressUrl);
+  const addressDoc = Array.isArray(addressData?.documents) ? addressData.documents[0] : null;
+  if (addressDoc?.x && addressDoc?.y) return { lat: Number(addressDoc.y), lng: Number(addressDoc.x), source: 'kakao-address-geocode' };
+
+  const keywordUrl = new URL('https://dapi.kakao.com/v2/local/search/keyword.json');
+  keywordUrl.searchParams.set('query', `${name} ${address}`.trim());
+  keywordUrl.searchParams.set('size', '1');
+  const keywordData = await kakaoGet(keywordUrl);
+  const keywordDoc = Array.isArray(keywordData?.documents) ? keywordData.documents[0] : null;
+  if (keywordDoc?.x && keywordDoc?.y) return { lat: Number(keywordDoc.y), lng: Number(keywordDoc.x), source: 'kakao-keyword-geocode' };
+  return null;
+}
+async function buildGeocodeMap(rawRows) {
+  const result = { map: new Map(), requested: 0, success: 0, failed: 0, cached: 0, skipped: 0 };
+  if (!geocodeMissing) return result;
+  if (!kakaoRestKey) {
+    console.warn('[parking-cache] --geocode-missing ignored: KAKAO_REST_API_KEY is not set.');
+    return result;
+  }
+  const cache = await readGeocodeCache();
+  const targets = rawRows.filter((row) => !rowHasValidCoordinate(row) && rowAddress(row) && rowName(row));
+  const limited = kakaoGeocodeLimit > 0 ? targets.slice(0, kakaoGeocodeLimit) : targets;
+  result.skipped = targets.length - limited.length;
+  console.log('[parking-cache] geocodeTargets:', targets.length, 'limit:', kakaoGeocodeLimit || 'all');
+  for (const row of limited) {
+    const key = geocodeKeyForRow(row);
+    if (!key) continue;
+    if (cache[key]?.lat && cache[key]?.lng) {
+      result.map.set(key, cache[key]);
+      result.cached += 1;
+      continue;
+    }
+    result.requested += 1;
+    try {
+      const found = await geocodeAddressWithKakao(row);
+      if (found && isValidLatLng(found.lat, found.lng)) {
+        cache[key] = { ...found, updatedAt: new Date().toISOString() };
+        result.map.set(key, cache[key]);
+        result.success += 1;
+      } else {
+        cache[key] = { notFound: true, updatedAt: new Date().toISOString() };
+        result.failed += 1;
+      }
+    } catch (error) {
+      result.failed += 1;
+      console.warn('[parking-cache] geocode failed:', rowName(row), rowAddress(row), error?.message || String(error));
+    }
+    if (kakaoGeocodeDelayMs > 0) await sleep(kakaoGeocodeDelayMs);
+  }
+  await writeGeocodeCache(cache);
+  return result;
+}
+
 async function main() {
   const rawResult = sourceCsv ? { raw: await readCsvRows(sourceCsv), totalCount: 0, pagesFetched: 0, failedPages: [] } : await fetchApiRows();
-  const normalizedRows = rawResult.raw.map(normalize);
+  const geocodeResult = await buildGeocodeMap(rawResult.raw);
+  const normalizedRows = rawResult.raw.map((row) => normalize(row, geocodeResult.map.get(geocodeKeyForRow(row)) || null));
   const lots = dedupe(normalizedRows.filter(Boolean));
   const missingCoordinates = normalizedRows.length - lots.length;
   const meta = {
@@ -237,13 +340,24 @@ async function main() {
     pagesFetched: rawResult.pagesFetched,
     failedPages: rawResult.failedPages.length,
     missingCoordinates,
-    sourceMode: sourceCsv ? 'csv' : 'openapi'
+    sourceMode: sourceCsv ? 'csv' : 'openapi',
+    geocodeMissingEnabled: geocodeMissing,
+    geocodeRequested: geocodeResult.requested,
+    geocodeCached: geocodeResult.cached,
+    geocodeSuccess: geocodeResult.success,
+    geocodeFailed: geocodeResult.failed,
+    geocodeSkipped: geocodeResult.skipped
   };
   const output = await writeOutputs(lots, meta);
   console.log('[parking-cache] rawItems:', rawResult.raw.length);
   console.log('[parking-cache] normalizedItems:', lots.length);
   console.log('[parking-cache] withCoordinates:', lots.length);
   console.log('[parking-cache] missingCoordinates:', missingCoordinates);
+  console.log('[parking-cache] geocodeRequested:', geocodeResult.requested);
+  console.log('[parking-cache] geocodeCached:', geocodeResult.cached);
+  console.log('[parking-cache] geocodeSuccess:', geocodeResult.success);
+  console.log('[parking-cache] geocodeFailed:', geocodeResult.failed);
+  console.log('[parking-cache] geocodeSkipped:', geocodeResult.skipped);
   console.log('[parking-cache] chunkCount:', output.chunkCount);
   console.log('[parking-cache] largestChunkLots:', output.largestChunk);
 }

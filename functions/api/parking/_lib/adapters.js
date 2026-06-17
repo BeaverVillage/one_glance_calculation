@@ -11,6 +11,11 @@ const MAX_PUBLIC_DATA_PAGES = 100;
 const PUBLIC_DATA_RUNTIME_FALLBACK_PAGES = 3;
 const PUBLIC_DATA_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const MAX_DATASET_RETURN = 80;
+const KAKAO_LOCAL_ENDPOINT = 'https://dapi.kakao.com/v2/local/search/keyword.json';
+const KAKAO_LOCAL_DEFAULT_QUERY = '주차장';
+const KAKAO_LOCAL_PAGE_SIZE = 15;
+const KAKAO_LOCAL_MAX_PAGES = 3;
+const KAKAO_LOCAL_SUPPLEMENT_MIN_CANDIDATES = 10;
 
 let publicDataCache = {
   key: '',
@@ -53,6 +58,7 @@ export async function resolveParkingLotDataset({ env = {}, destination = null, r
   let publicDataSource = null;
   let publicDataLots = [];
   let publicFallbackUsed = false;
+  let kakaoSupplementMeta = { used: false, skipped: true, rawCount: 0, normalizedCount: 0, mergedCount: 0, addedCount: 0, reason: '' };
 
   if (nationalMeta?.source) sources.push(nationalMeta.source);
 
@@ -75,6 +81,23 @@ export async function resolveParkingLotDataset({ env = {}, destination = null, r
       effectiveRadiusMeters = radiusMeters;
     } else {
       errors.push(publicData.error);
+    }
+  }
+
+  if (shouldUseKakaoLocalSupplement({ env, destination, selectedLots, nationalLots })) {
+    const kakaoResult = await safeFetch('kakao-local-parking', () => fetchKakaoLocalParkingLots(env, { destination, radius: effectiveRadiusMeters }));
+    kakaoSupplementMeta = kakaoResult.meta || kakaoSupplementMeta;
+    if (kakaoResult.ok && kakaoResult.lots?.length) {
+      if (kakaoResult.source) sources.push(kakaoResult.source);
+      const merged = mergeKakaoSupplementLots(selectedLots, kakaoResult.lots, destination);
+      selectedLots = merged.lots;
+      kakaoSupplementMeta = { ...kakaoSupplementMeta, used: true, skipped: false, mergedCount: merged.mergedCount, addedCount: merged.addedCount };
+      mode = selectedLots.length ? `${mode}+kakao-local` : 'kakao-local-only';
+      fallbackReason = fallbackReason || (merged.addedCount
+        ? '공공데이터 후보가 적어 카카오 Local 주차장 장소 후보를 함께 참고했습니다. 카카오 후보는 요금 정보가 부족할 수 있습니다.'
+        : '공공데이터 후보가 적어 카카오 Local 주차장 장소 후보를 확인했지만 추가 후보는 없었습니다.');
+    } else if (!kakaoResult.ok) {
+      errors.push(kakaoResult.error);
     }
   }
 
@@ -110,7 +133,8 @@ export async function resolveParkingLotDataset({ env = {}, destination = null, r
     selectedLots,
     cacheLoadMs,
     searchMs,
-    publicFallbackUsed
+    publicFallbackUsed,
+    kakaoSupplementMeta
   });
 
   return {
@@ -196,7 +220,7 @@ function filterByRadius(lots, radiusMeters) {
   });
 }
 
-function buildDatasetStats({ sources, publicDataSource, publicDataLots = [], cacheLots = [], cacheWithDistance = [], cacheNearby = [], expandedCacheNearby = [], sampleNearby = [], selectedLots = [], cacheLoadMs = 0, searchMs = 0, publicFallbackUsed = false }) {
+function buildDatasetStats({ sources, publicDataSource, publicDataLots = [], cacheLots = [], cacheWithDistance = [], cacheNearby = [], expandedCacheNearby = [], sampleNearby = [], selectedLots = [], cacheLoadMs = 0, searchMs = 0, publicFallbackUsed = false, kakaoSupplementMeta = null }) {
   const sourceById = new Map(sources.filter(Boolean).map((source) => [source.id, source]));
   const national = sourceById.get('national-chunk-cache') || sourceById.get('national-json-cache') || sourceById.get('national-cache') || sourceById.get('national-mock-fallback') || {};
   const publicData = publicDataSource || sourceById.get('public-data-parking') || {};
@@ -219,9 +243,194 @@ function buildDatasetStats({ sources, publicDataSource, publicDataLots = [], cac
     publicFailedPages: Number(publicData.failedPages || 0),
     sampleNearbyCount: sampleNearby.length,
     returnedCount: selectedLots.length,
+    kakaoLocalSupplementUsed: Boolean(kakaoSupplementMeta?.used),
+    kakaoLocalSupplementSkipped: Boolean(kakaoSupplementMeta?.skipped),
+    kakaoLocalRawCount: Number(kakaoSupplementMeta?.rawCount || 0),
+    kakaoLocalNormalizedCount: Number(kakaoSupplementMeta?.normalizedCount || 0),
+    kakaoLocalMergedCount: Number(kakaoSupplementMeta?.mergedCount || 0),
+    kakaoLocalAddedCount: Number(kakaoSupplementMeta?.addedCount || 0),
+    kakaoLocalReason: kakaoSupplementMeta?.reason || '',
     cacheLoadMs,
     searchMs
   };
+}
+
+
+function shouldUseKakaoLocalSupplement({ env = {}, destination = null, selectedLots = [], nationalLots = [] } = {}) {
+  if (!env?.KAKAO_REST_API_KEY) return false;
+  if (!destination || !isValidLatLng(destination.lat, destination.lng)) return false;
+  if (!nationalLots.length) return false;
+  return selectedLots.length < KAKAO_LOCAL_SUPPLEMENT_MIN_CANDIDATES;
+}
+
+async function fetchKakaoLocalParkingLots(env = {}, { destination, radius = 1500 } = {}) {
+  const key = env.KAKAO_REST_API_KEY || '';
+  if (!key || !destination || !isValidLatLng(destination.lat, destination.lng)) {
+    return {
+      ok: true,
+      lots: [],
+      source: null,
+      meta: { used: false, skipped: true, rawCount: 0, normalizedCount: 0, reason: key ? 'invalid-destination' : 'missing-kakao-rest-key' }
+    };
+  }
+
+  const safeRadius = Math.min(20000, Math.max(300, normalizeRadiusMeters(radius)));
+  const raw = [];
+  const failedPages = [];
+  for (let page = 1; page <= KAKAO_LOCAL_MAX_PAGES; page += 1) {
+    const url = new URL(KAKAO_LOCAL_ENDPOINT);
+    url.searchParams.set('query', KAKAO_LOCAL_DEFAULT_QUERY);
+    url.searchParams.set('x', String(destination.lng));
+    url.searchParams.set('y', String(destination.lat));
+    url.searchParams.set('radius', String(safeRadius));
+    url.searchParams.set('sort', 'distance');
+    url.searchParams.set('page', String(page));
+    url.searchParams.set('size', String(KAKAO_LOCAL_PAGE_SIZE));
+    try {
+      const res = await fetch(url.toString(), {
+        headers: { Authorization: `KakaoAK ${key}` },
+        cf: { cacheTtl: 600, cacheEverything: true }
+      });
+      if (!res.ok) throw new Error(`카카오 Local 주차장 검색 실패: ${res.status}`);
+      const data = await res.json();
+      const documents = Array.isArray(data?.documents) ? data.documents : [];
+      raw.push(...documents);
+      if (data?.meta?.is_end || documents.length < KAKAO_LOCAL_PAGE_SIZE) break;
+    } catch (error) {
+      failedPages.push({ page, message: error?.message || String(error) });
+    }
+  }
+
+  const rows = raw.map((row) => normalizeKakaoLocalParkingRow(row)).filter(Boolean);
+  const lots = dedupeLots(rows);
+  return {
+    ok: true,
+    lots,
+    source: {
+      id: 'kakao-local-parking',
+      name: '카카오 Local API 주차장 장소 검색',
+      service: 'keyword-search',
+      count: lots.length,
+      rawCount: raw.length,
+      normalizedCount: rows.length,
+      radius: safeRadius
+    },
+    meta: {
+      used: true,
+      skipped: false,
+      rawCount: raw.length,
+      normalizedCount: rows.length,
+      failedPages: failedPages.length,
+      mergedCount: 0,
+      addedCount: 0,
+      reason: failedPages.length ? 'partial-kakao-local-failure' : 'supplemented-by-kakao-local'
+    }
+  };
+}
+
+function normalizeKakaoLocalParkingRow(row) {
+  const name = row?.place_name || row?.name || '';
+  const lat = parseCoordinate(row?.y ?? row?.lat);
+  const lng = parseCoordinate(row?.x ?? row?.lng);
+  if (!name || !isValidLatLng(lat, lng)) return null;
+  const roadAddress = row.road_address_name || '';
+  const jibunAddress = row.address_name || '';
+  const address = roadAddress || jibunAddress;
+  return {
+    id: 'KAKAO_' + slug(row.id || `${name}_${lat}_${lng}`),
+    name,
+    publicPrivateType: '민영',
+    parkingType: '주차장',
+    roadAddress,
+    jibunAddress,
+    address,
+    lat,
+    lng,
+    region: normalizeRegion(`${address} ${name}`),
+    district: normalizeDistrict(address),
+    capacity: null,
+    operatingDays: '카카오 장소 검색 기준',
+    weekdayOpen: '',
+    weekdayClose: '',
+    saturdayOpen: '',
+    saturdayClose: '',
+    holidayOpen: '',
+    holidayClose: '',
+    feeType: '유료',
+    baseMinutes: null,
+    baseFee: null,
+    additionalMinutes: null,
+    additionalFee: null,
+    unitMinutes: null,
+    unitFee: null,
+    dayPassFee: null,
+    dailyMaxFee: null,
+    monthlyFee: null,
+    paymentMethods: '현장 확인',
+    agencyName: '카카오 Local API',
+    phone: row.phone || '',
+    dataDate: '',
+    sourceUpdatedAt: '',
+    source: '카카오 Local API 주차장 장소 검색',
+    sourceUrl: row.place_url || '',
+    pricingStatus: 'unknown',
+    realtimeAvailable: null,
+    realtimeKey: null,
+    disabledDiscountRate: 0,
+    compactDiscountRate: 0,
+    evDiscountRate: 0,
+    isKakaoLocalCandidate: true,
+    notes: '카카오 장소 검색으로 찾은 주차장 후보입니다. 요금과 운영시간은 현장 또는 주차장 안내를 확인하세요.'
+  };
+}
+
+function mergeKakaoSupplementLots(baseLots = [], kakaoLots = [], destination = null) {
+  const merged = [...baseLots];
+  let mergedCount = 0;
+  let addedCount = 0;
+  for (const kakaoLot of kakaoLots) {
+    const matchedIndex = merged.findIndex((lot) => isSameParkingCandidate(lot, kakaoLot));
+    if (matchedIndex >= 0) {
+      merged[matchedIndex] = {
+        ...merged[matchedIndex],
+        kakaoPlaceMatched: true,
+        kakaoPlaceName: kakaoLot.name,
+        kakaoPlaceUrl: kakaoLot.sourceUrl || ''
+      };
+      mergedCount += 1;
+    } else {
+      merged.push(kakaoLot);
+      addedCount += 1;
+    }
+  }
+  return { lots: dedupeLots(merged), mergedCount, addedCount };
+}
+
+function isSameParkingCandidate(a, b) {
+  if (!a || !b) return false;
+  const aName = normalizeName(a.name);
+  const bName = normalizeName(b.name);
+  const distance = isValidLatLng(a.lat, a.lng) && isValidLatLng(b.lat, b.lng) ? distanceKm(a, b) : Number.MAX_SAFE_INTEGER;
+  if (aName && bName && aName === bName && distance <= 0.15) return true;
+  if (distance <= 0.05) {
+    const aAddress = normalizeAddress(`${a.roadAddress || ''} ${a.jibunAddress || ''} ${a.address || ''}`);
+    const bAddress = normalizeAddress(`${b.roadAddress || ''} ${b.jibunAddress || ''} ${b.address || ''}`);
+    if (aAddress && bAddress && (aAddress.includes(bAddress) || bAddress.includes(aAddress))) return true;
+    if (namesLookSimilar(aName, bName)) return true;
+  }
+  return false;
+}
+
+function namesLookSimilar(a, b) {
+  if (!a || !b) return false;
+  if (a.includes(b) || b.includes(a)) return true;
+  const compactA = a.replace(/주차장|공영|민영|부설/g, '');
+  const compactB = b.replace(/주차장|공영|민영|부설/g, '');
+  return compactA.length >= 3 && compactB.length >= 3 && (compactA.includes(compactB) || compactB.includes(compactA));
+}
+
+function normalizeAddress(value) {
+  return String(value || '').replace(/\s+/g, '').replace(/[(),.]/g, '').toLowerCase();
 }
 
 export async function getNationalParkingLots({ env = {}, assetBaseUrl = '', destination = null, radius = 1500, query = '' } = {}) {
@@ -1020,5 +1229,9 @@ export const __parkingAdapterTest = {
   getNationalParkingCacheMeta,
   fetchPublicParkingLots,
   fetchAllPublicParkingPages,
-  normalizePublicFallbackPages
+  normalizePublicFallbackPages,
+  fetchKakaoLocalParkingLots,
+  normalizeKakaoLocalParkingRow,
+  mergeKakaoSupplementLots,
+  shouldUseKakaoLocalSupplement
 };
