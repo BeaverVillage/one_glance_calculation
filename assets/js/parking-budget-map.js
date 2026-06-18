@@ -212,37 +212,57 @@ function setupMobileBottomSheet(els) {
   });
 
   const isMobile = () => window.matchMedia("(max-width: 860px)").matches;
-  const peekHeight = () => Math.max(86, Math.min(110, sheet.querySelector(".parking-mobile-sheet-head")?.offsetHeight + 30 || 92));
+  const peekHeight = () => {
+    const headHeight = sheet.querySelector(".parking-mobile-sheet-head")?.offsetHeight || 0;
+    return Math.max(82, Math.min(112, headHeight + 34));
+  };
   const positions = () => {
-    const height = Math.max(sheet.offsetHeight || 0, Math.min(window.innerHeight * 0.88, 720));
+    const height = Math.max(sheet.offsetHeight || 0, Math.min(window.innerHeight * 0.88, 760));
     const collapsed = Math.max(0, height - peekHeight());
     return {
       expanded: 0,
-      half: Math.max(0, Math.min(collapsed, window.innerHeight * 0.46)),
+      half: Math.max(0, Math.min(collapsed, Math.round(window.innerHeight * 0.46))),
       collapsed,
     };
   };
-
   const modeFromSheet = () => {
     if (sheet.classList.contains("is-expanded")) return "expanded";
     if (sheet.classList.contains("is-collapsed")) return "collapsed";
     return "half";
   };
-
   const yForMode = (mode) => {
     const pos = positions();
     if (mode === "expanded") return pos.expanded;
     if (mode === "collapsed" || mode === "closed") return pos.collapsed;
     return pos.half;
   };
-
+  const parseCurrentTranslateY = () => {
+    const transform = window.getComputedStyle(sheet).transform;
+    if (!transform || transform === "none") return yForMode(modeFromSheet());
+    try {
+      const matrix = new DOMMatrixReadOnly(transform);
+      return Number.isFinite(matrix.m42) ? matrix.m42 : yForMode(modeFromSheet());
+    } catch (_) {
+      const match = transform.match(/matrix\(([^)]+)\)/);
+      if (!match) return yForMode(modeFromSheet());
+      const parts = match[1].split(",").map((value) => Number(value.trim()));
+      return Number.isFinite(parts[5]) ? parts[5] : yForMode(modeFromSheet());
+    }
+  };
   const clampY = (value) => {
     const pos = positions();
     return Math.max(pos.expanded, Math.min(pos.collapsed, value));
   };
-
   const applyDragY = (value) => {
-    sheet.style.setProperty("--parking-sheet-drag-y", `${clampY(value)}px`);
+    sheet.style.setProperty("--parking-sheet-drag-y", `${Math.round(clampY(value))}px`);
+  };
+  const lockPageScroll = () => {
+    document.documentElement.classList.add("parking-sheet-dragging-page");
+    document.body.classList.add("parking-sheet-dragging-page");
+  };
+  const unlockPageScroll = () => {
+    document.documentElement.classList.remove("parking-sheet-dragging-page");
+    document.body.classList.remove("parking-sheet-dragging-page");
   };
 
   let startY = 0;
@@ -250,36 +270,51 @@ function setupMobileBottomSheet(els) {
   let lastY = 0;
   let activePointerId = null;
   let dragging = false;
-
-  const lockPageScroll = () => {
-    document.documentElement.classList.add("parking-sheet-dragging-page");
-    document.body.classList.add("parking-sheet-dragging-page");
-  };
-
-  const unlockPageScroll = () => {
-    document.documentElement.classList.remove("parking-sheet-dragging-page");
-    document.body.classList.remove("parking-sheet-dragging-page");
-  };
+  let moved = false;
 
   const beginDrag = (clientY, pointerId = null, target = null) => {
     if (!isMobile()) return false;
     if (dragging) return true;
     dragging = true;
+    moved = false;
     activePointerId = pointerId;
     startY = clientY;
-    baseY = yForMode(modeFromSheet());
+    baseY = clampY(parseCurrentTranslateY());
     lastY = baseY;
+    applyDragY(baseY);
     sheet.classList.add("is-dragging");
     target?.setPointerCapture?.(pointerId);
     lockPageScroll();
-    applyDragY(baseY);
     return true;
   };
 
   const moveDrag = (clientY) => {
     if (!dragging) return;
-    lastY = clampY(baseY + clientY - startY);
+    const delta = clientY - startY;
+    if (Math.abs(delta) > 6) moved = true;
+    lastY = clampY(baseY + delta);
     applyDragY(lastY);
+  };
+
+  const snapToNearest = (endY) => {
+    const pos = positions();
+    const direction = endY - baseY;
+    if (Math.abs(direction) > 70) {
+      if (direction < 0) return endY < pos.half ? "expanded" : "half";
+      return endY > pos.half ? "closed" : "half";
+    }
+    return [
+      ["expanded", Math.abs(endY - pos.expanded)],
+      ["half", Math.abs(endY - pos.half)],
+      ["closed", Math.abs(endY - pos.collapsed)],
+    ].sort((a, b) => a[1] - b[1])[0][0];
+  };
+
+  const toggleByTap = () => {
+    const mode = modeFromSheet();
+    if (mode === "collapsed") return "half";
+    if (mode === "expanded") return "half";
+    return "expanded";
   };
 
   const endDrag = (target = null) => {
@@ -288,22 +323,11 @@ function setupMobileBottomSheet(els) {
     target?.releasePointerCapture?.(activePointerId);
     activePointerId = null;
     unlockPageScroll();
-
-    const endY = lastY;
-    const pos = positions();
-    sheet.classList.remove("is-dragging");
-    sheet.style.removeProperty("--parking-sheet-drag-y");
-
-    const distances = [
-      ["expanded", Math.abs(endY - pos.expanded)],
-      ["half", Math.abs(endY - pos.half)],
-      ["closed", Math.abs(endY - pos.collapsed)],
-    ].sort((a, b) => a[1] - b[1]);
-    setMobileSheetState(els, distances[0][0]);
+    const targetMode = moved ? snapToNearest(lastY) : toggleByTap();
+    setMobileSheetState(els, targetMode);
   };
 
   const shouldIgnoreDragStart = (event) => Boolean(event.target?.closest?.("button, a, input, select, textarea, summary"));
-
   const keyHandler = (event) => {
     if (event.key === "ArrowUp") {
       event.preventDefault();
@@ -1059,8 +1083,8 @@ function renderResults(els, input) {
 function updateMobileListToggle(els) {
   if (!els?.mobileListToggle) return;
   const count = state.results?.length || 0;
-  const isOpen = !els.mobileBottomSheet?.classList.contains("is-collapsed");
-  els.mobileListToggle.textContent = isOpen ? "추천 목록 접기" : count ? `추천 주차장 ${count}곳 보기` : "추천 주차장 보기";
+  const isOpen = els.mobileBottomSheet?.classList.contains("is-open");
+  els.mobileListToggle.textContent = isOpen ? "추천 목록 닫기" : count ? `추천 주차장 ${count}곳 보기` : "추천 주차장 보기";
   els.mobileListToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
 }
 
@@ -1385,8 +1409,6 @@ function showParkingMapPopup(id, els) {
   popup.className = `parking-map-popup${useDetailPopup ? " parking-map-popup--detail" : ""}`;
   popup.setAttribute("role", "dialog");
   popup.setAttribute("aria-label", `${row.name} 주차장 ${useDetailPopup ? "상세" : "요약"}`);
-  const kakaoLink = renderKakaoMapLink(row, "parking-kakao-map-link tiny");
-  const selectedBadge = state.pinnedParkingId === row.id ? '<p class="parking-pinned-badge parking-pinned-badge--inline">지도에서 선택한 주차장입니다.</p>' : '';
   popup.innerHTML = useDetailPopup ? [
     '<button type="button" class="parking-map-popup__close" aria-label="지도 주차장 요약 닫기">×</button>',
     '<div class="parking-map-popup__head">',
@@ -1402,7 +1424,8 @@ function showParkingMapPopup(id, els) {
     `<span class="parking-metric-chip ${riskClass}">${escapeHtml(row.fullRiskLabel || "위험도 확인 필요")}</span>`,
     `<span class="parking-metric-chip ${confidenceClass}">${escapeHtml(row.dataConfidenceLabel || "신뢰도 확인 필요")}</span>`,
     '</div>',
-    selectedBadge || kakaoLink ? `<div class="parking-map-popup__selected-row">${selectedBadge}${kakaoLink}</div>` : ''
+    state.pinnedParkingId === row.id ? '<p class="parking-pinned-badge">지도에서 선택한 주차장입니다.</p>' : '',
+    `<div class="parking-map-popup__actions"><button type="button" class="subtle-button tiny" data-popup-scroll-card>추천 카드 보기</button>${renderKakaoMapLink(row, "parking-kakao-map-link tiny")}</div>`
   ].join("") : [
     '<button type="button" class="parking-map-popup__close" aria-label="지도 주차장 요약 닫기">×</button>',
     '<div class="parking-map-popup__head">',
@@ -1413,9 +1436,10 @@ function showParkingMapPopup(id, els) {
     `<p class="parking-map-popup__price">${escapeHtml(price)}</p>`,
     `<p class="parking-map-popup__detail">${escapeHtml(distance)} · ${escapeHtml(realtime)}</p>`,
     `<p class="parking-map-popup__detail">${escapeHtml(row.dataConfidenceLabel || "신뢰도 확인 필요")}</p>`,
-    `<div class="parking-map-popup__actions"><button type="button" class="subtle-button tiny" data-mobile-detail-card>상세 보기</button>${kakaoLink}</div>`
+    `<div class="parking-map-popup__actions"><button type="button" class="subtle-button tiny" data-mobile-detail-card>상세 보기</button>${renderKakaoMapLink(row, "parking-kakao-map-link tiny")}</div>`
   ].join("");
   popup.querySelector(".parking-map-popup__close")?.addEventListener("click", () => popup.remove());
+  popup.querySelector("[data-popup-scroll-card]")?.addEventListener("click", () => pinParkingCard(id, els, { scroll: true }));
   popup.querySelector("[data-mobile-detail-card]")?.addEventListener("click", () => openMobileParkingDetail(id, els));
   mapCard.append(popup);
 }

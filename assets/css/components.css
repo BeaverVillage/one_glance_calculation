@@ -10126,327 +10126,10 @@ body {
   }
 }
 
-/* Parking map UI refinement 2026-06-18: PC compact popup + mobile map controls/bottom sheet */
-@media (min-width: 861px) {
-  .parking-map-popup--detail {
-    width: min(360px, calc(100% - 36px)) !important;
-    padding: 0.78rem 0.84rem !important;
-    border-radius: 17px !important;
-  }
-
-  .parking-map-popup--detail .parking-map-popup__head {
-    gap: 0.46rem !important;
-    padding-right: 1.9rem !important;
-  }
-
-  .parking-map-popup--detail .parking-map-popup__head span {
-    min-width: 34px !important;
-    min-height: 30px !important;
-    font-size: 0.82rem !important;
-  }
-
-  .parking-map-popup--detail .parking-map-popup__head strong {
-    font-size: 0.98rem !important;
-    line-height: 1.2 !important;
-  }
-
-  .parking-map-popup--detail .parking-map-popup__meta {
-    margin-top: 0.34rem !important;
-    font-size: 0.78rem !important;
-    line-height: 1.32 !important;
-  }
-
-  .parking-map-popup--detail .parking-map-popup__price-row {
-    margin: 0.48rem 0 0.24rem !important;
-    padding: 0.42rem 0.56rem !important;
-    border-radius: 13px !important;
-  }
-
-  .parking-map-popup--detail .parking-map-popup__price-row strong {
-    font-size: 1.52rem !important;
-  }
-
-  .parking-map-popup--detail .parking-map-popup__reason {
-    margin-top: 0.18rem !important;
-    font-size: 0.78rem !important;
-    line-height: 1.36 !important;
-  }
-
-  .parking-map-popup--detail .parking-map-popup__metrics {
-    gap: 0.26rem !important;
-    margin-top: 0.42rem !important;
-  }
-
-  .parking-map-popup--detail .parking-map-popup__metrics .parking-metric-chip {
-    min-height: 25px !important;
-    padding: 0.25rem 0.44rem !important;
-    font-size: 0.72rem !important;
-  }
-
-  .parking-map-popup__selected-row {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    align-items: center !important;
-    gap: 0.38rem !important;
-    margin-top: 0.48rem !important;
-  }
-
-  .parking-map-popup__selected-row .parking-pinned-badge,
-  .parking-map-popup__selected-row .parking-kakao-map-link {
-    margin: 0 !important;
-  }
-
-  .parking-map-popup__selected-row .parking-pinned-badge {
-    min-height: 30px !important;
-    padding: 0.34rem 0.56rem !important;
-    border-radius: 999px !important;
-    font-size: 0.76rem !important;
-    line-height: 1.15 !important;
-  }
-
-  .parking-map-popup__selected-row .parking-kakao-map-link {
-    min-height: 30px !important;
-    padding: 0.34rem 0.58rem !important;
-    border-radius: 999px !important;
-    font-size: 0.76rem !important;
-  }
-
-  .parking-map-popup--detail .parking-map-popup__actions {
-    display: none !important;
-  }
-}
-
-@media (max-width: 860px) {
-  .parking-map-toolbar {
-    top: 12px !important;
-    bottom: 12px !important;
-    left: 12px !important;
-    right: 12px !important;
-    height: auto !important;
-    display: block !important;
-  }
-
-  .parking-map-toolbar__search {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    z-index: 36 !important;
-  }
-
-  .parking-map-research-button {
-    top: 66px !important;
-    left: 50% !important;
-    z-index: 35 !important;
-    min-height: 34px !important;
-    padding: 0.42rem 0.78rem !important;
-    border-radius: 999px !important;
-    box-shadow: none !important;
-    font-size: 0.8rem !important;
-    white-space: nowrap !important;
-  }
-
-  .parking-map-toolbar__actions {
-    position: absolute !important;
-    left: 0 !important;
-    bottom: 16px !important;
-    z-index: 34 !important;
-    max-width: calc(100% - 156px) !important;
-    display: flex !important;
-    flex-wrap: wrap !important;
-    align-items: flex-end !important;
-    gap: 6px !important;
-    overflow: visible !important;
-    padding: 0 !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    filter: none !important;
-    backdrop-filter: none !important;
-  }
-
-  .parking-map-toolbar__button {
-    min-height: 34px !important;
-    padding: 0.4rem 0.62rem !important;
-    border-radius: 999px !important;
-    background: #fff !important;
-    box-shadow: none !important;
-    filter: none !important;
-    backdrop-filter: none !important;
-    font-size: 0.8rem !important;
-    line-height: 1.1 !important;
-  }
-
-  .parking-map-control-popover {
-    position: relative !important;
-  }
-
-  .parking-map-popover-panel {
-    top: auto !important;
-    bottom: calc(100% + 8px) !important;
-    left: 0 !important;
-    right: auto !important;
-    max-width: min(280px, calc(100vw - 28px)) !important;
-  }
-
-  .parking-mobile-list-toggle {
-    left: auto !important;
-    right: 12px !important;
-    bottom: 16px !important;
-    z-index: 38 !important;
-    transform: none !important;
-    max-width: 148px !important;
-    min-height: 36px !important;
-    padding: 0.44rem 0.66rem !important;
-    border-radius: 999px !important;
-    box-shadow: none !important;
-    font-size: 0.78rem !important;
-    white-space: normal !important;
-    line-height: 1.15 !important;
-  }
-
-  .parking-mobile-list-toggle[aria-expanded="true"] {
-    opacity: 0 !important;
-    pointer-events: none !important;
-  }
-
-  .parking-bottom-sheet {
-    position: fixed !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    z-index: 70 !important;
-    display: block !important;
-    max-height: min(58svh, 520px) !important;
-    margin: 0 !important;
-    padding: 0.58rem 0.78rem calc(0.84rem + env(safe-area-inset-bottom, 0px)) !important;
-    border: 1px solid rgba(139, 162, 184, 0.38) !important;
-    border-bottom: 0 !important;
-    border-radius: 22px 22px 0 0 !important;
-    background: rgba(255, 255, 255, 0.99) !important;
-    box-shadow: 0 -14px 32px rgba(15, 35, 55, 0.18) !important;
-    overflow: hidden !important;
-    transform: translateY(42%) !important;
-    transition: transform 0.2s ease !important;
-    will-change: transform !important;
-  }
-
-  .parking-bottom-sheet.is-collapsed {
-    display: block !important;
-    transform: translateY(calc(100% - 48px)) !important;
-  }
-
-  .parking-bottom-sheet.is-open {
-    display: block !important;
-    transform: translateY(42%) !important;
-  }
-
-  .parking-bottom-sheet.is-expanded {
-    display: block !important;
-    max-height: min(78svh, 720px) !important;
-    transform: translateY(0) !important;
-  }
-
-  .parking-bottom-sheet.is-dragging {
-    transform: translateY(var(--parking-sheet-drag-y, 42%)) !important;
-    transition: none !important;
-  }
-
-  .parking-sheet-handle {
-    width: 52px !important;
-    height: 6px !important;
-    margin: 0 auto 0.58rem !important;
-    border-radius: 999px !important;
-    background: #c4d0db !important;
-    touch-action: none !important;
-    cursor: grab !important;
-  }
-
-  .parking-bottom-sheet.is-collapsed .parking-mobile-sheet-head,
-  .parking-bottom-sheet.is-collapsed .parking-mobile-sheet-controls,
-  .parking-bottom-sheet.is-collapsed .parking-mobile-sheet-sort,
-  .parking-bottom-sheet.is-collapsed .parking-mobile-results {
-    visibility: hidden !important;
-    pointer-events: none !important;
-  }
-
-  .parking-mobile-results {
-    max-height: calc(58svh - 130px) !important;
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-  }
-
-  .parking-bottom-sheet.is-expanded .parking-mobile-results {
-    max-height: calc(78svh - 120px) !important;
-  }
-
-  .parking-map-popup {
-    left: 14px !important;
-    right: 14px !important;
-    bottom: 82px !important;
-    max-height: 152px !important;
-    padding: 0.58rem 0.66rem !important;
-    border-radius: 16px !important;
-    overflow: hidden !important;
-    background: rgba(255, 255, 255, 0.97) !important;
-    box-shadow: 0 8px 20px rgba(15, 35, 55, 0.15) !important;
-    backdrop-filter: none !important;
-  }
-
-  .parking-map-popup__head span {
-    min-width: 30px !important;
-    min-height: 30px !important;
-    font-size: 0.8rem !important;
-  }
-
-  .parking-map-popup__head strong {
-    font-size: 0.94rem !important;
-    line-height: 1.16 !important;
-  }
-
-  .parking-map-popup__meta,
-  .parking-map-popup__detail {
-    margin-top: 0.16rem !important;
-    font-size: 0.74rem !important;
-    line-height: 1.22 !important;
-  }
-
-  .parking-map-popup__price {
-    margin: 0.22rem 0 0.08rem !important;
-    font-size: 1.2rem !important;
-    line-height: 1.06 !important;
-  }
-
-  .parking-map-popup__actions {
-    margin-top: 0.32rem !important;
-    gap: 0.3rem !important;
-  }
-
-  .parking-map-popup__actions .subtle-button,
-  .parking-map-popup__actions .parking-kakao-map-link {
-    min-height: 30px !important;
-    padding: 0.32rem 0.52rem !important;
-    font-size: 0.74rem !important;
-  }
-}
-
-@media (max-width: 430px) {
-  .parking-map-toolbar__actions {
-    max-width: calc(100% - 138px) !important;
-    gap: 5px !important;
-  }
-
-  .parking-map-toolbar__button,
-  .parking-mobile-list-toggle {
-    font-size: 0.72rem !important;
-  }
-
-  .parking-map-popup {
-    bottom: 78px !important;
-    max-height: 146px !important;
-  }
-}
-
-/* Parking mobile bottom sheet drag reliability fix 2026-06-18 */
+/* Parking mobile bottom sheet stable snap fix 2026-06-18
+   - Keep the handle visible in collapsed mode.
+   - Start drag from the current rendered translateY position to prevent the sheet from jumping to the bottom first.
+*/
 @media (max-width: 860px) {
   html.parking-sheet-dragging-page,
   body.parking-sheet-dragging-page {
@@ -10456,12 +10139,14 @@ body {
   }
 
   .parking-bottom-sheet {
+    display: block !important;
     max-height: min(88svh, 760px) !important;
-    padding-top: 0.5rem !important;
     transform: translateY(46%) !important;
     transition: transform 180ms cubic-bezier(0.2, 0.85, 0.25, 1) !important;
+    will-change: transform !important;
     touch-action: pan-y !important;
     overscroll-behavior: contain !important;
+    overflow: hidden !important;
   }
 
   .parking-bottom-sheet.is-collapsed {
@@ -10481,6 +10166,7 @@ body {
   }
 
   .parking-bottom-sheet.is-dragging {
+    display: block !important;
     transform: translateY(var(--parking-sheet-drag-y, 46%)) !important;
     transition: none !important;
   }
@@ -10498,8 +10184,8 @@ body {
     cursor: grab !important;
   }
 
-  .parking-bottom-sheet.is-dragging .parking-mobile-sheet-head,
-  .parking-bottom-sheet.is-dragging .parking-sheet-handle {
+  .parking-bottom-sheet.is-dragging .parking-sheet-handle,
+  .parking-bottom-sheet.is-dragging .parking-mobile-sheet-head {
     cursor: grabbing !important;
   }
 
@@ -10526,11 +10212,7 @@ body {
     -webkit-overflow-scrolling: touch !important;
   }
 
-  .parking-bottom-sheet.is-open .parking-mobile-results {
-    max-height: calc(54svh - 150px) !important;
-  }
-
   .parking-bottom-sheet.is-expanded .parking-mobile-results {
-    max-height: calc(88svh - 146px) !important;
+    max-height: calc(88svh - 128px) !important;
   }
 }
