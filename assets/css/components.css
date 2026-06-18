@@ -10775,3 +10775,54 @@ body {
     width: 68px !important;
   }
 }
+
+
+/* Parking mobile sheet collapsed-minimal handle fix 2026-06-18 */
+@media (max-width: 860px) {
+  .parking-bottom-sheet {
+    --parking-sheet-collapsed-peek: 48px !important;
+  }
+
+  .parking-bottom-sheet.is-collapsed {
+    min-height: 48px !important;
+    padding-top: 0 !important;
+    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+    overflow: hidden !important;
+  }
+
+  .parking-bottom-sheet.is-collapsed .parking-mobile-sheet-head {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 48px !important;
+    height: 48px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border-bottom: 0 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    touch-action: none !important;
+  }
+
+  .parking-bottom-sheet.is-collapsed .parking-mobile-sheet-summary,
+  .parking-bottom-sheet.is-collapsed .parking-mobile-sheet-head .subtle-button,
+  .parking-bottom-sheet.is-collapsed .parking-mobile-sheet-controls,
+  .parking-bottom-sheet.is-collapsed .parking-mobile-sheet-sort,
+  .parking-bottom-sheet.is-collapsed .parking-mobile-results {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  .parking-bottom-sheet.is-collapsed .parking-sheet-handle {
+    display: block !important;
+    width: 72px !important;
+    height: 7px !important;
+    margin: 0 auto !important;
+    border-radius: 999px !important;
+    background: #c4d0db !important;
+    box-shadow: none !important;
+    touch-action: none !important;
+    cursor: grab !important;
+  }
+}

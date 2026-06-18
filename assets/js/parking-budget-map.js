@@ -231,10 +231,9 @@ function setupMobileBottomSheet(els) {
     return Math.min(Math.max(360, viewportHeight * 0.88), 760);
   };
 
-  const peekHeight = () => {
-    const headHeight = head?.offsetHeight || 92;
-    return clamp(headHeight + 10, 88, 132);
-  };
+  const COLLAPSED_SHEET_PEEK = 48;
+
+  const peekHeight = () => COLLAPSED_SHEET_PEEK;
 
   const positions = (viewportHeight = window.innerHeight || document.documentElement.clientHeight || 700) => {
     const height = sheetHeightFor(viewportHeight);
@@ -426,7 +425,7 @@ function setMobileSheetState(els, mode = "closed") {
   const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 700;
   const head = sheet.querySelector(".parking-mobile-sheet-head");
   const sheetHeight = Math.min(Math.max(360, viewportHeight * 0.88), 760);
-  const peek = Math.max(88, Math.min(132, (head?.offsetHeight || 92) + 10));
+  const peek = 48;
   const collapsedY = Math.max(0, sheetHeight - peek);
   const halfVisible = Math.max(peek + 120, Math.min(viewportHeight * 0.48, sheetHeight - 24));
   const halfY = Math.max(0, Math.min(collapsedY, sheetHeight - halfVisible));
