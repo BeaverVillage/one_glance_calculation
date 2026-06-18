@@ -33,7 +33,7 @@
 <script data-schema="faqpage" type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"주차비 계산 지도는 실제 주차요금을 보장하나요?","acceptedAnswer":{"@type":"Answer","text":"아니요. 목적지, 방문 시간, 공개 데이터, 샘플 또는 연동 데이터, 사용자가 선택한 할인 조건을 바탕으로 계산한 참고용 예상 금액입니다. 실제 요금과 할인 적용 여부는 현장 정책에 따라 달라질 수 있습니다."}},{"@type":"Question","name":"가장 가까운 주차장이 항상 추천 1위인가요?","acceptedAnswer":{"@type":"Answer","text":"아닙니다. 가까운 주차장이라도 요금이 높거나 만차 위험이 높을 수 있습니다. 이 계산기는 예상 주차비, 거리, 공영 여부, 실시간 빈자리, 데이터 신뢰도를 함께 고려해 후보를 비교합니다."}},{"@type":"Question","name":"카카오맵이 보이지 않아도 계산할 수 있나요?","acceptedAnswer":{"@type":"Answer","text":"예. 카카오맵 JavaScript 키가 없거나 도메인 설정이 필요할 때는 샘플 지도와 가격 마커로 기본 계산을 확인할 수 있습니다. 실제 운영에서는 Kakao Developers의 JavaScript 키와 Web 플랫폼 도메인 등록이 필요합니다."}},{"@type":"Question","name":"공영주차장과 무료 주차장은 어떻게 표시되나요?","acceptedAnswer":{"@type":"Answer","text":"주차장 데이터에 공영, 민영, 무료, 1일권 가능 여부가 있으면 필터와 카드 배지에 반영합니다. 무료 주차 가능성은 현장 상황이나 운영 시간에 따라 달라질 수 있으므로 방문 전 확인이 필요합니다."}},{"@type":"Question","name":"경차, 장애인, 전기차 할인은 확정 적용되나요?","acceptedAnswer":{"@type":"Answer","text":"아니요. 선택한 할인율을 적용한 참고 계산입니다. 실제 할인은 주차장 정책, 차량 등록 상태, 증빙 자료, 결제 방식에 따라 달라질 수 있습니다."}},{"@type":"Question","name":"실시간 빈자리 정보가 있으면 주차 가능이 보장되나요?","acceptedAnswer":{"@type":"Answer","text":"보장하지 않습니다. 실시간 가능 대수는 제공기관 데이터 기준이며 실제 현장 진입 시점과 차이가 날 수 있습니다. 만차 위험도도 참고용으로만 확인해 주세요."}},{"@type":"Question","name":"1일권 전환점은 무엇인가요?","acceptedAnswer":{"@type":"Answer","text":"시간요금으로 계속 계산했을 때 일 최대 요금 또는 1일권 요금 이상이 되는 시점입니다. 해당 정보가 있는 주차장에 한해 장시간 주차가 유리해지는 기준을 참고로 표시합니다."}},{"@type":"Question","name":"거리 표시는 어떤 기준인가요?","acceptedAnswer":{"@type":"Answer","text":"현재 화면의 거리는 목적지와 주차장 좌표 사이의 직선거리 기준입니다. 실제 차량 경로, 진입로, 일방통행, 도보 동선은 반영되지 않을 수 있습니다."}}]}</script>
 <link href="../assets/css/base.css" rel="stylesheet"/>
 <link href="../assets/css/layout.css" rel="stylesheet"/>
-<link href="../assets/css/components.css?v=20260618-parking-mobile-sheet-drag-lock" rel="stylesheet"/>
+<link href="../assets/css/components.css?v=20260618-parking-sheet-stable-header-drag" rel="stylesheet"/>
 </head>
 <body>
 <header class="site-header">
@@ -158,12 +158,12 @@
 <button class="parking-mobile-list-toggle" id="parking-mobile-list-toggle" type="button">추천 주차장 보기</button>
 </section>
 <section aria-label="모바일 추천 주차장 결과" class="parking-bottom-sheet" id="parking-mobile-bottom-sheet">
-  <div class="parking-sheet-handle" aria-hidden="true"></div>
   <div class="parking-mobile-sheet-head">
-    <div>
+    <div class="parking-mobile-sheet-summary">
       <strong id="parking-mobile-sheet-title">추천 결과</strong>
       <span id="parking-mobile-sheet-subtitle">목적지를 검색하면 주변 주차장을 비교합니다.</span>
     </div>
+    <div class="parking-sheet-handle" aria-hidden="true"></div>
     <button type="button" class="subtle-button tiny" id="parking-mobile-sheet-map-button">지도 보기</button>
   </div>
   <div class="parking-mobile-sheet-controls" aria-label="모바일 빠른 설정">

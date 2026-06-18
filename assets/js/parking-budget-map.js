@@ -198,9 +198,9 @@ function setupDesktopMapToolbar(els) {
 function setupMobileBottomSheet(els) {
   const sheet = els?.mobileBottomSheet;
   if (!sheet || sheet.dataset.dragReady === "true") return;
-  const handle = sheet.querySelector(".parking-sheet-handle");
   const head = sheet.querySelector(".parking-mobile-sheet-head");
-  const dragTargets = [handle, head].filter(Boolean);
+  const handle = sheet.querySelector(".parking-sheet-handle");
+  const dragTargets = [head, handle].filter(Boolean);
   if (!dragTargets.length) return;
 
   sheet.dataset.dragReady = "true";
@@ -212,15 +212,34 @@ function setupMobileBottomSheet(els) {
   });
 
   const isMobile = () => window.matchMedia("(max-width: 860px)").matches;
-  const peekHeight = () => Math.max(86, Math.min(110, sheet.querySelector(".parking-mobile-sheet-head")?.offsetHeight + 30 || 92));
-  const positions = () => {
-    const height = Math.max(sheet.offsetHeight || 0, Math.min(window.innerHeight * 0.88, 720));
-    const collapsed = Math.max(0, height - peekHeight());
-    return {
-      expanded: 0,
-      half: Math.max(0, Math.min(collapsed, window.innerHeight * 0.46)),
-      collapsed,
-    };
+  const isInteractiveTarget = (target) => Boolean(target?.closest?.("button, a, input, select, textarea, summary, label"));
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+  let dragViewportHeight = 0;
+  let startClientY = 0;
+  let startSheetY = 0;
+  let lastSheetY = 0;
+  let activePointerId = null;
+  let activeTarget = null;
+  let dragging = false;
+  let scrollLockY = 0;
+
+  const sheetHeightFor = (viewportHeight = window.innerHeight || document.documentElement.clientHeight || 700) => {
+    return Math.min(Math.max(360, viewportHeight * 0.88), 760);
+  };
+
+  const peekHeight = () => {
+    const headHeight = head?.offsetHeight || 92;
+    return clamp(headHeight + 10, 88, 132);
+  };
+
+  const positions = (viewportHeight = window.innerHeight || document.documentElement.clientHeight || 700) => {
+    const height = sheetHeightFor(viewportHeight);
+    const peek = peekHeight();
+    const collapsed = Math.max(0, height - peek);
+    const halfVisible = clamp(viewportHeight * 0.48, peek + 120, height - 24);
+    const half = Math.max(0, Math.min(collapsed, height - halfVisible));
+    return { expanded: 0, half, collapsed };
   };
 
   const modeFromSheet = () => {
@@ -229,36 +248,44 @@ function setupMobileBottomSheet(els) {
     return "half";
   };
 
-  const yForMode = (mode) => {
-    const pos = positions();
+  const yForMode = (mode, viewportHeight = window.innerHeight || document.documentElement.clientHeight || 700) => {
+    const pos = positions(viewportHeight);
     if (mode === "expanded") return pos.expanded;
     if (mode === "collapsed" || mode === "closed") return pos.collapsed;
     return pos.half;
   };
 
-  const clampY = (value) => {
-    const pos = positions();
-    return Math.max(pos.expanded, Math.min(pos.collapsed, value));
+  const clampY = (value, viewportHeight = dragViewportHeight || window.innerHeight || document.documentElement.clientHeight || 700) => {
+    const pos = positions(viewportHeight);
+    return clamp(value, pos.expanded, pos.collapsed);
   };
 
-  const applyDragY = (value) => {
-    sheet.style.setProperty("--parking-sheet-drag-y", `${clampY(value)}px`);
+  const applySheetY = (value, viewportHeight = dragViewportHeight || window.innerHeight || document.documentElement.clientHeight || 700) => {
+    const y = clampY(value, viewportHeight);
+    sheet.style.setProperty("--parking-sheet-y", `${y}px`);
+    return y;
   };
-
-  let startY = 0;
-  let baseY = 0;
-  let lastY = 0;
-  let activePointerId = null;
-  let dragging = false;
 
   const lockPageScroll = () => {
+    scrollLockY = window.scrollY || window.pageYOffset || 0;
     document.documentElement.classList.add("parking-sheet-dragging-page");
     document.body.classList.add("parking-sheet-dragging-page");
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollLockY}px`;
+    document.body.style.left = "0";
+    document.body.style.right = "0";
+    document.body.style.width = "100%";
   };
 
   const unlockPageScroll = () => {
     document.documentElement.classList.remove("parking-sheet-dragging-page");
     document.body.classList.remove("parking-sheet-dragging-page");
+    document.body.style.position = "";
+    document.body.style.top = "";
+    document.body.style.left = "";
+    document.body.style.right = "";
+    document.body.style.width = "";
+    window.scrollTo(0, scrollLockY || 0);
   };
 
   const beginDrag = (clientY, pointerId = null, target = null) => {
@@ -266,43 +293,61 @@ function setupMobileBottomSheet(els) {
     if (dragging) return true;
     dragging = true;
     activePointerId = pointerId;
-    startY = clientY;
-    baseY = yForMode(modeFromSheet());
-    lastY = baseY;
+    activeTarget = target;
+    dragViewportHeight = window.innerHeight || document.documentElement.clientHeight || 700;
+    startClientY = clientY;
+    startSheetY = yForMode(modeFromSheet(), dragViewportHeight);
+    lastSheetY = startSheetY;
     sheet.classList.add("is-dragging");
-    target?.setPointerCapture?.(pointerId);
+    sheet.style.setProperty("--parking-sheet-height", `${sheetHeightFor(dragViewportHeight)}px`);
+    applySheetY(startSheetY, dragViewportHeight);
+    try {
+      if (pointerId != null) target?.setPointerCapture?.(pointerId);
+    } catch (_) {}
     lockPageScroll();
-    applyDragY(baseY);
     return true;
   };
 
   const moveDrag = (clientY) => {
     if (!dragging) return;
-    lastY = clampY(baseY + clientY - startY);
-    applyDragY(lastY);
+    const nextY = startSheetY + clientY - startClientY;
+    lastSheetY = applySheetY(nextY, dragViewportHeight);
   };
 
-  const endDrag = (target = null) => {
+  const snapToClosest = () => {
+    const pos = positions(dragViewportHeight);
+    const delta = lastSheetY - startSheetY;
+    let nextMode = "half";
+    if (Math.abs(delta) > 72) {
+      if (delta < 0) {
+        if (startSheetY >= pos.collapsed - 4) nextMode = "half";
+        else nextMode = "expanded";
+      } else {
+        if (startSheetY <= pos.expanded + 4) nextMode = "half";
+        else nextMode = "closed";
+      }
+    } else {
+      nextMode = [
+        ["expanded", Math.abs(lastSheetY - pos.expanded)],
+        ["half", Math.abs(lastSheetY - pos.half)],
+        ["closed", Math.abs(lastSheetY - pos.collapsed)],
+      ].sort((a, b) => a[1] - b[1])[0][0];
+    }
+    setMobileSheetState(els, nextMode);
+  };
+
+  const endDrag = () => {
     if (!dragging) return;
+    try {
+      if (activePointerId != null) activeTarget?.releasePointerCapture?.(activePointerId);
+    } catch (_) {}
     dragging = false;
-    target?.releasePointerCapture?.(activePointerId);
     activePointerId = null;
+    activeTarget = null;
     unlockPageScroll();
-
-    const endY = lastY;
-    const pos = positions();
     sheet.classList.remove("is-dragging");
-    sheet.style.removeProperty("--parking-sheet-drag-y");
-
-    const distances = [
-      ["expanded", Math.abs(endY - pos.expanded)],
-      ["half", Math.abs(endY - pos.half)],
-      ["closed", Math.abs(endY - pos.collapsed)],
-    ].sort((a, b) => a[1] - b[1]);
-    setMobileSheetState(els, distances[0][0]);
+    snapToClosest();
   };
-
-  const shouldIgnoreDragStart = (event) => Boolean(event.target?.closest?.("button, a, input, select, textarea, summary"));
 
   const keyHandler = (event) => {
     if (event.key === "ArrowUp") {
@@ -317,63 +362,69 @@ function setupMobileBottomSheet(els) {
     }
   };
 
+  const onDragStart = (event) => {
+    if (isInteractiveTarget(event.target)) return;
+    const clientY = event.clientY ?? event.touches?.[0]?.clientY;
+    if (clientY == null) return;
+    if (!beginDrag(clientY, event.pointerId ?? null, event.currentTarget)) return;
+    event.preventDefault();
+    event.stopPropagation();
+  };
+
+  const onDragMove = (event) => {
+    if (!dragging) return;
+    const clientY = event.clientY ?? event.touches?.[0]?.clientY;
+    if (clientY != null) moveDrag(clientY);
+    event.preventDefault();
+    event.stopPropagation();
+  };
+
+  const onDragEnd = (event) => {
+    if (!dragging) return;
+    event.preventDefault?.();
+    event.stopPropagation?.();
+    endDrag();
+  };
+
   dragTargets.forEach((target) => {
     target.addEventListener("keydown", keyHandler);
-    target.addEventListener("pointerdown", (event) => {
-      if (shouldIgnoreDragStart(event)) return;
-      if (!beginDrag(event.clientY, event.pointerId, target)) return;
-      event.preventDefault();
-      event.stopPropagation();
-    });
-    target.addEventListener("pointermove", (event) => {
-      if (!dragging) return;
-      moveDrag(event.clientY);
-      event.preventDefault();
-      event.stopPropagation();
-    });
-    target.addEventListener("pointerup", (event) => {
-      if (!dragging) return;
-      event.preventDefault();
-      event.stopPropagation();
-      endDrag(target);
-    });
-    target.addEventListener("pointercancel", () => endDrag(target));
-    target.addEventListener("touchstart", (event) => {
-      if (shouldIgnoreDragStart(event)) return;
-      const touch = event.touches?.[0];
-      if (!touch) return;
-      if (!beginDrag(touch.clientY, null, target)) return;
-      event.preventDefault();
-      event.stopPropagation();
-    }, { passive: false });
-    target.addEventListener("touchmove", (event) => {
-      if (!dragging) return;
-      const touch = event.touches?.[0];
-      if (touch) moveDrag(touch.clientY);
-      event.preventDefault();
-      event.stopPropagation();
-    }, { passive: false });
-    target.addEventListener("touchend", (event) => {
-      if (!dragging) return;
-      event.preventDefault();
-      event.stopPropagation();
-      endDrag(target);
-    }, { passive: false });
-    target.addEventListener("touchcancel", () => endDrag(target), { passive: false });
+    if (window.PointerEvent) {
+      target.addEventListener("pointerdown", onDragStart);
+      target.addEventListener("pointermove", onDragMove);
+      target.addEventListener("pointerup", onDragEnd);
+      target.addEventListener("pointercancel", onDragEnd);
+    } else {
+      target.addEventListener("touchstart", onDragStart, { passive: false });
+      target.addEventListener("touchmove", onDragMove, { passive: false });
+      target.addEventListener("touchend", onDragEnd, { passive: false });
+      target.addEventListener("touchcancel", onDragEnd, { passive: false });
+    }
   });
 
   window.addEventListener("resize", () => setMobileSheetState(els, modeFromSheet()));
+  window.addEventListener("orientationchange", () => window.setTimeout(() => setMobileSheetState(els, modeFromSheet()), 220));
   setMobileSheetState(els, "closed");
 }
 
 function setMobileSheetState(els, mode = "closed") {
   const sheet = els?.mobileBottomSheet;
   if (!sheet) return;
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 700;
+  const head = sheet.querySelector(".parking-mobile-sheet-head");
+  const sheetHeight = Math.min(Math.max(360, viewportHeight * 0.88), 760);
+  const peek = Math.max(88, Math.min(132, (head?.offsetHeight || 92) + 10));
+  const collapsedY = Math.max(0, sheetHeight - peek);
+  const halfVisible = Math.max(peek + 120, Math.min(viewportHeight * 0.48, sheetHeight - 24));
+  const halfY = Math.max(0, Math.min(collapsedY, sheetHeight - halfVisible));
+  const nextMode = mode === "expanded" ? "expanded" : mode === "half" || mode === "open" ? "half" : "collapsed";
+  const nextY = nextMode === "expanded" ? 0 : nextMode === "half" ? halfY : collapsedY;
+
   sheet.classList.remove("is-open", "is-expanded", "is-collapsed", "is-dragging");
-  sheet.style.removeProperty("--parking-sheet-drag-y");
-  if (mode === "expanded") {
+  sheet.style.setProperty("--parking-sheet-height", `${sheetHeight}px`);
+  sheet.style.setProperty("--parking-sheet-y", `${nextY}px`);
+  if (nextMode === "expanded") {
     sheet.classList.add("is-open", "is-expanded");
-  } else if (mode === "half" || mode === "open") {
+  } else if (nextMode === "half") {
     sheet.classList.add("is-open");
   } else {
     sheet.classList.add("is-collapsed");
