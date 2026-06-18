@@ -113,6 +113,7 @@ export function initParkingBudgetMap() {
   setupDefaults(els);
   setupMobileOptionsToggle();
   setupDesktopMapToolbar(els);
+  setupMobileBottomSheet(els);
   bindEvents(els);
   loadMockData().then(() => {
     renderPlaces(els);
@@ -192,6 +193,95 @@ function setupDesktopMapToolbar(els) {
   if (!els.mapToolbar || els.mapToolbar.dataset.ready === "true") return;
   els.mapToolbar.dataset.ready = "true";
   syncDesktopMapToolbar(els);
+}
+
+function setupMobileBottomSheet(els) {
+  const sheet = els?.mobileBottomSheet;
+  if (!sheet || sheet.dataset.dragReady === "true") return;
+  const handle = sheet.querySelector(".parking-sheet-handle");
+  const dragTarget = handle || sheet.querySelector(".parking-mobile-sheet-head");
+  if (!dragTarget) return;
+
+  sheet.dataset.dragReady = "true";
+  dragTarget.setAttribute("role", "button");
+  dragTarget.setAttribute("tabindex", "0");
+  dragTarget.setAttribute("aria-label", "추천 주차장 목록을 위아래로 끌어서 열고 닫기");
+
+  let startY = 0;
+  let lastDeltaY = 0;
+  let dragging = false;
+
+  const resetDragStyle = () => {
+    sheet.classList.remove("is-dragging");
+    sheet.style.transform = "";
+  };
+
+  const openHalf = () => setMobileSheetState(els, "half");
+  const openExpanded = () => setMobileSheetState(els, "expanded");
+  const closeSheet = () => setMobileSheetState(els, "closed");
+
+  dragTarget.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      openExpanded();
+    }
+    if (event.key === "ArrowDown" || event.key === "Escape") {
+      event.preventDefault();
+      closeSheet();
+    }
+  });
+
+  dragTarget.addEventListener("pointerdown", (event) => {
+    if (window.innerWidth > 860) return;
+    dragging = true;
+    startY = event.clientY;
+    lastDeltaY = 0;
+    sheet.classList.add("is-dragging");
+    dragTarget.setPointerCapture?.(event.pointerId);
+  });
+
+  dragTarget.addEventListener("pointermove", (event) => {
+    if (!dragging) return;
+    lastDeltaY = event.clientY - startY;
+    const limited = Math.max(-150, Math.min(260, lastDeltaY));
+    sheet.style.transform = `translateY(${limited}px)`;
+  });
+
+  const finishDrag = (event) => {
+    if (!dragging) return;
+    dragging = false;
+    dragTarget.releasePointerCapture?.(event.pointerId);
+    const deltaY = lastDeltaY;
+    resetDragStyle();
+    if (deltaY > 70) {
+      closeSheet();
+      return;
+    }
+    if (deltaY < -60) {
+      openExpanded();
+      return;
+    }
+    if (sheet.classList.contains("is-expanded")) openExpanded();
+    else openHalf();
+  };
+
+  dragTarget.addEventListener("pointerup", finishDrag);
+  dragTarget.addEventListener("pointercancel", finishDrag);
+}
+
+function setMobileSheetState(els, mode = "closed") {
+  const sheet = els?.mobileBottomSheet;
+  if (!sheet) return;
+  sheet.classList.remove("is-open", "is-expanded", "is-collapsed", "is-dragging");
+  sheet.style.transform = "";
+  if (mode === "expanded") {
+    sheet.classList.add("is-open", "is-expanded");
+  } else if (mode === "half" || mode === "open") {
+    sheet.classList.add("is-open");
+  } else {
+    sheet.classList.add("is-collapsed");
+  }
+  updateMobileListToggle(els);
 }
 
 function syncDesktopMapToolbar(els) {
@@ -304,14 +394,13 @@ function bindEvents(els) {
   });
   els.mapRefresh?.addEventListener("click", () => researchCurrentMapArea(els));
   els.mobileSheetMapButton?.addEventListener("click", () => {
-    els.mobileBottomSheet?.classList.remove("is-open");
-    updateMobileListToggle(els);
+    setMobileSheetState(els, "closed");
     document.querySelector(".parking-map-card")?.scrollIntoView({ behavior: "smooth", block: "start" });
   });
   els.mobileListToggle?.addEventListener("click", () => {
-    const open = els.mobileBottomSheet?.classList.toggle("is-open");
-    updateMobileListToggle(els);
-    if (open) els.mobileBottomSheet?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    const isOpen = els.mobileBottomSheet?.classList.contains("is-open");
+    setMobileSheetState(els, isOpen ? "closed" : "half");
+    if (!isOpen) els.mobileBottomSheet?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   });
   els.mobileTimeButton?.addEventListener("click", () => {
     document.querySelector(".parking-control-card--schedule")?.scrollIntoView({ behavior: "smooth", block: "center" });
