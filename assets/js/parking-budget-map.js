@@ -219,6 +219,9 @@ function setupMobileBottomSheet(els) {
   let startClientY = 0;
   let startSheetY = 0;
   let lastSheetY = 0;
+  let lastClientY = 0;
+  let lastMoveTime = 0;
+  let dragVelocityY = 0;
   let activePointerId = null;
   let activeTarget = null;
   let dragging = false;
@@ -289,6 +292,9 @@ function setupMobileBottomSheet(els) {
     startClientY = clientY;
     startSheetY = yForMode(modeFromSheet(), dragViewportHeight);
     lastSheetY = startSheetY;
+    lastClientY = clientY;
+    lastMoveTime = Date.now();
+    dragVelocityY = 0;
     sheet.classList.add("is-dragging");
     sheet.style.setProperty("--parking-sheet-height", `${sheetHeightFor(dragViewportHeight)}px`);
     applySheetY(startSheetY, dragViewportHeight);
@@ -301,6 +307,11 @@ function setupMobileBottomSheet(els) {
 
   const moveDrag = (clientY) => {
     if (!dragging) return;
+    const now = Date.now();
+    const elapsed = Math.max(1, now - (lastMoveTime || now));
+    dragVelocityY = (clientY - lastClientY) / elapsed;
+    lastClientY = clientY;
+    lastMoveTime = now;
     const nextY = startSheetY + clientY - startClientY;
     lastSheetY = applySheetY(nextY, dragViewportHeight);
   };
@@ -308,22 +319,26 @@ function setupMobileBottomSheet(els) {
   const snapToClosest = () => {
     const pos = positions(dragViewportHeight);
     const delta = lastSheetY - startSheetY;
-    let nextMode = "half";
-    if (Math.abs(delta) > 72) {
-      if (delta < 0) {
-        if (startSheetY >= pos.collapsed - 4) nextMode = "half";
-        else nextMode = "expanded";
-      } else {
-        if (startSheetY <= pos.expanded + 4) nextMode = "half";
-        else nextMode = "closed";
-      }
+    const travel = Math.abs(delta);
+    const velocity = dragVelocityY || 0;
+    let nextMode;
+
+    // A decisive flick should jump directly to the end state, not step through the middle state.
+    if (velocity < -0.45 && travel > 36) {
+      nextMode = "expanded";
+    } else if (velocity > 0.45 && travel > 36) {
+      nextMode = "closed";
     } else {
+      // Otherwise snap to the nearest final position based on where the user released the sheet.
+      // This lets a long drag go directly collapsed <-> expanded without being forced through half.
+      const projectedY = clampY(lastSheetY + velocity * 120, dragViewportHeight);
       nextMode = [
-        ["expanded", Math.abs(lastSheetY - pos.expanded)],
-        ["half", Math.abs(lastSheetY - pos.half)],
-        ["closed", Math.abs(lastSheetY - pos.collapsed)],
+        ["expanded", Math.abs(projectedY - pos.expanded)],
+        ["half", Math.abs(projectedY - pos.half)],
+        ["closed", Math.abs(projectedY - pos.collapsed)],
       ].sort((a, b) => a[1] - b[1])[0][0];
     }
+
     setMobileSheetState(els, nextMode);
   };
 
