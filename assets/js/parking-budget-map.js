@@ -144,6 +144,192 @@ function syncMobileSortButtons(els) {
   if (els.mobileSortButton) els.mobileSortButton.textContent = `${recommendationModeLabel(mode)} 변경`;
 }
 
+function isMobileParkingViewport() {
+  return window.matchMedia("(max-width: 860px)").matches;
+}
+
+function ensureMobileActionSheet() {
+  let sheet = document.querySelector("#parking-mobile-action-sheet");
+  if (sheet) return sheet;
+  sheet = document.createElement("div");
+  sheet.id = "parking-mobile-action-sheet";
+  sheet.className = "parking-mobile-action-sheet";
+  sheet.hidden = true;
+  sheet.innerHTML = `
+    <button type="button" class="parking-mobile-action-sheet__backdrop" data-parking-action-close aria-label="설정 닫기"></button>
+    <section class="parking-mobile-action-sheet__panel" role="dialog" aria-modal="true" aria-labelledby="parking-mobile-action-sheet-title">
+      <div class="parking-mobile-action-sheet__grip" aria-hidden="true"></div>
+      <div class="parking-mobile-action-sheet__head">
+        <strong id="parking-mobile-action-sheet-title">설정</strong>
+        <button type="button" data-parking-action-close aria-label="설정 닫기">×</button>
+      </div>
+      <div class="parking-mobile-action-sheet__body"></div>
+    </section>`;
+  document.body.appendChild(sheet);
+  sheet.addEventListener("click", (event) => {
+    if (event.target.closest("[data-parking-action-close]")) closeMobileActionSheet();
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !sheet.hidden) closeMobileActionSheet();
+  });
+  return sheet;
+}
+
+function closeMobileActionSheet() {
+  const sheet = document.querySelector("#parking-mobile-action-sheet");
+  if (!sheet) return;
+  sheet.classList.remove("is-open");
+  window.setTimeout(() => { sheet.hidden = true; }, 160);
+}
+
+function activeQuickDurationValue() {
+  return document.querySelector("[data-parking-duration].active")?.dataset.parkingDuration
+    || document.querySelector("[data-parking-map-duration].active")?.dataset.parkingMapDuration
+    || "240";
+}
+
+function openMobileActionSheet(els, type) {
+  if (!isMobileParkingViewport()) return false;
+  const sheet = ensureMobileActionSheet();
+  const title = sheet.querySelector("#parking-mobile-action-sheet-title");
+  const body = sheet.querySelector(".parking-mobile-action-sheet__body");
+  if (!body || !title) return false;
+  closeMapToolbarPopovers(els);
+
+  const renderDuration = () => {
+    const active = activeQuickDurationValue();
+    title.textContent = "주차 시간 선택";
+    body.innerHTML = `
+      <div class="parking-mobile-action-sheet__quick-grid" role="group" aria-label="빠른 주차 시간">
+        ${[
+          ["30", "30분"], ["60", "1시간"], ["120", "2시간"],
+          ["180", "3시간"], ["240", "4시간"], ["day", "1일권"]
+        ].map(([value, label]) => `<button type="button" data-parking-action-duration="${value}" class="${active === value ? "active" : ""}">${label}</button>`).join("")}
+      </div>
+      <details class="parking-mobile-action-sheet__details">
+        <summary>직접 설정</summary>
+        <div class="parking-mobile-action-sheet__field-grid">
+          <label>방문일<input type="date" data-parking-action-date value="${els.visitDate?.value || ""}"></label>
+          <label>입차 시간<input type="time" data-parking-action-arrival value="${els.arrival?.value || ""}"></label>
+          <label>출차 시간<input type="time" data-parking-action-departure value="${els.departure?.value || ""}"></label>
+        </div>
+        <button type="button" class="primary-button wide-button" data-parking-action-apply-time>적용하기</button>
+      </details>`;
+
+    body.querySelectorAll("[data-parking-action-duration]").forEach((button) => {
+      button.addEventListener("click", () => {
+        setQuickDuration(els, button.dataset.parkingActionDuration, { fromNow: true });
+        closeMobileActionSheet();
+      });
+    });
+    const syncManual = () => {
+      const date = body.querySelector("[data-parking-action-date]")?.value;
+      const arrival = body.querySelector("[data-parking-action-arrival]")?.value;
+      const departure = body.querySelector("[data-parking-action-departure]")?.value;
+      if (date && els.visitDate) els.visitDate.value = date;
+      if (arrival && els.arrival) els.arrival.value = arrival;
+      if (departure && els.departure) els.departure.value = departure;
+      document.querySelectorAll("[data-parking-duration], [data-parking-map-duration]").forEach((item) => item.classList.remove("active"));
+      syncDesktopMapToolbar(els);
+      calculateAndRender(els);
+    };
+    body.querySelectorAll("[data-parking-action-date], [data-parking-action-arrival], [data-parking-action-departure]").forEach((input) => input.addEventListener("change", syncManual));
+    body.querySelector("[data-parking-action-apply-time]")?.addEventListener("click", () => {
+      syncManual();
+      closeMobileActionSheet();
+    });
+  };
+
+  const renderConditions = () => {
+    title.textContent = "할인/차량 조건";
+    const vehicle = els.vehicleType?.value || "general";
+    const pairs = mapFilterPairs(els);
+    const checked = (key) => pairs[key]?.checked ? "checked" : "";
+    const manualOpen = vehicle === "manual";
+    body.innerHTML = `
+      <div class="parking-mobile-action-sheet__section">
+        <span class="parking-mobile-action-sheet__label">차량 조건</span>
+        <div class="parking-mobile-action-sheet__quick-grid parking-mobile-action-sheet__quick-grid--vehicle" role="group" aria-label="차량 조건">
+          ${[
+            ["general", "일반"], ["compact", "경차"], ["disabled", "장애인"], ["ev", "전기차"], ["manual", "직접 할인"]
+          ].map(([value, label]) => `<button type="button" data-parking-action-vehicle="${value}" class="${vehicle === value ? "active" : ""}">${label}</button>`).join("")}
+        </div>
+      </div>
+      <div class="parking-mobile-action-sheet__section ${manualOpen ? "" : "is-hidden"}" data-parking-action-manual-row>
+        <label class="parking-mobile-action-sheet__input-line">직접 할인율 <span><input type="number" min="0" max="100" step="1" data-parking-action-manual-discount value="${els.manualDiscount?.value || 0}">%</span></label>
+      </div>
+      <div class="parking-mobile-action-sheet__section">
+        <span class="parking-mobile-action-sheet__label">주차 조건</span>
+        <div class="parking-mobile-action-sheet__check-grid">
+          <label><input type="checkbox" data-parking-action-filter="publicOnly" ${checked("publicOnly")}> 공영만</label>
+          <label><input type="checkbox" data-parking-action-filter="freeOnly" ${checked("freeOnly")}> 무료</label>
+          <label><input type="checkbox" data-parking-action-filter="dayPassOnly" ${checked("dayPassOnly")}> 1일권</label>
+          <label><input type="checkbox" data-parking-action-filter="openOnly" ${checked("openOnly")}> 운영 중</label>
+          <label><input type="checkbox" data-parking-action-filter="discountOnly" ${checked("discountOnly")}> 할인 가능</label>
+          <label><input type="checkbox" data-parking-action-filter="realtimeOnly" ${checked("realtimeOnly")}> 실시간</label>
+          <label><input type="checkbox" data-parking-action-filter="lowRiskOnly" ${checked("lowRiskOnly")}> 낮은 위험</label>
+        </div>
+      </div>
+      <button type="button" class="primary-button wide-button" data-parking-action-close>적용하기</button>`;
+
+    const updateVehicleButtons = () => {
+      const current = els.vehicleType?.value || "general";
+      body.querySelectorAll("[data-parking-action-vehicle]").forEach((button) => button.classList.toggle("active", button.dataset.parkingActionVehicle === current));
+      body.querySelector("[data-parking-action-manual-row]")?.classList.toggle("is-hidden", current !== "manual");
+    };
+    body.querySelectorAll("[data-parking-action-vehicle]").forEach((button) => {
+      button.addEventListener("click", () => {
+        if (els.vehicleType) els.vehicleType.value = button.dataset.parkingActionVehicle || "general";
+        if (els.manualDiscountField) els.manualDiscountField.hidden = els.vehicleType.value !== "manual";
+        updateVehicleButtons();
+        syncDesktopMapToolbar(els);
+        calculateAndRender(els);
+      });
+    });
+    body.querySelector("[data-parking-action-manual-discount]")?.addEventListener("input", (event) => {
+      if (els.manualDiscount) els.manualDiscount.value = event.target.value;
+      syncDesktopMapToolbar(els);
+      calculateAndRender(els);
+    });
+    body.querySelectorAll("[data-parking-action-filter]").forEach((input) => {
+      input.addEventListener("change", () => {
+        const source = mapFilterPairs(els)[input.dataset.parkingActionFilter];
+        if (source) source.checked = input.checked;
+        syncDesktopMapToolbar(els);
+        calculateAndRender(els);
+      });
+    });
+  };
+
+  const renderSort = () => {
+    title.textContent = "정렬 기준";
+    const current = els.sort?.value || "recommended";
+    body.innerHTML = `<div class="parking-mobile-action-sheet__sort-list">
+      ${[
+        ["recommended", "추천순"], ["cheap", "저렴한순"], ["nearby", "가까운순"],
+        ["available", "빈자리순"], ["confidence", "신뢰도순"]
+      ].map(([value, label]) => `<button type="button" data-parking-action-sort="${value}" class="${current === value ? "active" : ""}"><span>${label}</span><strong>${current === value ? "✓" : ""}</strong></button>`).join("")}
+    </div>`;
+    body.querySelectorAll("[data-parking-action-sort]").forEach((button) => {
+      button.addEventListener("click", () => {
+        if (els.sort) els.sort.value = button.dataset.parkingActionSort || "recommended";
+        syncPreferenceCards(els);
+        syncDesktopMapToolbar(els);
+        calculateAndRender(els);
+        closeMobileActionSheet();
+      });
+    });
+  };
+
+  if (type === "time") renderDuration();
+  else if (type === "conditions") renderConditions();
+  else renderSort();
+
+  sheet.hidden = false;
+  window.requestAnimationFrame(() => sheet.classList.add("is-open"));
+  return true;
+}
+
 function setupDefaults(els) {
   const now = new Date();
   const departure = new Date(now);
@@ -564,21 +750,13 @@ function bindEvents(els) {
     if (!isOpen) els.mobileBottomSheet?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   });
   els.mobileTimeButton?.addEventListener("click", () => {
-    document.querySelector(".parking-control-card--schedule")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    openMobileActionSheet(els, "time");
   });
   els.mobileConditionButton?.addEventListener("click", () => {
-    const card = document.querySelector(".parking-control-card--options");
-    card?.classList.add("is-open");
-    card?.classList.remove("is-collapsed");
-    const toggle = card?.querySelector(".parking-options-toggle");
-    toggle?.setAttribute("aria-expanded", "true");
-    const stateText = toggle?.querySelector("strong");
-    if (stateText) stateText.textContent = "접기";
-    card?.scrollIntoView({ behavior: "smooth", block: "center" });
+    openMobileActionSheet(els, "conditions");
   });
   els.mobileSortButton?.addEventListener("click", () => {
-    if (!els.mobileSheetSort) return;
-    els.mobileSheetSort.hidden = !els.mobileSheetSort.hidden;
+    openMobileActionSheet(els, "sort");
   });
   els.mobileSortButtons?.forEach((button) => {
     button.addEventListener("click", () => {
@@ -594,9 +772,18 @@ function bindEvents(els) {
     syncDesktopMapToolbar(els);
     calculateAndRender(els);
   });
-  els.mapDurationToggle?.addEventListener("click", () => toggleMapToolbarPopover(els.mapDurationPanel, els.mapDurationToggle, els));
-  els.mapOptionsToggle?.addEventListener("click", () => toggleMapToolbarPopover(els.mapOptionsPanel, els.mapOptionsToggle, els));
-  els.mapSortToggle?.addEventListener("click", () => toggleMapToolbarPopover(els.mapSortPanel, els.mapSortToggle, els));
+  els.mapDurationToggle?.addEventListener("click", () => {
+    if (openMobileActionSheet(els, "time")) return;
+    toggleMapToolbarPopover(els.mapDurationPanel, els.mapDurationToggle, els);
+  });
+  els.mapOptionsToggle?.addEventListener("click", () => {
+    if (openMobileActionSheet(els, "conditions")) return;
+    toggleMapToolbarPopover(els.mapOptionsPanel, els.mapOptionsToggle, els);
+  });
+  els.mapSortToggle?.addEventListener("click", () => {
+    if (openMobileActionSheet(els, "sort")) return;
+    toggleMapToolbarPopover(els.mapSortPanel, els.mapSortToggle, els);
+  });
   document.addEventListener("click", (event) => {
     if (!els.mapToolbar || els.mapToolbar.contains(event.target)) return;
     closeMapToolbarPopovers(els);
