@@ -11046,6 +11046,15 @@ body {
     gap: 10px;
   }
 
+  .parking-mobile-action-sheet__body > .primary-button.wide-button {
+    margin-top: 18px;
+  }
+
+  .parking-mobile-action-sheet__check-grid + .primary-button.wide-button,
+  .parking-mobile-action-sheet__section + .primary-button.wide-button {
+    margin-top: 18px;
+  }
+
   .parking-mobile-action-sheet__sort-list button {
     display: flex;
     align-items: center;
