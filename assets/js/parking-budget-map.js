@@ -85,6 +85,8 @@ export function initParkingBudgetMap() {
     summarySubtitle: document.querySelector("#parking-summary-subtitle"),
     resultList: document.querySelector("#parking-result-list"),
     mobileResults: document.querySelector("#parking-mobile-results"),
+    mobileBottomSheet: document.querySelector("#parking-mobile-bottom-sheet"),
+    mobileListToggle: document.querySelector("#parking-mobile-list-toggle"),
     mobileSheetTitle: document.querySelector("#parking-mobile-sheet-title"),
     mobileSheetSubtitle: document.querySelector("#parking-mobile-sheet-subtitle"),
     mobileSheetMapButton: document.querySelector("#parking-mobile-sheet-map-button"),
@@ -302,7 +304,14 @@ function bindEvents(els) {
   });
   els.mapRefresh?.addEventListener("click", () => researchCurrentMapArea(els));
   els.mobileSheetMapButton?.addEventListener("click", () => {
+    els.mobileBottomSheet?.classList.remove("is-open");
+    updateMobileListToggle(els);
     document.querySelector(".parking-map-card")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  els.mobileListToggle?.addEventListener("click", () => {
+    const open = els.mobileBottomSheet?.classList.toggle("is-open");
+    updateMobileListToggle(els);
+    if (open) els.mobileBottomSheet?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   });
   els.mobileTimeButton?.addEventListener("click", () => {
     document.querySelector(".parking-control-card--schedule")?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -849,6 +858,7 @@ function renderResults(els, input) {
   els.summarySubtitle.textContent = state.results.length ? `${state.results.length}개 주차장 비교 · ${modeText}` : "조건에 맞는 주차장이 없습니다.";
   if (els.mobileSheetTitle) els.mobileSheetTitle.textContent = els.summaryTitle.textContent;
   if (els.mobileSheetSubtitle) els.mobileSheetSubtitle.textContent = els.summarySubtitle.textContent;
+  updateMobileListToggle(els);
   syncMobileSortButtons(els);
   els.status.textContent = state.results.length ? "추천 결과입니다." : "이 주변에서 계산 가능한 주차장을 찾지 못했습니다. 검색 반경을 넓히거나 필터를 줄여보세요.";
   renderDataBadges(els, input);
@@ -860,12 +870,20 @@ function renderResults(els, input) {
   applyPinnedParkingState(els);
 }
 
+function updateMobileListToggle(els) {
+  if (!els?.mobileListToggle) return;
+  const count = state.results?.length || 0;
+  const isOpen = els.mobileBottomSheet?.classList.contains("is-open");
+  els.mobileListToggle.textContent = isOpen ? "추천 목록 닫기" : count ? `추천 주차장 ${count}곳 보기` : "추천 주차장 보기";
+  els.mobileListToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+}
+
 function bindResultCardEvents(container, els) {
   container.querySelectorAll("[data-parking-card-id]").forEach((card) => {
     card.addEventListener("click", (event) => {
       if (event.target.closest("button, a, summary, details, input, select, textarea")) return;
       const isMobile = window.innerWidth <= 860;
-      pinParkingCard(card.dataset.parkingCardId, els, { scrollToMap: isMobile, popup: isMobile });
+      pinParkingCard(card.dataset.parkingCardId, els, { scrollToMap: isMobile, popup: true });
     });
   });
   container.querySelectorAll("[data-parking-pin-clear]").forEach((button) => {
@@ -1141,8 +1159,19 @@ function markerLabel(row) {
   return `${won.format(row.discountedFee)}원`;
 }
 
+function focusMapOnParking(id) {
+  const row = state.results.find((item) => item.id === id);
+  if (!row || !Number.isFinite(Number(row.lat)) || !Number.isFinite(Number(row.lng))) return;
+  if (state.map && window.kakao?.maps) {
+    const position = new window.kakao.maps.LatLng(Number(row.lat), Number(row.lng));
+    if (typeof state.map.panTo === "function") state.map.panTo(position);
+    else state.map.setCenter(position);
+  }
+}
+
 function pinParkingCard(id, els, { scroll = false, popup = false, scrollToMap = false } = {}) {
   state.pinnedParkingId = id || "";
+  focusMapOnParking(id);
   applyPinnedParkingState(els);
   const safeId = typeof CSS !== "undefined" && CSS.escape ? CSS.escape(state.pinnedParkingId) : String(state.pinnedParkingId).replace(/"/g, '\\"');
   const target = document.querySelector(`[data-parking-card-id="${safeId}"]`);
@@ -1197,12 +1226,41 @@ function showParkingMapPopup(id, els) {
     `<p class="parking-map-popup__price">${escapeHtml(price)}</p>`,
     `<p class="parking-map-popup__detail">${escapeHtml(distance)} · ${escapeHtml(realtime)}</p>`,
     `<p class="parking-map-popup__detail">${escapeHtml(row.dataConfidenceLabel || "신뢰도 확인 필요")}</p>`,
-    `<div class="parking-map-popup__actions"><button type="button" class="subtle-button tiny" data-popup-scroll-card>추천 카드 보기</button>${renderKakaoMapLink(row, "parking-kakao-map-link tiny")}</div>`
+    `<div class="parking-map-popup__actions"><button type="button" class="subtle-button tiny" data-mobile-detail-card>상세 보기</button>${renderKakaoMapLink(row, "parking-kakao-map-link tiny")}</div>`
   ].join("");
   popup.querySelector(".parking-map-popup__close")?.addEventListener("click", () => popup.remove());
   popup.querySelector("[data-popup-scroll-card]")?.addEventListener("click", () => pinParkingCard(id, els, { scroll: true }));
+  popup.querySelector("[data-mobile-detail-card]")?.addEventListener("click", () => openMobileParkingDetail(id, els));
   mapCard.append(popup);
 }
+function openMobileParkingDetail(id, els) {
+  const row = state.results.find((item) => item.id === id);
+  if (!row) return;
+  document.querySelector(".parking-mobile-detail-modal")?.remove();
+  const modal = document.createElement("div");
+  modal.className = "parking-mobile-detail-modal";
+  modal.setAttribute("role", "dialog");
+  modal.setAttribute("aria-modal", "true");
+  modal.setAttribute("aria-label", `${row.name} 상세 정보`);
+  modal.innerHTML = `<div class="parking-mobile-detail-backdrop" data-mobile-detail-close></div>
+    <section class="parking-mobile-detail-panel">
+      <div class="parking-mobile-detail-head"><strong>주차장 상세</strong><button type="button" aria-label="상세 닫기" data-mobile-detail-close>×</button></div>
+      ${renderResultCard(row)}
+    </section>`;
+  document.body.append(modal);
+  const detail = modal.querySelector("[data-parking-card-detail]");
+  const toggle = modal.querySelector("[data-parking-detail-toggle]");
+  if (detail) detail.hidden = false;
+  if (toggle) {
+    toggle.setAttribute("aria-expanded", "true");
+    toggle.textContent = "상세 접기 ▲";
+  }
+  modal.querySelectorAll("[data-mobile-detail-close]").forEach((button) => {
+    button.addEventListener("click", () => modal.remove());
+  });
+  bindResultCardEvents(modal, els);
+}
+
 function applyPinnedParkingState(els) {
   document.querySelectorAll("[data-parking-card-id]").forEach((card) => {
     card.classList.toggle("is-pinned", Boolean(state.pinnedParkingId) && card.dataset.parkingCardId === state.pinnedParkingId);
