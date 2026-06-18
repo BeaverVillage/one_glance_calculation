@@ -205,15 +205,33 @@ function setupMobileBottomSheet(els) {
   sheet.dataset.dragReady = "true";
   dragTarget.setAttribute("role", "button");
   dragTarget.setAttribute("tabindex", "0");
+  dragTarget.setAttribute("aria-hidden", "false");
   dragTarget.setAttribute("aria-label", "추천 주차장 목록을 위아래로 끌어서 열고 닫기");
 
+  const transformY = () => {
+    const style = window.getComputedStyle(sheet);
+    const matrix = style.transform;
+    if (!matrix || matrix === "none") return 0;
+    const match = matrix.match(/matrix\(([^)]+)\)/);
+    if (!match) return 0;
+    const parts = match[1].split(",").map((part) => Number(part.trim()));
+    return Number.isFinite(parts[5]) ? parts[5] : 0;
+  };
+
+  const collapsedY = () => Math.max(0, sheet.offsetHeight - 48);
+  const clampY = (value) => Math.max(0, Math.min(collapsedY(), value));
+  const applyDragY = (value) => {
+    sheet.style.setProperty("--parking-sheet-drag-y", `${clampY(value)}px`);
+  };
+
   let startY = 0;
-  let lastDeltaY = 0;
+  let baseY = 0;
+  let lastY = 0;
   let dragging = false;
 
   const resetDragStyle = () => {
     sheet.classList.remove("is-dragging");
-    sheet.style.transform = "";
+    sheet.style.removeProperty("--parking-sheet-drag-y");
   };
 
   const openHalf = () => setMobileSheetState(els, "half");
@@ -223,11 +241,13 @@ function setupMobileBottomSheet(els) {
   dragTarget.addEventListener("keydown", (event) => {
     if (event.key === "ArrowUp") {
       event.preventDefault();
-      openExpanded();
+      if (sheet.classList.contains("is-collapsed")) openHalf();
+      else openExpanded();
     }
     if (event.key === "ArrowDown" || event.key === "Escape") {
       event.preventDefault();
-      closeSheet();
+      if (sheet.classList.contains("is-expanded")) openHalf();
+      else closeSheet();
     }
   });
 
@@ -235,45 +255,51 @@ function setupMobileBottomSheet(els) {
     if (window.innerWidth > 860) return;
     dragging = true;
     startY = event.clientY;
-    lastDeltaY = 0;
+    baseY = transformY();
+    lastY = baseY;
     sheet.classList.add("is-dragging");
     dragTarget.setPointerCapture?.(event.pointerId);
+    event.preventDefault();
   });
 
   dragTarget.addEventListener("pointermove", (event) => {
     if (!dragging) return;
-    lastDeltaY = event.clientY - startY;
-    const limited = Math.max(-150, Math.min(260, lastDeltaY));
-    sheet.style.transform = `translateY(${limited}px)`;
+    lastY = clampY(baseY + event.clientY - startY);
+    applyDragY(lastY);
+    event.preventDefault();
   });
 
   const finishDrag = (event) => {
     if (!dragging) return;
     dragging = false;
     dragTarget.releasePointerCapture?.(event.pointerId);
-    const deltaY = lastDeltaY;
+    const endY = lastY;
+    const maxY = collapsedY();
     resetDragStyle();
-    if (deltaY > 70) {
-      closeSheet();
-      return;
-    }
-    if (deltaY < -60) {
+    if (endY <= maxY * 0.25) {
       openExpanded();
       return;
     }
-    if (sheet.classList.contains("is-expanded")) openExpanded();
-    else openHalf();
+    if (endY <= maxY * 0.68) {
+      openHalf();
+      return;
+    }
+    closeSheet();
   };
 
   dragTarget.addEventListener("pointerup", finishDrag);
   dragTarget.addEventListener("pointercancel", finishDrag);
+  dragTarget.addEventListener("touchmove", (event) => {
+    if (dragging) event.preventDefault();
+  }, { passive: false });
+  setMobileSheetState(els, "closed");
 }
 
 function setMobileSheetState(els, mode = "closed") {
   const sheet = els?.mobileBottomSheet;
   if (!sheet) return;
   sheet.classList.remove("is-open", "is-expanded", "is-collapsed", "is-dragging");
-  sheet.style.transform = "";
+  sheet.style.removeProperty("--parking-sheet-drag-y");
   if (mode === "expanded") {
     sheet.classList.add("is-open", "is-expanded");
   } else if (mode === "half" || mode === "open") {
@@ -962,8 +988,8 @@ function renderResults(els, input) {
 function updateMobileListToggle(els) {
   if (!els?.mobileListToggle) return;
   const count = state.results?.length || 0;
-  const isOpen = els.mobileBottomSheet?.classList.contains("is-open");
-  els.mobileListToggle.textContent = isOpen ? "추천 목록 닫기" : count ? `추천 주차장 ${count}곳 보기` : "추천 주차장 보기";
+  const isOpen = !els.mobileBottomSheet?.classList.contains("is-collapsed");
+  els.mobileListToggle.textContent = isOpen ? "추천 목록 접기" : count ? `추천 주차장 ${count}곳 보기` : "추천 주차장 보기";
   els.mobileListToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
 }
 
@@ -1288,6 +1314,8 @@ function showParkingMapPopup(id, els) {
   popup.className = `parking-map-popup${useDetailPopup ? " parking-map-popup--detail" : ""}`;
   popup.setAttribute("role", "dialog");
   popup.setAttribute("aria-label", `${row.name} 주차장 ${useDetailPopup ? "상세" : "요약"}`);
+  const kakaoLink = renderKakaoMapLink(row, "parking-kakao-map-link tiny");
+  const selectedBadge = state.pinnedParkingId === row.id ? '<p class="parking-pinned-badge parking-pinned-badge--inline">지도에서 선택한 주차장입니다.</p>' : '';
   popup.innerHTML = useDetailPopup ? [
     '<button type="button" class="parking-map-popup__close" aria-label="지도 주차장 요약 닫기">×</button>',
     '<div class="parking-map-popup__head">',
@@ -1303,8 +1331,7 @@ function showParkingMapPopup(id, els) {
     `<span class="parking-metric-chip ${riskClass}">${escapeHtml(row.fullRiskLabel || "위험도 확인 필요")}</span>`,
     `<span class="parking-metric-chip ${confidenceClass}">${escapeHtml(row.dataConfidenceLabel || "신뢰도 확인 필요")}</span>`,
     '</div>',
-    state.pinnedParkingId === row.id ? '<p class="parking-pinned-badge">지도에서 선택한 주차장입니다.</p>' : '',
-    `<div class="parking-map-popup__actions"><button type="button" class="subtle-button tiny" data-popup-scroll-card>추천 카드 보기</button>${renderKakaoMapLink(row, "parking-kakao-map-link tiny")}</div>`
+    selectedBadge || kakaoLink ? `<div class="parking-map-popup__selected-row">${selectedBadge}${kakaoLink}</div>` : ''
   ].join("") : [
     '<button type="button" class="parking-map-popup__close" aria-label="지도 주차장 요약 닫기">×</button>',
     '<div class="parking-map-popup__head">',
@@ -1315,10 +1342,9 @@ function showParkingMapPopup(id, els) {
     `<p class="parking-map-popup__price">${escapeHtml(price)}</p>`,
     `<p class="parking-map-popup__detail">${escapeHtml(distance)} · ${escapeHtml(realtime)}</p>`,
     `<p class="parking-map-popup__detail">${escapeHtml(row.dataConfidenceLabel || "신뢰도 확인 필요")}</p>`,
-    `<div class="parking-map-popup__actions"><button type="button" class="subtle-button tiny" data-mobile-detail-card>상세 보기</button>${renderKakaoMapLink(row, "parking-kakao-map-link tiny")}</div>`
+    `<div class="parking-map-popup__actions"><button type="button" class="subtle-button tiny" data-mobile-detail-card>상세 보기</button>${kakaoLink}</div>`
   ].join("");
   popup.querySelector(".parking-map-popup__close")?.addEventListener("click", () => popup.remove());
-  popup.querySelector("[data-popup-scroll-card]")?.addEventListener("click", () => pinParkingCard(id, els, { scroll: true }));
   popup.querySelector("[data-mobile-detail-card]")?.addEventListener("click", () => openMobileParkingDetail(id, els));
   mapCard.append(popup);
 }
