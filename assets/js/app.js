@@ -8,6 +8,7 @@ import { initAustraliaWhv88DaysCalculator } from "./australia-whv-88-days.js?v=2
 import { initExchangeRateCalculator } from "./exchange-rate.js?v=20260616-mobile-exchange-whv-final";
 import { initParkingBudgetMap } from "./parking-budget-map.js?v=20260617-kakao-map-link-card-compact";
 import { initLoanInterestCalculator } from "./loan-interest.js?v=20260614-cache-fix";
+import { initRentVsJeonseCalculator } from "./rent-vs-jeonse.js?v=20260618-rent-vs-jeonse";
 import { initNetSalaryCalculator } from "./net-salary.js?v=20260614-cache-fix";
 import { initPercentileCalculator } from "./percentile.js?v=20260614-cache-fix";
 import { renderPriceChart } from "./chart.js?v=20260614-cache-fix";
@@ -33,6 +34,7 @@ const TOOL_GROUPS = [
     tools: [
       ["월 실수령액 계산기", "calculators/net-salary.html"],
       ["대출 이자 계산기", "calculators/loan-interest.html"],
+      ["전세 월세 비교 계산기", "calculators/rent-vs-jeonse.html"],
       ["실시간 환율 계산기", "calculators/exchange-rate.html"],
       ["주휴수당 계산기", "calculators/weekly-holiday-pay.html"],
       ["군적금 계산기", "calculators/military-savings.html"],
@@ -138,6 +140,7 @@ async function initApp() {
   initParkingBudgetMap();
   initNetSalaryCalculator();
   initLoanInterestCalculator();
+  initRentVsJeonseCalculator();
   initWeeklyHolidayPayCalculator();
   initTextCounter();
   initBmiCalculator();
