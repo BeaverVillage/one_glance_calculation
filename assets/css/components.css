@@ -10445,3 +10445,92 @@ body {
     max-height: 146px !important;
   }
 }
+
+/* Parking mobile bottom sheet drag reliability fix 2026-06-18 */
+@media (max-width: 860px) {
+  html.parking-sheet-dragging-page,
+  body.parking-sheet-dragging-page {
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+    touch-action: none !important;
+  }
+
+  .parking-bottom-sheet {
+    max-height: min(88svh, 760px) !important;
+    padding-top: 0.5rem !important;
+    transform: translateY(46%) !important;
+    transition: transform 180ms cubic-bezier(0.2, 0.85, 0.25, 1) !important;
+    touch-action: pan-y !important;
+    overscroll-behavior: contain !important;
+  }
+
+  .parking-bottom-sheet.is-collapsed {
+    display: block !important;
+    transform: translateY(calc(100% - 92px)) !important;
+  }
+
+  .parking-bottom-sheet.is-open {
+    display: block !important;
+    transform: translateY(46%) !important;
+  }
+
+  .parking-bottom-sheet.is-expanded {
+    display: block !important;
+    max-height: min(88svh, 760px) !important;
+    transform: translateY(0) !important;
+  }
+
+  .parking-bottom-sheet.is-dragging {
+    transform: translateY(var(--parking-sheet-drag-y, 46%)) !important;
+    transition: none !important;
+  }
+
+  .parking-sheet-handle,
+  .parking-mobile-sheet-head {
+    touch-action: none !important;
+    overscroll-behavior: contain !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -webkit-touch-callout: none !important;
+  }
+
+  .parking-mobile-sheet-head {
+    cursor: grab !important;
+  }
+
+  .parking-bottom-sheet.is-dragging .parking-mobile-sheet-head,
+  .parking-bottom-sheet.is-dragging .parking-sheet-handle {
+    cursor: grabbing !important;
+  }
+
+  .parking-bottom-sheet.is-collapsed .parking-mobile-sheet-head {
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+
+  .parking-bottom-sheet.is-collapsed .parking-mobile-sheet-controls,
+  .parking-bottom-sheet.is-collapsed .parking-mobile-sheet-sort,
+  .parking-bottom-sheet.is-collapsed .parking-mobile-results {
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  .parking-bottom-sheet.is-collapsed .parking-mobile-sheet-head .subtle-button {
+    display: none !important;
+  }
+
+  .parking-mobile-results {
+    max-height: calc(88svh - 150px) !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .parking-bottom-sheet.is-open .parking-mobile-results {
+    max-height: calc(54svh - 150px) !important;
+  }
+
+  .parking-bottom-sheet.is-expanded .parking-mobile-results {
+    max-height: calc(88svh - 146px) !important;
+  }
+}

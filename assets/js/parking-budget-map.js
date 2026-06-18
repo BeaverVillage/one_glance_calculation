@@ -199,27 +199,48 @@ function setupMobileBottomSheet(els) {
   const sheet = els?.mobileBottomSheet;
   if (!sheet || sheet.dataset.dragReady === "true") return;
   const handle = sheet.querySelector(".parking-sheet-handle");
-  const dragTarget = handle || sheet.querySelector(".parking-mobile-sheet-head");
-  if (!dragTarget) return;
+  const head = sheet.querySelector(".parking-mobile-sheet-head");
+  const dragTargets = [handle, head].filter(Boolean);
+  if (!dragTargets.length) return;
 
   sheet.dataset.dragReady = "true";
-  dragTarget.setAttribute("role", "button");
-  dragTarget.setAttribute("tabindex", "0");
-  dragTarget.setAttribute("aria-hidden", "false");
-  dragTarget.setAttribute("aria-label", "추천 주차장 목록을 위아래로 끌어서 열고 닫기");
+  dragTargets.forEach((target) => {
+    target.setAttribute("role", "button");
+    target.setAttribute("tabindex", "0");
+    target.setAttribute("aria-hidden", "false");
+    target.setAttribute("aria-label", "추천 주차장 목록을 위아래로 끌어서 열고 닫기");
+  });
 
-  const transformY = () => {
-    const style = window.getComputedStyle(sheet);
-    const matrix = style.transform;
-    if (!matrix || matrix === "none") return 0;
-    const match = matrix.match(/matrix\(([^)]+)\)/);
-    if (!match) return 0;
-    const parts = match[1].split(",").map((part) => Number(part.trim()));
-    return Number.isFinite(parts[5]) ? parts[5] : 0;
+  const isMobile = () => window.matchMedia("(max-width: 860px)").matches;
+  const peekHeight = () => Math.max(86, Math.min(110, sheet.querySelector(".parking-mobile-sheet-head")?.offsetHeight + 30 || 92));
+  const positions = () => {
+    const height = Math.max(sheet.offsetHeight || 0, Math.min(window.innerHeight * 0.88, 720));
+    const collapsed = Math.max(0, height - peekHeight());
+    return {
+      expanded: 0,
+      half: Math.max(0, Math.min(collapsed, window.innerHeight * 0.46)),
+      collapsed,
+    };
   };
 
-  const collapsedY = () => Math.max(0, sheet.offsetHeight - 48);
-  const clampY = (value) => Math.max(0, Math.min(collapsedY(), value));
+  const modeFromSheet = () => {
+    if (sheet.classList.contains("is-expanded")) return "expanded";
+    if (sheet.classList.contains("is-collapsed")) return "collapsed";
+    return "half";
+  };
+
+  const yForMode = (mode) => {
+    const pos = positions();
+    if (mode === "expanded") return pos.expanded;
+    if (mode === "collapsed" || mode === "closed") return pos.collapsed;
+    return pos.half;
+  };
+
+  const clampY = (value) => {
+    const pos = positions();
+    return Math.max(pos.expanded, Math.min(pos.collapsed, value));
+  };
+
   const applyDragY = (value) => {
     sheet.style.setProperty("--parking-sheet-drag-y", `${clampY(value)}px`);
   };
@@ -227,71 +248,121 @@ function setupMobileBottomSheet(els) {
   let startY = 0;
   let baseY = 0;
   let lastY = 0;
+  let activePointerId = null;
   let dragging = false;
 
-  const resetDragStyle = () => {
-    sheet.classList.remove("is-dragging");
-    sheet.style.removeProperty("--parking-sheet-drag-y");
+  const lockPageScroll = () => {
+    document.documentElement.classList.add("parking-sheet-dragging-page");
+    document.body.classList.add("parking-sheet-dragging-page");
   };
 
-  const openHalf = () => setMobileSheetState(els, "half");
-  const openExpanded = () => setMobileSheetState(els, "expanded");
-  const closeSheet = () => setMobileSheetState(els, "closed");
+  const unlockPageScroll = () => {
+    document.documentElement.classList.remove("parking-sheet-dragging-page");
+    document.body.classList.remove("parking-sheet-dragging-page");
+  };
 
-  dragTarget.addEventListener("keydown", (event) => {
+  const beginDrag = (clientY, pointerId = null, target = null) => {
+    if (!isMobile()) return false;
+    if (dragging) return true;
+    dragging = true;
+    activePointerId = pointerId;
+    startY = clientY;
+    baseY = yForMode(modeFromSheet());
+    lastY = baseY;
+    sheet.classList.add("is-dragging");
+    target?.setPointerCapture?.(pointerId);
+    lockPageScroll();
+    applyDragY(baseY);
+    return true;
+  };
+
+  const moveDrag = (clientY) => {
+    if (!dragging) return;
+    lastY = clampY(baseY + clientY - startY);
+    applyDragY(lastY);
+  };
+
+  const endDrag = (target = null) => {
+    if (!dragging) return;
+    dragging = false;
+    target?.releasePointerCapture?.(activePointerId);
+    activePointerId = null;
+    unlockPageScroll();
+
+    const endY = lastY;
+    const pos = positions();
+    sheet.classList.remove("is-dragging");
+    sheet.style.removeProperty("--parking-sheet-drag-y");
+
+    const distances = [
+      ["expanded", Math.abs(endY - pos.expanded)],
+      ["half", Math.abs(endY - pos.half)],
+      ["closed", Math.abs(endY - pos.collapsed)],
+    ].sort((a, b) => a[1] - b[1]);
+    setMobileSheetState(els, distances[0][0]);
+  };
+
+  const shouldIgnoreDragStart = (event) => Boolean(event.target?.closest?.("button, a, input, select, textarea, summary"));
+
+  const keyHandler = (event) => {
     if (event.key === "ArrowUp") {
       event.preventDefault();
-      if (sheet.classList.contains("is-collapsed")) openHalf();
-      else openExpanded();
+      if (sheet.classList.contains("is-collapsed")) setMobileSheetState(els, "half");
+      else setMobileSheetState(els, "expanded");
     }
     if (event.key === "ArrowDown" || event.key === "Escape") {
       event.preventDefault();
-      if (sheet.classList.contains("is-expanded")) openHalf();
-      else closeSheet();
+      if (sheet.classList.contains("is-expanded")) setMobileSheetState(els, "half");
+      else setMobileSheetState(els, "closed");
     }
-  });
-
-  dragTarget.addEventListener("pointerdown", (event) => {
-    if (window.innerWidth > 860) return;
-    dragging = true;
-    startY = event.clientY;
-    baseY = transformY();
-    lastY = baseY;
-    sheet.classList.add("is-dragging");
-    dragTarget.setPointerCapture?.(event.pointerId);
-    event.preventDefault();
-  });
-
-  dragTarget.addEventListener("pointermove", (event) => {
-    if (!dragging) return;
-    lastY = clampY(baseY + event.clientY - startY);
-    applyDragY(lastY);
-    event.preventDefault();
-  });
-
-  const finishDrag = (event) => {
-    if (!dragging) return;
-    dragging = false;
-    dragTarget.releasePointerCapture?.(event.pointerId);
-    const endY = lastY;
-    const maxY = collapsedY();
-    resetDragStyle();
-    if (endY <= maxY * 0.25) {
-      openExpanded();
-      return;
-    }
-    if (endY <= maxY * 0.68) {
-      openHalf();
-      return;
-    }
-    closeSheet();
   };
 
-  dragTarget.addEventListener("pointerup", finishDrag);
-  dragTarget.addEventListener("pointercancel", finishDrag);
-  dragTarget.addEventListener("touchmove", (event) => {
-    if (dragging) event.preventDefault();
-  }, { passive: false });
+  dragTargets.forEach((target) => {
+    target.addEventListener("keydown", keyHandler);
+    target.addEventListener("pointerdown", (event) => {
+      if (shouldIgnoreDragStart(event)) return;
+      if (!beginDrag(event.clientY, event.pointerId, target)) return;
+      event.preventDefault();
+      event.stopPropagation();
+    });
+    target.addEventListener("pointermove", (event) => {
+      if (!dragging) return;
+      moveDrag(event.clientY);
+      event.preventDefault();
+      event.stopPropagation();
+    });
+    target.addEventListener("pointerup", (event) => {
+      if (!dragging) return;
+      event.preventDefault();
+      event.stopPropagation();
+      endDrag(target);
+    });
+    target.addEventListener("pointercancel", () => endDrag(target));
+    target.addEventListener("touchstart", (event) => {
+      if (shouldIgnoreDragStart(event)) return;
+      const touch = event.touches?.[0];
+      if (!touch) return;
+      if (!beginDrag(touch.clientY, null, target)) return;
+      event.preventDefault();
+      event.stopPropagation();
+    }, { passive: false });
+    target.addEventListener("touchmove", (event) => {
+      if (!dragging) return;
+      const touch = event.touches?.[0];
+      if (touch) moveDrag(touch.clientY);
+      event.preventDefault();
+      event.stopPropagation();
+    }, { passive: false });
+    target.addEventListener("touchend", (event) => {
+      if (!dragging) return;
+      event.preventDefault();
+      event.stopPropagation();
+      endDrag(target);
+    }, { passive: false });
+    target.addEventListener("touchcancel", () => endDrag(target), { passive: false });
+  });
+
+  window.addEventListener("resize", () => setMobileSheetState(els, modeFromSheet()));
   setMobileSheetState(els, "closed");
 }
 
