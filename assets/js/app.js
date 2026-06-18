@@ -6,7 +6,7 @@ import { initApplianceElectricityCalculator } from "./appliance-electricity.js?v
 import { initAustraliaPayCalculator } from "./australia-pay.js?v=20260616-mobile-exchange-whv-final";
 import { initAustraliaWhv88DaysCalculator } from "./australia-whv-88-days.js?v=20260616-mobile-exchange-whv-final";
 import { initExchangeRateCalculator } from "./exchange-rate.js?v=20260616-mobile-exchange-whv-final";
-import { initParkingBudgetMap } from "./parking-budget-map.js?v=20260617-kakao-map-link-card-compact";
+import { initParkingBudgetMap } from "./parking-budget-map.js?v=20260618-parking-map-pc-controls";
 import { initLoanInterestCalculator } from "./loan-interest.js?v=20260614-cache-fix";
 import { initRentVsJeonseCalculator } from "./rent-vs-jeonse.js?v=20260618-rent-vs-jeonse";
 import { initNetSalaryCalculator } from "./net-salary.js?v=20260614-cache-fix";

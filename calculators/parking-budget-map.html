@@ -33,7 +33,7 @@
 <script data-schema="faqpage" type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"주차비 계산 지도는 실제 주차요금을 보장하나요?","acceptedAnswer":{"@type":"Answer","text":"아니요. 목적지, 방문 시간, 공개 데이터, 샘플 또는 연동 데이터, 사용자가 선택한 할인 조건을 바탕으로 계산한 참고용 예상 금액입니다. 실제 요금과 할인 적용 여부는 현장 정책에 따라 달라질 수 있습니다."}},{"@type":"Question","name":"가장 가까운 주차장이 항상 추천 1위인가요?","acceptedAnswer":{"@type":"Answer","text":"아닙니다. 가까운 주차장이라도 요금이 높거나 만차 위험이 높을 수 있습니다. 이 계산기는 예상 주차비, 거리, 공영 여부, 실시간 빈자리, 데이터 신뢰도를 함께 고려해 후보를 비교합니다."}},{"@type":"Question","name":"카카오맵이 보이지 않아도 계산할 수 있나요?","acceptedAnswer":{"@type":"Answer","text":"예. 카카오맵 JavaScript 키가 없거나 도메인 설정이 필요할 때는 샘플 지도와 가격 마커로 기본 계산을 확인할 수 있습니다. 실제 운영에서는 Kakao Developers의 JavaScript 키와 Web 플랫폼 도메인 등록이 필요합니다."}},{"@type":"Question","name":"공영주차장과 무료 주차장은 어떻게 표시되나요?","acceptedAnswer":{"@type":"Answer","text":"주차장 데이터에 공영, 민영, 무료, 1일권 가능 여부가 있으면 필터와 카드 배지에 반영합니다. 무료 주차 가능성은 현장 상황이나 운영 시간에 따라 달라질 수 있으므로 방문 전 확인이 필요합니다."}},{"@type":"Question","name":"경차, 장애인, 전기차 할인은 확정 적용되나요?","acceptedAnswer":{"@type":"Answer","text":"아니요. 선택한 할인율을 적용한 참고 계산입니다. 실제 할인은 주차장 정책, 차량 등록 상태, 증빙 자료, 결제 방식에 따라 달라질 수 있습니다."}},{"@type":"Question","name":"실시간 빈자리 정보가 있으면 주차 가능이 보장되나요?","acceptedAnswer":{"@type":"Answer","text":"보장하지 않습니다. 실시간 가능 대수는 제공기관 데이터 기준이며 실제 현장 진입 시점과 차이가 날 수 있습니다. 만차 위험도도 참고용으로만 확인해 주세요."}},{"@type":"Question","name":"1일권 전환점은 무엇인가요?","acceptedAnswer":{"@type":"Answer","text":"시간요금으로 계속 계산했을 때 일 최대 요금 또는 1일권 요금 이상이 되는 시점입니다. 해당 정보가 있는 주차장에 한해 장시간 주차가 유리해지는 기준을 참고로 표시합니다."}},{"@type":"Question","name":"거리 표시는 어떤 기준인가요?","acceptedAnswer":{"@type":"Answer","text":"현재 화면의 거리는 목적지와 주차장 좌표 사이의 직선거리 기준입니다. 실제 차량 경로, 진입로, 일방통행, 도보 동선은 반영되지 않을 수 있습니다."}}]}</script>
 <link href="../assets/css/base.css" rel="stylesheet"/>
 <link href="../assets/css/layout.css" rel="stylesheet"/>
-<link href="../assets/css/components.css?v=20260617-kakao-map-link-card-compact" rel="stylesheet"/>
+<link href="../assets/css/components.css?v=20260618-parking-map-mobile-phase3-polish" rel="stylesheet"/>
 </head>
 <body>
 <header class="site-header">
@@ -94,9 +94,90 @@
 </section><div class="parking-dashboard__map parking-map-column parking-map-panel">
 <div class="parking-panel-head"><span>지도</span><strong>목적지 주변 주차장</strong></div>
 <section aria-label="주차장 지도" class="parking-map-card">
+<div class="parking-map-toolbar" id="parking-map-toolbar" aria-label="지도 빠른 검색 및 조건">
+  <form class="parking-map-toolbar__search" id="parking-map-toolbar-search">
+    <label class="sr-only" for="parking-map-destination">목적지 검색</label>
+    <input autocomplete="off" id="parking-map-destination" placeholder="목적지 검색" type="search"/>
+    <button type="submit">검색</button>
+  </form>
+  <div class="parking-map-toolbar__actions">
+    <div class="parking-map-control-popover">
+      <button aria-expanded="false" aria-controls="parking-map-duration-panel" class="parking-map-toolbar__button" id="parking-map-duration-toggle" type="button">4시간</button>
+      <div class="parking-map-popover-panel parking-map-duration-panel" id="parking-map-duration-panel" hidden>
+        <button data-parking-map-duration="30" type="button">30분</button>
+        <button data-parking-map-duration="60" type="button">1시간</button>
+        <button data-parking-map-duration="120" type="button">2시간</button>
+        <button data-parking-map-duration="180" type="button">3시간</button>
+        <button class="active" data-parking-map-duration="240" type="button">4시간</button>
+        <button data-parking-map-duration="day" type="button">1일권</button>
+      </div>
+    </div>
+    <div class="parking-map-control-popover">
+      <button aria-expanded="false" aria-controls="parking-map-options-panel" class="parking-map-toolbar__button" id="parking-map-options-toggle" type="button">조건</button>
+      <div class="parking-map-popover-panel parking-map-options-panel" id="parking-map-options-panel" hidden>
+        <label class="parking-map-popover-field">
+          <span>차량 조건</span>
+          <select id="parking-map-vehicle-type">
+            <option value="general">일반</option>
+            <option value="compact">경차 할인 참고</option>
+            <option value="disabled">장애인 할인 참고</option>
+            <option value="ev">전기차 할인 참고</option>
+            <option value="manual">직접 할인율</option>
+          </select>
+        </label>
+        <label class="parking-map-popover-field" id="parking-map-manual-discount-field" hidden>
+          <span>직접 할인율</span>
+          <div class="input-with-unit"><input id="parking-map-manual-discount" max="100" min="0" step="1" type="number" value="0"/><span class="unit">%</span></div>
+        </label>
+        <div class="parking-map-filter-grid" aria-label="주차장 필터">
+          <label><input data-parking-map-filter="publicOnly" type="checkbox"/> 공영만</label>
+          <label><input data-parking-map-filter="freeOnly" type="checkbox"/> 무료</label>
+          <label><input data-parking-map-filter="dayPassOnly" type="checkbox"/> 1일권</label>
+          <label><input data-parking-map-filter="openOnly" type="checkbox"/> 운영 중</label>
+          <label><input data-parking-map-filter="discountOnly" type="checkbox"/> 할인 가능</label>
+          <label><input data-parking-map-filter="realtimeOnly" type="checkbox"/> 실시간</label>
+          <label><input data-parking-map-filter="lowRiskOnly" type="checkbox"/> 낮은 위험</label>
+        </div>
+      </div>
+    </div>
+    <div class="parking-map-control-popover">
+      <button aria-expanded="false" aria-controls="parking-map-sort-panel" class="parking-map-toolbar__button" id="parking-map-sort-toggle" type="button">추천순</button>
+      <div class="parking-map-popover-panel parking-map-sort-panel" id="parking-map-sort-panel" hidden>
+        <button class="active" data-parking-map-sort="recommended" type="button">추천순</button>
+        <button data-parking-map-sort="cheap" type="button">저렴한순</button>
+        <button data-parking-map-sort="nearby" type="button">가까운순</button>
+        <button data-parking-map-sort="available" type="button">빈자리순</button>
+        <button data-parking-map-sort="confidence" type="button">신뢰도순</button>
+      </div>
+    </div>
+  </div>
+</div>
 <div aria-label="목적지 주변 주차장 지도" class="parking-map is-fallback" id="parking-map" role="img"><div class="parking-map-fallback"><strong>샘플 지도 계산 모드</strong><span>카카오맵을 불러오지 못해 샘플 지도에서 예상 주차비를 표시합니다.</span></div><div aria-hidden="true" class="parking-map-legend"><span>● 목적지</span><span>● 추천 1위</span><span>가격 pill = 예상 주차비</span></div></div>
 <div aria-hidden="true" class="parking-map-markers" id="parking-map-markers"></div>
 <button class="parking-map-research-button" id="parking-map-research-button" type="button" hidden>현재 지도에서 주차장 다시 찾기</button>
+</section>
+<section aria-label="모바일 추천 주차장 결과" class="parking-bottom-sheet" id="parking-mobile-bottom-sheet">
+  <div class="parking-sheet-handle" aria-hidden="true"></div>
+  <div class="parking-mobile-sheet-head">
+    <div>
+      <strong id="parking-mobile-sheet-title">추천 결과</strong>
+      <span id="parking-mobile-sheet-subtitle">목적지를 검색하면 주변 주차장을 비교합니다.</span>
+    </div>
+    <button type="button" class="subtle-button tiny" id="parking-mobile-sheet-map-button">지도 보기</button>
+  </div>
+  <div class="parking-mobile-sheet-controls" aria-label="모바일 빠른 설정">
+    <button type="button" id="parking-mobile-time-button">시간 수정</button>
+    <button type="button" id="parking-mobile-condition-button">조건 수정</button>
+    <button type="button" id="parking-mobile-sort-button">정렬 변경</button>
+  </div>
+  <div class="parking-mobile-sheet-sort" id="parking-mobile-sheet-sort" hidden>
+    <button class="active" data-parking-mobile-sort="recommended" type="button">추천순</button>
+    <button data-parking-mobile-sort="cheap" type="button">저렴한순</button>
+    <button data-parking-mobile-sort="nearby" type="button">가까운순</button>
+    <button data-parking-mobile-sort="available" type="button">빈자리순</button>
+    <button data-parking-mobile-sort="confidence" type="button">신뢰도순</button>
+  </div>
+  <section aria-label="모바일 추천 주차장 목록" class="parking-mobile-results" id="parking-mobile-results"></section>
 </section>
 <div class="parking-legal-note parking-map-legal"><p>본 결과는 공공데이터 및 실시간 제공 데이터를 바탕으로 계산한 예상 주차비입니다. 실제 요금, 할인 적용 여부, 운영시간, 주차 가능 여부는 현장 사정에 따라 달라질 수 있습니다. 방문 전 주차장 또는 관리기관 안내를 확인해 주세요.</p><p>실시간 가능 대수는 제공기관 데이터 기준이며 실제 현장 상황과 차이가 있을 수 있습니다. 경차, 장애인, 전기차 할인은 주차장별 정책에 따라 다를 수 있으므로 선택한 할인율은 참고 계산용으로만 사용해 주세요.</p></div>
 </div></div></div>
@@ -106,8 +187,8 @@
 <section class="content-band" id="faq"><div class="container faq-section parking-faq-section"><p class="eyebrow">자주 묻는 질문</p><h2>주차비 계산 지도 FAQ</h2><details><summary>주차비 계산 지도는 실제 주차요금을 보장하나요?</summary><p>아니요. 목적지, 방문 시간, 공개 데이터, 샘플 또는 연동 데이터, 사용자가 선택한 할인 조건을 바탕으로 계산한 참고용 예상 금액입니다. 실제 요금과 할인 적용 여부는 현장 정책에 따라 달라질 수 있습니다.</p></details><details><summary>가장 가까운 주차장이 항상 추천 1위인가요?</summary><p>아닙니다. 가까운 주차장이라도 요금이 높거나 만차 위험이 높을 수 있습니다. 이 계산기는 예상 주차비, 거리, 공영 여부, 실시간 빈자리, 데이터 신뢰도를 함께 고려해 후보를 비교합니다.</p></details><details><summary>카카오맵이 보이지 않아도 계산할 수 있나요?</summary><p>예. 카카오맵 JavaScript 키가 없거나 도메인 설정이 필요할 때는 샘플 지도와 가격 마커로 기본 계산을 확인할 수 있습니다. 실제 운영에서는 Kakao Developers의 JavaScript 키와 Web 플랫폼 도메인 등록이 필요합니다.</p></details><details><summary>공영주차장과 무료 주차장은 어떻게 표시되나요?</summary><p>주차장 데이터에 공영, 민영, 무료, 1일권 가능 여부가 있으면 필터와 카드 배지에 반영합니다. 무료 주차 가능성은 현장 상황이나 운영 시간에 따라 달라질 수 있으므로 방문 전 확인이 필요합니다.</p></details><details><summary>경차, 장애인, 전기차 할인은 확정 적용되나요?</summary><p>아니요. 선택한 할인율을 적용한 참고 계산입니다. 실제 할인은 주차장 정책, 차량 등록 상태, 증빙 자료, 결제 방식에 따라 달라질 수 있습니다.</p></details><details><summary>실시간 빈자리 정보가 있으면 주차 가능이 보장되나요?</summary><p>보장하지 않습니다. 실시간 가능 대수는 제공기관 데이터 기준이며 실제 현장 진입 시점과 차이가 날 수 있습니다. 만차 위험도도 참고용으로만 확인해 주세요.</p></details><details><summary>1일권 전환점은 무엇인가요?</summary><p>시간요금으로 계속 계산했을 때 일 최대 요금 또는 1일권 요금 이상이 되는 시점입니다. 해당 정보가 있는 주차장에 한해 장시간 주차가 유리해지는 기준을 참고로 표시합니다.</p></details><details><summary>거리 표시는 어떤 기준인가요?</summary><p>현재 화면의 거리는 목적지와 주차장 좌표 사이의 직선거리 기준입니다. 실제 차량 경로, 진입로, 일방통행, 도보 동선은 반영되지 않을 수 있습니다.</p></details></div></section>
 </main>
 <footer class="site-footer"><div><strong>한눈계산</strong><p>모든 계산 결과는 참고용이며, 실제 판단은 공식 기관 기준을 확인해야 합니다.</p></div><nav aria-label="푸터 링크"><a href="../about.html">소개</a><a href="../contact.html">문의하기</a><a href="../privacy.html">개인정보 처리방침</a><a href="../disclaimer.html">면책 고지</a><a href="../licenses.html">오픈소스 라이선스</a></nav></footer>
-<script defer="" src="../assets/config/public-config.js?v=20260617-parking-mobile-input-mapjump"></script>
-<script src="../assets/js/app.js?v=20260617-kakao-map-link-card-compact" type="module"></script>
+<script defer="" src="../assets/config/public-config.js?v=20260618-parking-map-mobile-phase3"></script>
+<script src="../assets/js/app.js?v=20260618-parking-map-mobile-phase3" type="module"></script>
 </body>
 </html>
 

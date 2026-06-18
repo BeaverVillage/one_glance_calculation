@@ -63,6 +63,21 @@ export function initParkingBudgetMap() {
     manualDiscount: document.querySelector("#parking-manual-discount"),
     sort: document.querySelector("#parking-sort"),
     preferenceCards: Array.from(document.querySelectorAll("[data-parking-sort-mode]")),
+    mapToolbar: document.querySelector("#parking-map-toolbar"),
+    mapToolbarSearch: document.querySelector("#parking-map-toolbar-search"),
+    mapToolbarDestination: document.querySelector("#parking-map-destination"),
+    mapDurationToggle: document.querySelector("#parking-map-duration-toggle"),
+    mapDurationPanel: document.querySelector("#parking-map-duration-panel"),
+    mapDurationButtons: Array.from(document.querySelectorAll("[data-parking-map-duration]")),
+    mapOptionsToggle: document.querySelector("#parking-map-options-toggle"),
+    mapOptionsPanel: document.querySelector("#parking-map-options-panel"),
+    mapVehicleType: document.querySelector("#parking-map-vehicle-type"),
+    mapManualDiscountField: document.querySelector("#parking-map-manual-discount-field"),
+    mapManualDiscount: document.querySelector("#parking-map-manual-discount"),
+    mapFilterInputs: Array.from(document.querySelectorAll("[data-parking-map-filter]")),
+    mapSortToggle: document.querySelector("#parking-map-sort-toggle"),
+    mapSortPanel: document.querySelector("#parking-map-sort-panel"),
+    mapSortButtons: Array.from(document.querySelectorAll("[data-parking-map-sort]")),
     recommend: document.querySelector("#parking-recommend-button"),
     status: document.querySelector("#parking-status"),
     dataBadges: document.querySelector("#parking-data-badges"),
@@ -70,6 +85,14 @@ export function initParkingBudgetMap() {
     summarySubtitle: document.querySelector("#parking-summary-subtitle"),
     resultList: document.querySelector("#parking-result-list"),
     mobileResults: document.querySelector("#parking-mobile-results"),
+    mobileSheetTitle: document.querySelector("#parking-mobile-sheet-title"),
+    mobileSheetSubtitle: document.querySelector("#parking-mobile-sheet-subtitle"),
+    mobileSheetMapButton: document.querySelector("#parking-mobile-sheet-map-button"),
+    mobileTimeButton: document.querySelector("#parking-mobile-time-button"),
+    mobileConditionButton: document.querySelector("#parking-mobile-condition-button"),
+    mobileSortButton: document.querySelector("#parking-mobile-sort-button"),
+    mobileSheetSort: document.querySelector("#parking-mobile-sheet-sort"),
+    mobileSortButtons: Array.from(document.querySelectorAll("[data-parking-mobile-sort]")),
     map: document.querySelector("#parking-map"),
     markerLayer: document.querySelector("#parking-map-markers"),
     mapRefresh: document.querySelector("#parking-map-research-button"),
@@ -87,6 +110,7 @@ export function initParkingBudgetMap() {
 
   setupDefaults(els);
   setupMobileOptionsToggle();
+  setupDesktopMapToolbar(els);
   bindEvents(els);
   loadMockData().then(() => {
     renderPlaces(els);
@@ -96,12 +120,25 @@ export function initParkingBudgetMap() {
 }
 
 function syncPreferenceCards(els) {
-  if (!els.preferenceCards?.length) return;
-  els.preferenceCards.forEach((button) => {
-    const active = button.dataset.parkingSortMode === els.sort.value;
+  if (els.preferenceCards?.length) {
+    els.preferenceCards.forEach((button) => {
+      const active = button.dataset.parkingSortMode === els.sort.value;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+  }
+  syncMobileSortButtons(els);
+}
+
+function syncMobileSortButtons(els) {
+  if (!els?.mobileSortButtons?.length) return;
+  const mode = els.sort?.value || "recommended";
+  els.mobileSortButtons.forEach((button) => {
+    const active = button.dataset.parkingMobileSort === mode;
     button.classList.toggle("active", active);
     button.setAttribute("aria-pressed", active ? "true" : "false");
   });
+  if (els.mobileSortButton) els.mobileSortButton.textContent = `${recommendationModeLabel(mode)} 변경`;
 }
 
 function setupDefaults(els) {
@@ -113,6 +150,7 @@ function setupDefaults(els) {
   els.departure.value = formatTimeInput(departure);
   els.destination.value = DEFAULT_PLACE.name;
   syncPreferenceCards(els);
+  syncDesktopMapToolbar(els);
 }
 
 function setupMobileOptionsToggle() {
@@ -148,6 +186,95 @@ function setupMobileOptionsToggle() {
     if (stateText) stateText.textContent = open ? "접기" : "열기";
   });
 }
+function setupDesktopMapToolbar(els) {
+  if (!els.mapToolbar || els.mapToolbar.dataset.ready === "true") return;
+  els.mapToolbar.dataset.ready = "true";
+  syncDesktopMapToolbar(els);
+}
+
+function syncDesktopMapToolbar(els) {
+  if (!els?.mapToolbar) return;
+  if (els.mapToolbarDestination && els.destination) els.mapToolbarDestination.value = els.destination.value || state.destination?.name || "";
+  if (els.mapVehicleType && els.vehicleType) els.mapVehicleType.value = els.vehicleType.value;
+  if (els.mapManualDiscount && els.manualDiscount) els.mapManualDiscount.value = els.manualDiscount.value;
+  const manualOpen = els.vehicleType?.value === "manual";
+  if (els.mapManualDiscountField) els.mapManualDiscountField.hidden = !manualOpen;
+
+  const filterPairs = mapFilterPairs(els);
+  els.mapFilterInputs?.forEach((input) => {
+    const source = filterPairs[input.dataset.parkingMapFilter];
+    if (source) input.checked = source.checked;
+  });
+
+  const sortLabel = selectedOptionText(els.sort) || recommendationModeLabel(els.sort?.value || "recommended");
+  if (els.mapSortToggle) els.mapSortToggle.textContent = sortLabel;
+  els.mapSortButtons?.forEach((button) => button.classList.toggle("active", button.dataset.parkingMapSort === els.sort?.value));
+
+  const activeDuration = document.querySelector("[data-parking-duration].active")?.dataset.parkingDuration
+    || document.querySelector("[data-parking-map-duration].active")?.dataset.parkingMapDuration
+    || "240";
+  if (els.mapDurationToggle) els.mapDurationToggle.textContent = durationButtonLabel(activeDuration);
+  els.mapDurationButtons?.forEach((button) => button.classList.toggle("active", button.dataset.parkingMapDuration === activeDuration));
+}
+
+function selectedOptionText(select) {
+  if (!select) return "";
+  return select.options?.[select.selectedIndex]?.textContent?.trim() || "";
+}
+
+function durationButtonLabel(value) {
+  if (value === "day") return "1일권";
+  const minutes = Number(value);
+  if (minutes === 30) return "30분";
+  if (minutes === 60) return "1시간";
+  if (minutes === 120) return "2시간";
+  if (minutes === 180) return "3시간";
+  if (minutes === 240) return "4시간";
+  return Number.isFinite(minutes) ? formatDuration(minutes) : "4시간";
+}
+
+function mapFilterPairs(els) {
+  return {
+    publicOnly: els.filters?.publicOnly,
+    freeOnly: els.filters?.freeOnly,
+    dayPassOnly: els.filters?.dayPassOnly,
+    openOnly: els.filters?.openOnly,
+    discountOnly: els.filters?.discountOnly,
+    realtimeOnly: els.filters?.realtimeOnly,
+    lowRiskOnly: els.filters?.lowRiskOnly
+  };
+}
+
+function closeMapToolbarPopovers(els, exceptPanel = null) {
+  [
+    [els.mapDurationPanel, els.mapDurationToggle],
+    [els.mapOptionsPanel, els.mapOptionsToggle],
+    [els.mapSortPanel, els.mapSortToggle]
+  ].forEach(([panel, toggle]) => {
+    if (!panel || panel === exceptPanel) return;
+    panel.hidden = true;
+    toggle?.setAttribute("aria-expanded", "false");
+  });
+}
+
+function toggleMapToolbarPopover(panel, toggle, els) {
+  if (!panel || !toggle) return;
+  const willOpen = panel.hidden;
+  closeMapToolbarPopovers(els, willOpen ? panel : null);
+  panel.hidden = !willOpen;
+  toggle.setAttribute("aria-expanded", willOpen ? "true" : "false");
+}
+
+function setQuickDuration(els, value, { fromNow = false } = {}) {
+  document.querySelectorAll("[data-parking-duration], [data-parking-map-duration]").forEach((item) => {
+    const itemValue = item.dataset.parkingDuration || item.dataset.parkingMapDuration;
+    item.classList.toggle("active", itemValue === value);
+  });
+  applyQuickDuration(els, value, { fromNow });
+  syncDesktopMapToolbar(els);
+  calculateAndRender(els);
+}
+
 function bindEvents(els) {
   els.placePopup?.addEventListener("click", (event) => {
     if (event.target === els.placePopup || event.target.closest("[data-place-popup-close]")) closePlacePopup(els);
@@ -159,34 +286,114 @@ function bindEvents(els) {
     event.preventDefault();
     await handleParkingSearch(els);
   });
+  els.mapToolbarSearch?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (els.mapToolbarDestination && els.destination) els.destination.value = els.mapToolbarDestination.value.trim();
+    closeMapToolbarPopovers(els);
+    await handleParkingSearch(els);
+  });
+  els.mapToolbarDestination?.addEventListener("input", () => {
+    if (els.destination) els.destination.value = els.mapToolbarDestination.value;
+  });
   els.recommend.addEventListener("click", () => handleParkingSearch(els));
   els.mobileMapJump?.addEventListener("click", () => {
     const target = document.querySelector(".parking-dashboard__map") || els.map;
     if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
   });
   els.mapRefresh?.addEventListener("click", () => researchCurrentMapArea(els));
+  els.mobileSheetMapButton?.addEventListener("click", () => {
+    document.querySelector(".parking-map-card")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  els.mobileTimeButton?.addEventListener("click", () => {
+    document.querySelector(".parking-control-card--schedule")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+  els.mobileConditionButton?.addEventListener("click", () => {
+    const card = document.querySelector(".parking-control-card--options");
+    card?.classList.add("is-open");
+    card?.classList.remove("is-collapsed");
+    const toggle = card?.querySelector(".parking-options-toggle");
+    toggle?.setAttribute("aria-expanded", "true");
+    const stateText = toggle?.querySelector("strong");
+    if (stateText) stateText.textContent = "접기";
+    card?.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+  els.mobileSortButton?.addEventListener("click", () => {
+    if (!els.mobileSheetSort) return;
+    els.mobileSheetSort.hidden = !els.mobileSheetSort.hidden;
+  });
+  els.mobileSortButtons?.forEach((button) => {
+    button.addEventListener("click", () => {
+      els.sort.value = button.dataset.parkingMobileSort || "recommended";
+      if (els.mobileSheetSort) els.mobileSheetSort.hidden = true;
+      syncPreferenceCards(els);
+      syncDesktopMapToolbar(els);
+      calculateAndRender(els);
+    });
+  });
   els.vehicleType.addEventListener("change", () => {
     els.manualDiscountField.hidden = els.vehicleType.value !== "manual";
+    syncDesktopMapToolbar(els);
     calculateAndRender(els);
+  });
+  els.mapDurationToggle?.addEventListener("click", () => toggleMapToolbarPopover(els.mapDurationPanel, els.mapDurationToggle, els));
+  els.mapOptionsToggle?.addEventListener("click", () => toggleMapToolbarPopover(els.mapOptionsPanel, els.mapOptionsToggle, els));
+  els.mapSortToggle?.addEventListener("click", () => toggleMapToolbarPopover(els.mapSortPanel, els.mapSortToggle, els));
+  document.addEventListener("click", (event) => {
+    if (!els.mapToolbar || els.mapToolbar.contains(event.target)) return;
+    closeMapToolbarPopovers(els);
+  });
+  els.mapVehicleType?.addEventListener("change", () => {
+    els.vehicleType.value = els.mapVehicleType.value;
+    els.manualDiscountField.hidden = els.vehicleType.value !== "manual";
+    syncDesktopMapToolbar(els);
+    calculateAndRender(els);
+  });
+  els.mapManualDiscount?.addEventListener("change", () => {
+    els.manualDiscount.value = els.mapManualDiscount.value;
+    syncDesktopMapToolbar(els);
+    calculateAndRender(els);
+  });
+  els.mapFilterInputs?.forEach((input) => {
+    input.addEventListener("change", () => {
+      const source = mapFilterPairs(els)[input.dataset.parkingMapFilter];
+      if (source) source.checked = input.checked;
+      syncDesktopMapToolbar(els);
+      calculateAndRender(els);
+    });
+  });
+  els.mapSortButtons?.forEach((button) => {
+    button.addEventListener("click", () => {
+      els.sort.value = button.dataset.parkingMapSort || "recommended";
+      closeMapToolbarPopovers(els);
+      syncPreferenceCards(els);
+      syncDesktopMapToolbar(els);
+      calculateAndRender(els);
+    });
   });
   [els.visitDate, els.arrival, els.departure, els.manualDiscount, els.sort].forEach((el) => el.addEventListener("change", () => {
     syncPreferenceCards(els);
+    syncDesktopMapToolbar(els);
     calculateAndRender(els);
   }));
   els.preferenceCards.forEach((button) => {
     button.addEventListener("click", () => {
       els.sort.value = button.dataset.parkingSortMode || "recommended";
       syncPreferenceCards(els);
+      syncDesktopMapToolbar(els);
       calculateAndRender(els);
     });
   });
-  Object.values(els.filters).forEach((el) => el.addEventListener("change", () => calculateAndRender(els)));
+  Object.values(els.filters).forEach((el) => el.addEventListener("change", () => {
+    syncDesktopMapToolbar(els);
+    calculateAndRender(els);
+  }));
   document.querySelectorAll("[data-parking-duration]").forEach((button) => {
+    button.addEventListener("click", () => setQuickDuration(els, button.dataset.parkingDuration));
+  });
+  els.mapDurationButtons?.forEach((button) => {
     button.addEventListener("click", () => {
-      document.querySelectorAll("[data-parking-duration]").forEach((item) => item.classList.remove("active"));
-      button.classList.add("active");
-      applyQuickDuration(els, button.dataset.parkingDuration);
-      calculateAndRender(els);
+      closeMapToolbarPopovers(els);
+      setQuickDuration(els, button.dataset.parkingMapDuration, { fromNow: true });
     });
   });
 }
@@ -321,6 +528,7 @@ async function selectPlaceFromPopup(index, els) {
   state.destination = place;
   state.lastSearchCenter = { lat: place.lat, lng: place.lng };
   els.destination.value = place.name;
+  syncDesktopMapToolbar(els);
   closePlacePopup(els);
   els.searchStatus.textContent = state.lastPlaceSearchUsedSampleFallback
     ? `목적지 검색 API를 사용할 수 없어 ${place.name} 샘플 위치 기준으로 계산합니다.`
@@ -328,7 +536,12 @@ async function selectPlaceFromPopup(index, els) {
   await calculateAndRender(els);
 }
 
-function applyQuickDuration(els, value) {
+function applyQuickDuration(els, value, { fromNow = false } = {}) {
+  if (fromNow) {
+    const now = new Date();
+    els.visitDate.value = formatDateInput(now);
+    els.arrival.value = formatTimeInput(now);
+  }
   const [h, m] = els.arrival.value.split(":").map(Number);
   const date = new Date(`${els.visitDate.value}T${pad(h)}:${pad(m)}:00`);
   const minutes = value === "day" ? 1440 : Number(value);
@@ -430,6 +643,7 @@ async function calculateAndRender(els) {
   if (state.pinnedParkingId && !rows.some((row) => row.id === state.pinnedParkingId)) state.pinnedParkingId = "";
   if (!state.pinnedParkingId && rows[0]?.id) state.pinnedParkingId = rows[0].id;
   renderResults(els, input);
+  syncDesktopMapToolbar(els);
   renderMap(els);
 }
 
@@ -633,6 +847,9 @@ function renderResults(els, input) {
   els.summaryTitle.textContent = `${state.destination.name} · ${durationText} · ${vehicleText}`;
   const modeText = recommendationModeLabel(input.sort);
   els.summarySubtitle.textContent = state.results.length ? `${state.results.length}개 주차장 비교 · ${modeText}` : "조건에 맞는 주차장이 없습니다.";
+  if (els.mobileSheetTitle) els.mobileSheetTitle.textContent = els.summaryTitle.textContent;
+  if (els.mobileSheetSubtitle) els.mobileSheetSubtitle.textContent = els.summarySubtitle.textContent;
+  syncMobileSortButtons(els);
   els.status.textContent = state.results.length ? "추천 결과입니다." : "이 주변에서 계산 가능한 주차장을 찾지 못했습니다. 검색 반경을 넓히거나 필터를 줄여보세요.";
   renderDataBadges(els, input);
   if (state.lastFallbackReason) console.info("[parking-map] data fallback/status", { mode: state.lastDataMode, reason: state.lastFallbackReason, stats: state.lastStats });
@@ -647,7 +864,8 @@ function bindResultCardEvents(container, els) {
   container.querySelectorAll("[data-parking-card-id]").forEach((card) => {
     card.addEventListener("click", (event) => {
       if (event.target.closest("button, a, summary, details, input, select, textarea")) return;
-      pinParkingCard(card.dataset.parkingCardId, els, { scrollToMap: window.innerWidth <= 860 });
+      const isMobile = window.innerWidth <= 860;
+      pinParkingCard(card.dataset.parkingCardId, els, { scrollToMap: isMobile, popup: isMobile });
     });
   });
   container.querySelectorAll("[data-parking-pin-clear]").forEach((button) => {
@@ -694,6 +912,7 @@ function renderResultCard(row) {
   const confidenceClass = row.dataConfidence === "high" ? "metric-confidence-high" : row.dataConfidence === "medium" ? "metric-confidence-medium" : "metric-confidence-low";
   return `<article class="parking-result-card ${row.rank === 1 ? "is-best" : ""} ${pinned ? "is-pinned" : ""}" data-parking-card-id="${escapeHtml(row.id)}">
     <div class="parking-card-head"><div><strong>${escapeHtml(row.name)}</strong><span>${row.rank === 1 ? "추천 1위" : `${row.rank}순위`} · ${escapeHtml(row.publicPrivateType || "구분 확인")}</span></div>${pinned ? `<button type="button" class="subtle-button tiny" data-parking-pin-clear>선택 해제</button>` : ""}</div>
+    <div class="parking-list-summary" aria-hidden="true"><strong>${price}</strong><span>${distance}</span><span>${row.fullRiskLabel || "위험도 확인 필요"}</span></div>
     <div class="parking-price-row"><strong>${price}</strong>${original}</div>
     <p class="parking-reason">${escapeHtml(reason)}</p>
     <div class="parking-card-metrics"><span class="parking-metric-chip metric-distance">${distance}</span><span class="parking-metric-chip metric-availability">${realtime}</span><span class="parking-metric-chip ${riskClass}">${row.fullRiskLabel}</span><span class="parking-metric-chip ${confidenceClass}">${row.dataConfidenceLabel}</span></div>
@@ -940,13 +1159,35 @@ function showParkingMapPopup(id, els) {
   if (!row || !mapCard) return;
   mapCard.querySelector(".parking-map-popup")?.remove();
   const price = row.discountedFee == null ? markerLabel(row) : row.discountedFee === 0 ? markerLabel(row) : `${won.format(row.discountedFee)}원`;
+  const original = row.parkingFee != null && row.parkingFee !== row.discountedFee ? `<span>할인 전 ${won.format(row.parkingFee)}원</span>` : "";
   const distance = row.distanceFromDestinationKm == null ? "거리 정보 없음" : `목적지에서 약 ${formatDistance(row.distanceFromDestinationKm)}`;
   const realtime = realtimeAvailabilityText(row);
+  const reason = recommendationReason(row);
+  const riskClass = row.fullRisk === "high" ? "metric-risk-high" : row.fullRisk === "medium" ? "metric-risk-medium" : "metric-risk-low";
+  const confidenceClass = row.dataConfidence === "high" ? "metric-confidence-high" : row.dataConfidence === "medium" ? "metric-confidence-medium" : "metric-confidence-low";
   const popup = document.createElement("article");
-  popup.className = "parking-map-popup";
+  const useDetailPopup = typeof window === "undefined" ? true : window.innerWidth > 860;
+  popup.className = `parking-map-popup${useDetailPopup ? " parking-map-popup--detail" : ""}`;
   popup.setAttribute("role", "dialog");
-  popup.setAttribute("aria-label", `${row.name} 주차장 요약`);
-  popup.innerHTML = [
+  popup.setAttribute("aria-label", `${row.name} 주차장 ${useDetailPopup ? "상세" : "요약"}`);
+  popup.innerHTML = useDetailPopup ? [
+    '<button type="button" class="parking-map-popup__close" aria-label="지도 주차장 요약 닫기">×</button>',
+    '<div class="parking-map-popup__head">',
+    `<span>${row.rank || "-"}위</span>`,
+    `<strong>${escapeHtml(row.name)}</strong>`,
+    '</div>',
+    `<p class="parking-map-popup__meta">${escapeHtml(row.publicPrivateType || "구분 확인")} · ${escapeHtml(row.fullRiskLabel || "위험도 확인 필요")}</p>`,
+    `<div class="parking-map-popup__price-row"><strong>${escapeHtml(price)}</strong>${original}</div>`,
+    `<p class="parking-map-popup__reason">${escapeHtml(reason)}</p>`,
+    '<div class="parking-map-popup__metrics">',
+    `<span class="parking-metric-chip metric-distance">${escapeHtml(distance)}</span>`,
+    `<span class="parking-metric-chip metric-availability">${escapeHtml(realtime)}</span>`,
+    `<span class="parking-metric-chip ${riskClass}">${escapeHtml(row.fullRiskLabel || "위험도 확인 필요")}</span>`,
+    `<span class="parking-metric-chip ${confidenceClass}">${escapeHtml(row.dataConfidenceLabel || "신뢰도 확인 필요")}</span>`,
+    '</div>',
+    state.pinnedParkingId === row.id ? '<p class="parking-pinned-badge">지도에서 선택한 주차장입니다.</p>' : '',
+    `<div class="parking-map-popup__actions"><button type="button" class="subtle-button tiny" data-popup-scroll-card>추천 카드 보기</button>${renderKakaoMapLink(row, "parking-kakao-map-link tiny")}</div>`
+  ].join("") : [
     '<button type="button" class="parking-map-popup__close" aria-label="지도 주차장 요약 닫기">×</button>',
     '<div class="parking-map-popup__head">',
     `<span>${row.rank || "-"}위</span>`,

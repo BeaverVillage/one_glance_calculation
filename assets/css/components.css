@@ -8940,3 +8940,685 @@ body {
     width: 100%;
   }
 }
+
+/* Parking map-first PC layout pass 2026-06-18 */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.parking-map-toolbar {
+  display: none;
+}
+
+@media (min-width: 861px) {
+  .parking-app-shell .parking-dashboard {
+    gap: 16px !important;
+  }
+
+  .parking-dashboard__controls {
+    display: none !important;
+  }
+
+  .parking-dashboard__main {
+    height: clamp(840px, calc(100vh - 130px), 1080px) !important;
+    min-height: 840px !important;
+  }
+
+  .parking-dashboard__map .parking-map-card {
+    height: clamp(760px, calc(100vh - 210px), 980px) !important;
+    min-height: 760px !important;
+  }
+
+  .parking-result-sort-tabs {
+    display: none !important;
+  }
+
+  .parking-map-toolbar {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    right: 14px;
+    z-index: 15;
+    display: grid;
+    grid-template-columns: minmax(260px, 1fr) auto;
+    gap: 10px;
+    align-items: start;
+    pointer-events: none;
+  }
+
+  .parking-map-toolbar__search,
+  .parking-map-toolbar__actions,
+  .parking-map-control-popover,
+  .parking-map-popover-panel {
+    pointer-events: auto;
+  }
+
+  .parking-map-toolbar__search {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    align-items: center;
+    max-width: 520px;
+    padding: 8px;
+    border: 1px solid rgba(139, 162, 184, 0.32);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 14px 34px rgba(15, 35, 55, 0.18);
+    backdrop-filter: blur(10px);
+  }
+
+  .parking-map-toolbar__search input {
+    width: 100%;
+    min-width: 0;
+    min-height: 42px;
+    padding: 0.58rem 0.78rem;
+    border: 1px solid #cfe0eb;
+    border-radius: 13px;
+    background: #fff;
+    color: #102033;
+    font: inherit;
+    font-weight: 750;
+  }
+
+  .parking-map-toolbar__search button,
+  .parking-map-toolbar__button {
+    min-height: 42px;
+    border: 1px solid rgba(20, 108, 95, 0.26);
+    border-radius: 13px;
+    background: #fff;
+    color: #146c5f;
+    font: inherit;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 10px 24px rgba(15, 35, 55, 0.12);
+  }
+
+  .parking-map-toolbar__search button {
+    padding: 0.58rem 0.86rem;
+    background: #146c5f;
+    color: #fff;
+  }
+
+  .parking-map-toolbar__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .parking-map-control-popover {
+    position: relative;
+  }
+
+  .parking-map-toolbar__button {
+    min-width: 86px;
+    padding: 0.58rem 0.82rem;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(10px);
+  }
+
+  .parking-map-toolbar__button[aria-expanded="true"] {
+    border-color: #146c5f;
+    background: #146c5f;
+    color: #fff;
+  }
+
+  .parking-map-popover-panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 20;
+    width: max-content;
+    min-width: 230px;
+    max-width: min(340px, 72vw);
+    padding: 10px;
+    border: 1px solid rgba(139, 162, 184, 0.32);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 18px 42px rgba(15, 35, 55, 0.22);
+    backdrop-filter: blur(12px);
+  }
+
+  .parking-map-popover-panel[hidden] {
+    display: none !important;
+  }
+
+  .parking-map-duration-panel,
+  .parking-map-sort-panel {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .parking-map-duration-panel button,
+  .parking-map-sort-panel button {
+    min-height: 38px;
+    padding: 0.48rem 0.62rem;
+    border: 1px solid rgba(20, 108, 95, 0.22);
+    border-radius: 999px;
+    background: #fff;
+    color: #146c5f;
+    font: inherit;
+    font-size: 0.84rem;
+    font-weight: 900;
+    cursor: pointer;
+  }
+
+  .parking-map-duration-panel button.active,
+  .parking-map-sort-panel button.active {
+    border-color: #146c5f;
+    background: #146c5f;
+    color: #fff;
+  }
+
+  .parking-map-options-panel {
+    display: grid;
+    gap: 10px;
+    min-width: 300px;
+  }
+
+  .parking-map-popover-field {
+    display: grid;
+    gap: 5px;
+    color: #30465c;
+    font-size: 0.82rem;
+    font-weight: 850;
+  }
+
+  .parking-map-popover-field select,
+  .parking-map-popover-field input {
+    width: 100%;
+    min-height: 38px;
+    border: 1px solid #cfe0eb;
+    border-radius: 10px;
+    background: #fff;
+    color: #102033;
+    font: inherit;
+  }
+
+  .parking-map-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .parking-map-filter-grid label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 34px;
+    padding: 0.38rem 0.52rem;
+    border: 1px solid #d7e4ee;
+    border-radius: 999px;
+    background: #f8fbfd;
+    color: #20394f;
+    font-size: 0.82rem;
+    font-weight: 850;
+    white-space: nowrap;
+  }
+
+  .parking-map-research-button {
+    top: 74px !important;
+  }
+}
+
+@media (max-width: 860px) {
+  .parking-map-toolbar {
+    display: none !important;
+  }
+}
+
+/* Parking map-first PC phase 2: compact result list + detailed map popup */
+.parking-list-summary {
+  display: none;
+}
+
+.parking-map-popup__price-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: baseline;
+  margin: 0.66rem 0 0.35rem;
+  padding: 0.52rem 0.68rem;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #f2fbf8 0%, #ffffff 100%);
+}
+
+.parking-map-popup__price-row strong {
+  color: #0f766e;
+  font-size: 1.72rem;
+  font-weight: 950;
+  line-height: 1.1;
+}
+
+.parking-map-popup__price-row span {
+  color: #607085;
+  font-size: 0.86rem;
+}
+
+.parking-map-popup__reason {
+  margin: 0.2rem 0 0;
+  color: #425466;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.parking-map-popup__metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.36rem;
+  margin-top: 0.55rem;
+}
+
+.parking-map-popup__metrics .parking-metric-chip {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 28px;
+  padding: 0.34rem 0.54rem !important;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.78rem !important;
+  font-weight: 850;
+  line-height: 1.25;
+  white-space: normal;
+}
+
+@media (min-width: 861px) {
+  .parking-dashboard__results .parking-panel-head,
+  .parking-dashboard__results .parking-summary-bar,
+  .parking-dashboard__results .status-message,
+  .parking-dashboard__results .parking-data-badges {
+    display: none !important;
+  }
+
+  .parking-dashboard__results {
+    padding: 0.82rem !important;
+  }
+
+  .parking-dashboard__results .parking-result-list {
+    gap: 0.45rem !important;
+    padding: 0 !important;
+  }
+
+  .parking-dashboard__results .parking-result-card {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    gap: 0.28rem 0.55rem !important;
+    align-items: center !important;
+    min-height: 72px !important;
+    padding: 0.62rem 0.7rem !important;
+    border-radius: 14px !important;
+    box-shadow: none !important;
+    background: rgba(255, 255, 255, 0.96) !important;
+  }
+
+  .parking-dashboard__results .parking-result-card.is-pinned {
+    border-color: #0f766e !important;
+    background: linear-gradient(180deg, #ecfdf5 0%, #ffffff 100%) !important;
+  }
+
+  .parking-dashboard__results .parking-card-head {
+    display: block !important;
+    min-width: 0;
+    grid-column: 1 / 2;
+  }
+
+  .parking-dashboard__results .parking-card-head > div {
+    display: grid;
+    gap: 0.12rem;
+    min-width: 0;
+  }
+
+  .parking-dashboard__results .parking-card-head strong {
+    display: block;
+    max-width: 100%;
+    color: #102033;
+    font-size: 0.92rem !important;
+    line-height: 1.28;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .parking-dashboard__results .parking-card-head span {
+    color: #607085;
+    font-size: 0.74rem;
+    font-weight: 800;
+    line-height: 1.25;
+  }
+
+  .parking-dashboard__results .parking-card-head [data-parking-pin-clear] {
+    display: none !important;
+  }
+
+  .parking-dashboard__results .parking-list-summary {
+    display: grid;
+    grid-column: 2 / 3;
+    grid-row: 1 / 3;
+    justify-items: end;
+    gap: 0.12rem;
+    min-width: 92px;
+    text-align: right;
+  }
+
+  .parking-dashboard__results .parking-list-summary strong {
+    color: #0f766e;
+    font-size: 0.98rem;
+    font-weight: 950;
+    line-height: 1.18;
+  }
+
+  .parking-dashboard__results .parking-list-summary span {
+    max-width: 110px;
+    color: #64748b;
+    font-size: 0.7rem;
+    font-weight: 800;
+    line-height: 1.18;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .parking-dashboard__results .parking-price-row,
+  .parking-dashboard__results .parking-reason,
+  .parking-dashboard__results .parking-card-metrics,
+  .parking-dashboard__results .parking-pinned-badge,
+  .parking-dashboard__results .parking-card-actions,
+  .parking-dashboard__results .parking-card-detail {
+    display: none !important;
+  }
+
+  .parking-map-popup--detail {
+    left: auto !important;
+    right: 18px !important;
+    bottom: 18px !important;
+    width: min(420px, calc(100% - 36px)) !important;
+    padding: 1rem !important;
+    border-radius: 20px !important;
+  }
+
+  .parking-map-popup--detail .parking-map-popup__head strong {
+    font-size: 1.06rem;
+  }
+
+  .parking-map-popup--detail .parking-map-popup__meta {
+    margin-top: 0.5rem;
+  }
+}
+
+/* Parking map-first mobile phase 3: bottom-sheet result flow */
+.parking-bottom-sheet {
+  display: none !important;
+}
+
+.parking-mobile-sheet-head,
+.parking-mobile-sheet-controls,
+.parking-mobile-sheet-sort {
+  box-sizing: border-box;
+}
+
+@media (max-width: 860px) {
+  .parking-dashboard__main {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+  }
+
+  .parking-dashboard__results {
+    display: none !important;
+  }
+
+  .parking-dashboard__map {
+    order: 1;
+  }
+
+  .parking-map-card {
+    min-height: min(68vh, 620px) !important;
+    border-radius: 18px 18px 0 0 !important;
+  }
+
+  .parking-map-popup {
+    max-width: calc(100% - 24px) !important;
+  }
+
+  .parking-bottom-sheet {
+    position: sticky !important;
+    bottom: 0 !important;
+    z-index: 20 !important;
+    display: block !important;
+    max-height: min(48vh, 430px) !important;
+    margin: -0.35rem 0 0 !important;
+    padding: 0.6rem 0.74rem calc(0.9rem + env(safe-area-inset-bottom, 0px)) !important;
+    border: 1px solid rgba(139, 162, 184, 0.38) !important;
+    border-top-width: 1px !important;
+    border-radius: 22px 22px 0 0 !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+    box-shadow: 0 -16px 34px rgba(15, 35, 55, 0.18) !important;
+    overflow: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .parking-sheet-handle {
+    width: 44px;
+    height: 5px;
+    margin: 0 auto 0.72rem;
+    border-radius: 999px;
+    background: #c6d3df;
+  }
+
+  .parking-mobile-sheet-head {
+    display: flex;
+    gap: 0.65rem;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 0.62rem;
+  }
+
+  .parking-mobile-sheet-head > div {
+    display: grid;
+    min-width: 0;
+    gap: 0.14rem;
+  }
+
+  .parking-mobile-sheet-head strong {
+    color: #102033;
+    font-size: 0.98rem;
+    font-weight: 950;
+    line-height: 1.28;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .parking-mobile-sheet-head span {
+    color: #64748b;
+    font-size: 0.78rem;
+    font-weight: 750;
+    line-height: 1.35;
+  }
+
+  .parking-mobile-sheet-head .subtle-button {
+    flex: 0 0 auto;
+    min-height: 34px;
+    padding: 0.38rem 0.62rem;
+    white-space: nowrap;
+  }
+
+  .parking-mobile-sheet-controls {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.38rem;
+    margin-bottom: 0.52rem;
+  }
+
+  .parking-mobile-sheet-controls button,
+  .parking-mobile-sheet-sort button {
+    min-width: 0;
+    min-height: 36px;
+    padding: 0.42rem 0.45rem;
+    border: 1px solid #c9d9e8;
+    border-radius: 999px;
+    background: #fff;
+    color: #17304d;
+    font-size: 0.78rem;
+    font-weight: 850;
+    line-height: 1.2;
+  }
+
+  .parking-mobile-sheet-controls button:active,
+  .parking-mobile-sheet-sort button:active {
+    transform: translateY(1px);
+  }
+
+  .parking-mobile-sheet-sort {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin: 0 0 0.58rem;
+    padding: 0.48rem;
+    border: 1px solid rgba(139, 162, 184, 0.28);
+    border-radius: 16px;
+    background: #f8fbfd;
+  }
+
+  .parking-mobile-sheet-sort[hidden] {
+    display: none !important;
+  }
+
+  .parking-mobile-sheet-sort button {
+    flex: 1 1 auto;
+    width: auto;
+  }
+
+  .parking-mobile-sheet-sort button.active {
+    border-color: #146c5f;
+    background: #e7f5f1;
+    color: #0f594f;
+  }
+
+  .parking-mobile-results {
+    display: grid !important;
+    gap: 0.62rem !important;
+    padding-bottom: 0.2rem;
+  }
+
+  .parking-mobile-results .parking-result-card {
+    padding: 0.82rem !important;
+    border-radius: 16px !important;
+    gap: 0.54rem !important;
+    box-shadow: none !important;
+  }
+
+  .parking-mobile-results .parking-price-row {
+    margin: 0.08rem 0 0 !important;
+    padding: 0.44rem 0.62rem !important;
+  }
+
+  .parking-mobile-results .parking-card-metrics {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.32rem !important;
+  }
+
+  .parking-mobile-results .parking-metric-chip {
+    width: fit-content !important;
+    min-height: 28px !important;
+    padding: 0.34rem 0.5rem !important;
+    border-radius: 999px !important;
+    font-size: 0.76rem !important;
+  }
+}
+
+/* Parking map-first phase 3 design polish: PC toolbar fit + mobile map/bottom-sheet balance */
+@media (min-width: 861px) {
+  .parking-map-toolbar {
+    grid-template-columns: minmax(280px, 520px) minmax(0, 1fr) !important;
+    align-items: start !important;
+  }
+
+  .parking-map-toolbar__actions {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .parking-map-toolbar__button {
+    white-space: nowrap !important;
+  }
+
+  .parking-map-popup--detail .parking-map-popup__actions,
+  .parking-map-popup__actions {
+    flex-wrap: wrap !important;
+    gap: 0.45rem !important;
+  }
+}
+
+@media (max-width: 860px) {
+  .parking-dashboard__map {
+    gap: 0 !important;
+    min-height: 0 !important;
+  }
+
+  .parking-dashboard__map .parking-map-card,
+  .parking-map-card {
+    height: clamp(360px, 54svh, 520px) !important;
+    min-height: clamp(360px, 54svh, 520px) !important;
+    border-radius: 18px 18px 0 0 !important;
+  }
+
+  .parking-bottom-sheet {
+    margin-top: -0.65rem !important;
+    max-height: min(46svh, 400px) !important;
+    border-radius: 20px 20px 0 0 !important;
+  }
+
+  .parking-mobile-sheet-head {
+    align-items: center !important;
+  }
+
+  .parking-mobile-sheet-head span {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  .parking-mobile-sheet-controls button,
+  .parking-mobile-sheet-sort button {
+    white-space: nowrap !important;
+  }
+
+  .parking-mobile-results .parking-result-card {
+    margin: 0 !important;
+  }
+
+  .parking-mobile-results .parking-card-actions {
+    gap: 0.45rem !important;
+  }
+
+  .parking-map-legal {
+    margin-top: 0.75rem !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .parking-dashboard__map .parking-map-card,
+  .parking-map-card {
+    height: clamp(340px, 52svh, 460px) !important;
+    min-height: clamp(340px, 52svh, 460px) !important;
+  }
+
+  .parking-bottom-sheet {
+    max-height: min(48svh, 390px) !important;
+    padding-left: 0.68rem !important;
+    padding-right: 0.68rem !important;
+  }
+}
