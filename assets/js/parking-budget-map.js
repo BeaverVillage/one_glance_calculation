@@ -267,25 +267,16 @@ function setupMobileBottomSheet(els) {
   };
 
   const lockPageScroll = () => {
+    // Do not lock body/html with overflow:hidden or position:fixed on mobile Safari.
+    // Those techniques can make the whole page jump to the top during sheet dragging.
+    // The handle owns the vertical gesture through touch-action:none + passive:false move handlers instead.
     scrollLockY = window.scrollY || window.pageYOffset || 0;
-    document.documentElement.classList.add("parking-sheet-dragging-page");
-    document.body.classList.add("parking-sheet-dragging-page");
-    document.body.style.position = "fixed";
-    document.body.style.top = `-${scrollLockY}px`;
-    document.body.style.left = "0";
-    document.body.style.right = "0";
-    document.body.style.width = "100%";
+    sheet.classList.add("is-gesture-owned");
   };
 
   const unlockPageScroll = () => {
-    document.documentElement.classList.remove("parking-sheet-dragging-page");
-    document.body.classList.remove("parking-sheet-dragging-page");
-    document.body.style.position = "";
-    document.body.style.top = "";
-    document.body.style.left = "";
-    document.body.style.right = "";
-    document.body.style.width = "";
-    window.scrollTo(0, scrollLockY || 0);
+    sheet.classList.remove("is-gesture-owned");
+    scrollLockY = 0;
   };
 
   const beginDrag = (clientY, pointerId = null, target = null) => {
@@ -389,10 +380,10 @@ function setupMobileBottomSheet(els) {
   dragTargets.forEach((target) => {
     target.addEventListener("keydown", keyHandler);
     if (window.PointerEvent) {
-      target.addEventListener("pointerdown", onDragStart);
-      target.addEventListener("pointermove", onDragMove);
-      target.addEventListener("pointerup", onDragEnd);
-      target.addEventListener("pointercancel", onDragEnd);
+      target.addEventListener("pointerdown", onDragStart, { passive: false });
+      target.addEventListener("pointermove", onDragMove, { passive: false });
+      target.addEventListener("pointerup", onDragEnd, { passive: false });
+      target.addEventListener("pointercancel", onDragEnd, { passive: false });
     } else {
       target.addEventListener("touchstart", onDragStart, { passive: false });
       target.addEventListener("touchmove", onDragMove, { passive: false });
@@ -401,7 +392,15 @@ function setupMobileBottomSheet(els) {
     }
   });
 
-  window.addEventListener("resize", () => setMobileSheetState(els, modeFromSheet()));
+  let lastViewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
+  window.addEventListener("resize", () => {
+    if (dragging) return;
+    const nextWidth = window.innerWidth || document.documentElement.clientWidth || 0;
+    // Mobile browser address bars can resize height while scrolling; do not resnap the sheet for height-only changes.
+    if (Math.abs(nextWidth - lastViewportWidth) < 12) return;
+    lastViewportWidth = nextWidth;
+    setMobileSheetState(els, modeFromSheet());
+  });
   window.addEventListener("orientationchange", () => window.setTimeout(() => setMobileSheetState(els, modeFromSheet()), 220));
   setMobileSheetState(els, "closed");
 }
