@@ -28,7 +28,14 @@ export function initRentVsJeonseCalculator(root = document) {
     apiStatus: root.querySelector('#rent-market-status'),
     apiSummary: root.querySelector('#rent-market-summary'),
     apiBody: root.querySelector('#rent-market-body'),
-    apiUseAvg: root.querySelector('#rent-use-average')
+    apiUseAvg: root.querySelector('#rent-use-average'),
+    placeQuery: root.querySelector('#rent-place-query'),
+    placeSearch: root.querySelector('#rent-place-search'),
+    placeResults: root.querySelector('#rent-place-results'),
+    selectedRegion: root.querySelector('#rent-selected-region'),
+    lawdCd: root.querySelector('#lawd-cd'),
+    dealYmd: root.querySelector('#deal-ymd'),
+    aptName: root.querySelector('#apt-name')
   };
 
   const update = () => {
@@ -48,6 +55,17 @@ export function initRentVsJeonseCalculator(root = document) {
     els.apiForm.addEventListener('submit', async (event) => {
       event.preventDefault();
       await fetchMarketData(root, els);
+    });
+  }
+
+  if (els.placeSearch && els.placeQuery) {
+    els.placeSearch.addEventListener('click', async () => {
+      await fetchPlaceCandidates(root, els);
+    });
+    els.placeQuery.addEventListener('keydown', async (event) => {
+      if (event.key !== 'Enter') return;
+      event.preventDefault();
+      await fetchPlaceCandidates(root, els);
     });
   }
 }
@@ -206,13 +224,88 @@ function renderOptionDetail(label, option, months) {
   </article>`;
 }
 
+
+async function fetchPlaceCandidates(root, els) {
+  const query = String(els.placeQuery?.value || '').trim();
+  if (!query) {
+    setPlaceStatus(els, '아파트명이나 지역명을 입력해 주세요.');
+    return;
+  }
+  setPlaceStatus(els, '카카오 장소 검색 중입니다.');
+  if (els.placeSearch) els.placeSearch.disabled = true;
+  try {
+    const response = await fetch(`/api/real-estate/place-search?q=${encodeURIComponent(query)}&size=8`);
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || '장소 검색 실패');
+    renderPlaceCandidates(root, els, data.items || []);
+  } catch (error) {
+    setPlaceStatus(els, error.message || '장소 검색에 실패했습니다.');
+  } finally {
+    if (els.placeSearch) els.placeSearch.disabled = false;
+  }
+}
+
+function renderPlaceCandidates(root, els, items) {
+  if (!els.placeResults) return;
+  if (!items.length) {
+    setPlaceStatus(els, '검색 결과가 없습니다. 아파트명이나 지역명을 다르게 입력해 보세요.');
+    return;
+  }
+  els.placeResults.innerHTML = items.map((item, index) => `
+    <button class="rent-place-result" type="button" data-place-index="${index}">
+      <strong>${escapeHtml(item.name || '이름 없음')}</strong>
+      <span>${escapeHtml(item.address || '주소 정보 없음')}</span>
+      ${item.category ? `<em>${escapeHtml(item.category)}</em>` : ''}
+    </button>
+  `).join('');
+  els.placeResults.querySelectorAll('[data-place-index]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const item = items[Number(button.dataset.placeIndex)];
+      await selectPlaceCandidate(root, els, item);
+    });
+  });
+  if (els.apiStatus) els.apiStatus.textContent = '검색 결과에서 아파트나 지역을 선택해 주세요.';
+}
+
+async function selectPlaceCandidate(root, els, item) {
+  if (!item || !Number.isFinite(Number(item.lat)) || !Number.isFinite(Number(item.lng))) {
+    setPlaceStatus(els, '선택한 장소의 좌표를 확인할 수 없습니다.');
+    return;
+  }
+  setPlaceStatus(els, '선택한 위치의 법정동코드를 확인하는 중입니다.');
+  try {
+    const params = new URLSearchParams({ lat: String(item.lat), lng: String(item.lng) });
+    const response = await fetch(`/api/real-estate/region-code?${params.toString()}`);
+    const data = await response.json();
+    if (!response.ok || !data.ok) throw new Error(data.error || '법정동 코드 변환 실패');
+    if (els.lawdCd) els.lawdCd.value = data.lawdCd || '';
+    if (els.selectedRegion) {
+      const regionLabel = [data.region1, data.region2, data.region3].filter(Boolean).join(' ');
+      els.selectedRegion.textContent = `${regionLabel || '선택 지역'} · 법정동코드 ${data.lawdCd} 자동 적용`;
+    }
+    if (els.placeResults) els.placeResults.innerHTML = '';
+    if (els.apiStatus) els.apiStatus.textContent = '지역이 선택되었습니다. 계약년월을 입력하고 실거래가를 조회하세요.';
+  } catch (error) {
+    setPlaceStatus(els, error.message || '법정동 코드 확인에 실패했습니다.');
+  }
+}
+
+function setPlaceStatus(els, message) {
+  if (els.apiStatus) els.apiStatus.textContent = message;
+  if (els.placeResults) els.placeResults.innerHTML = '';
+}
+
 async function fetchMarketData(root, els) {
   const form = els.apiForm;
   const lawdCd = String(form.elements.lawdCd.value || '').replace(/\D/g, '').slice(0, 5);
   const dealYmd = String(form.elements.dealYmd.value || '').replace(/\D/g, '').slice(0, 6);
   const aptName = String(form.elements.aptName.value || '').trim();
-  if (lawdCd.length !== 5 || dealYmd.length !== 6) {
-    els.apiStatus.textContent = '법정동코드 5자리와 계약년월 6자리를 입력해 주세요.';
+  if (lawdCd.length !== 5) {
+    els.apiStatus.textContent = '아파트/지역을 검색하고 결과를 선택해 주세요.';
+    return;
+  }
+  if (dealYmd.length !== 6) {
+    els.apiStatus.textContent = '계약년월 6자리를 입력해 주세요. 예: 202605';
     return;
   }
   els.apiStatus.textContent = '실거래가 자료를 조회하는 중입니다.';

@@ -8821,6 +8821,69 @@ body {
   background: var(--surface-soft);
 }
 
+.rent-form-section .field-row,
+.rent-market-form .field-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.rent-place-search-box {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.rent-place-search-box .subtle-button {
+  min-height: 42px;
+  white-space: nowrap;
+}
+
+.rent-selected-region {
+  margin: 4px 0 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(20, 108, 95, 0.2);
+  border-radius: 999px;
+  background: rgba(20, 108, 95, 0.06);
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.rent-place-results {
+  display: grid;
+  gap: 8px;
+  margin: 10px 0 12px;
+}
+
+.rent-place-result {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.rent-place-result:hover {
+  border-color: rgba(20, 108, 95, 0.45);
+  background: rgba(20, 108, 95, 0.05);
+}
+
+.rent-place-result strong {
+  font-size: 0.95rem;
+}
+
+.rent-place-result span,
+.rent-place-result em {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-style: normal;
+}
+
 .rent-market-actions .primary-button {
   margin-top: 0;
 }
@@ -8854,6 +8917,10 @@ body {
   .rent-market-form,
   .rent-detail-card {
     padding: 12px;
+  }
+
+  .rent-place-search-box {
+    grid-template-columns: 1fr;
   }
 
   .rent-use-average {
