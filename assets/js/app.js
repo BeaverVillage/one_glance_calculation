@@ -128,7 +128,7 @@ const els = {};
 async function initApp() {
   initResponsiveNav();
   initToolDrawer();
-  initAffiliateAds();
+  // AdSense review mode: affiliate ads are disabled until approval.
   initCalculatorClickRanking();
   initScientificCalculator();
   initMilitarySavingsCalculator();
@@ -205,71 +205,6 @@ function initResponsiveNav() {
 
   applyNav();
   mobileQuery.addEventListener("change", applyNav);
-}
-
-function initAffiliateAds() {
-  if (document.querySelector(".affiliate-ad")) return;
-
-  const desktopCoupangWidget = createCoupangWidget({
-    id: 997238,
-    slot: "desktop",
-    width: 728,
-    height: 90
-  });
-  const mobileCoupangWidget = createCoupangWidget({
-    id: 997235,
-    slot: "mobile",
-    width: 320,
-    height: 50
-  });
-
-  const compactSection = document.querySelector(".content-band.compact");
-  if (compactSection) {
-    const desktopAdBand = document.createElement("section");
-    desktopAdBand.className = "affiliate-ad-band desktop-affiliate-ad";
-    desktopAdBand.setAttribute("aria-label", "광고");
-    desktopAdBand.innerHTML = `
-      <div class="container">
-        <div class="affiliate-ad-note">이 페이지는 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</div>
-        ${desktopCoupangWidget}
-      </div>
-    `;
-    const footer = document.querySelector(".site-footer");
-    if (footer) {
-      footer.before(desktopAdBand);
-    } else {
-      document.body.append(desktopAdBand);
-    }
-  }
-
-  const mobileAd = document.createElement("aside");
-  mobileAd.className = "mobile-affiliate-ad";
-  mobileAd.setAttribute("aria-label", "하단 광고");
-  mobileAd.innerHTML = `
-    <div class="mobile-affiliate-label">이 페이지는 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.</div>
-    ${mobileCoupangWidget}
-  `;
-  document.body.append(mobileAd);
-}
-
-function createCoupangWidget({ id, slot, width, height }) {
-  const widgetUrl = `https://ads-partners.coupang.com/widgets.html?id=${id}&template=carousel&trackingCode=AF5055363&width=${width}&height=${height}&tsource=&tag=js`;
-
-  return `
-    <iframe
-      class="affiliate-ad coupang-widget"
-      data-coupang-slot="${slot}"
-      data-coupang-id="${id}"
-      title="쿠팡 파트너스 광고"
-      width="${width}"
-      height="${height}"
-      loading="lazy"
-      referrerpolicy="unsafe-url"
-      scrolling="no"
-      aria-label="쿠팡 파트너스 광고"
-      src="${widgetUrl}"
-    ></iframe>
-  `;
 }
 
 function initToolDrawer() {

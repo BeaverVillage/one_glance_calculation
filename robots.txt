@@ -1,4 +1,11 @@
 User-agent: *
 Allow: /
+Disallow: /tools/
+Disallow: /docs/
+Disallow: /data/
+Disallow: /.git/
+Disallow: /.env
+Disallow: /.env.example
+Disallow: /COMPLIANCE_CHECK.md
 
 Sitemap: https://hannuncalc.com/sitemap.xml

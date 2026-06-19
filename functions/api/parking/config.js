@@ -13,6 +13,6 @@ export async function onRequestGet({ env }) {
     hasHolidayApiKey: Boolean(env.HOLIDAY_API_KEY || env.PUBLIC_DATA_API_KEY),
     message: kakaoMapJsKey
       ? 'Kakao Maps JavaScript key is configured. If the map still fails, check Kakao Developers Web platform domains.'
-      : '카카오맵 키가 없어 샘플 지도 계산 모드로 표시합니다.'
+      : '카카오맵 키가 없어 기본 지도 표시 모드로 표시합니다.'
   });
 }

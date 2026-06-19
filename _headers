@@ -12,3 +12,15 @@
 
 /assets/js/*
   Cache-Control: no-cache, max-age=0, must-revalidate
+
+/tools/*
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/docs/*
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/data/*
+  X-Robots-Tag: noindex, nofollow, noarchive
+
+/*.md
+  X-Robots-Tag: noindex, nofollow, noarchive
