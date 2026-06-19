@@ -11319,3 +11319,104 @@ body {
   color: var(--muted);
   line-height: 1.45;
 }
+
+
+/* Jeonse risk API stability phase 2: candidate apartment suggestions */
+.jeonse-candidate-card {
+  border-style: dashed;
+  background: #fffdf7;
+}
+
+.jeonse-candidate-card .jeonse-trade-card-body strong {
+  color: var(--ink);
+}
+
+.jeonse-use-candidate-button {
+  white-space: nowrap;
+}
+
+.jeonse-candidate-card-list + .fine-print {
+  margin-top: 2px;
+}
+
+@media (max-width: 820px) {
+  .jeonse-use-candidate-button {
+    width: 100%;
+  }
+}
+
+/* Jeonse risk API stability phase 4: guided lookup actions */
+.jeonse-query-examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.jeonse-query-examples span {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.jeonse-query-examples button,
+.jeonse-lookup-action-button {
+  border: 1px solid rgba(0, 128, 112, 0.24);
+  background: rgba(0, 128, 112, 0.06);
+  color: var(--green);
+  border-radius: 999px;
+  padding: 7px 10px;
+  font-size: 0.88rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.jeonse-query-examples button:hover,
+.jeonse-lookup-action-button:hover {
+  border-color: rgba(0, 128, 112, 0.42);
+  background: rgba(0, 128, 112, 0.1);
+}
+
+.jeonse-lookup-action-panel {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid rgba(245, 158, 11, 0.24);
+  border-radius: 14px;
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.jeonse-lookup-action-panel > strong {
+  color: var(--ink);
+}
+
+.jeonse-lookup-action-list {
+  display: grid;
+  gap: 8px;
+}
+
+.jeonse-lookup-action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 640px) {
+  .jeonse-query-examples {
+    align-items: stretch;
+  }
+
+  .jeonse-query-examples span {
+    flex-basis: 100%;
+  }
+
+  .jeonse-query-examples button,
+  .jeonse-lookup-action-button {
+    width: 100%;
+  }
+
+  .jeonse-lookup-action-buttons {
+    display: grid;
+  }
+}

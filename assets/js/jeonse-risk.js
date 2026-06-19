@@ -126,7 +126,35 @@ export function initJeonseRiskCalculator(root = document) {
     });
   });
 
+  form.addEventListener("click", (event) => {
+    const exampleButton = event.target.closest("[data-jeonse-fill-query]");
+    if (!exampleButton) return;
+    els.tradeAddress.value = exampleButton.dataset.address || "";
+    els.tradeAptName.value = exampleButton.dataset.aptName || "";
+    showTradeMessage(els, "예시 검색어를 입력했습니다. 필요하면 지역과 단지명을 수정한 뒤 조회해 주세요.", "default");
+    clearTradeResults(els);
+    els.tradeAddress.focus({ preventScroll: true });
+  });
+
   els.tradeResults.addEventListener("click", (event) => {
+    const expandButton = event.target.closest("[data-jeonse-expand-months]");
+    if (expandButton) {
+      applyTradeMonthExpansion(els, expandButton);
+      return;
+    }
+
+    const focusButton = event.target.closest("[data-jeonse-focus-input]");
+    if (focusButton) {
+      focusTradeInput(els, focusButton.dataset.jeonseFocusInput);
+      return;
+    }
+
+    const candidateButton = event.target.closest("[data-jeonse-use-candidate]");
+    if (candidateButton) {
+      applyAptCandidate(els, candidateButton);
+      return;
+    }
+
     const button = event.target.closest("[data-jeonse-use-trade]");
     if (!button) return;
     applyTradePrice(els, button);
@@ -410,7 +438,7 @@ function clampNumber(value, min, max, fallback) {
   return Math.min(max, Math.max(min, Math.round(number)));
 }
 
-const TRADE_LOOKUP_DEFAULT_MESSAGE = "실거래가 조회 결과는 기준 매매가격 입력을 돕는 참고 정보입니다. 조회 결과가 없으면 매매가격을 직접 입력해 계산할 수 있습니다.";
+const TRADE_LOOKUP_DEFAULT_MESSAGE = "실거래가 조회 결과는 기준 매매가격 입력을 돕는 참고 정보입니다. 주소칸에 지역과 단지명을 함께 입력해도 되고, 조회 결과가 없으면 매매가격을 직접 입력해 계산할 수 있습니다.";
 const MAX_RENDERED_TRADES = 25;
 const TRADE_LOOKUP_TIMEOUT_MS = 12000;
 let activeTradeLookupController = null;
@@ -418,17 +446,26 @@ let activeTradeLookupController = null;
 async function lookupAptTrades(els) {
   const addressQuery = String(els.tradeAddress.value || "").trim();
   const aptName = String(els.tradeAptName.value || "").trim();
-  const months = clampNumber(els.tradeMonths.value, 1, 12, 12);
+  const months = clampNumber(els.tradeMonths.value, 1, 12, 3);
+  const combinedQuery = [addressQuery, aptName].filter(Boolean).join(" ").trim();
 
-  if (!addressQuery) {
-    showTradeMessage(els, "주소 또는 동 이름을 입력해 주세요. 예: 서울 강서구 화곡동", "error");
+  if (!combinedQuery) {
+    showTradeMessage(els, "주소 또는 동 이름과 단지명을 입력해 주세요. 예: 세종 아름동 범지기마을3단지", "error");
     clearTradeResults(els);
     els.tradeAddress.focus();
     return;
   }
 
-  if (!aptName) {
-    showTradeMessage(els, "아파트명을 입력해 주세요. 단지명 일부만 입력해도 검색할 수 있습니다.", "error");
+  if (!addressQuery) {
+    showTradeMessage(els, "주소칸에 지역과 단지명을 함께 입력해도 됩니다. 예: 세종 아름동 범지기마을3단지", "error");
+    clearTradeResults(els);
+    els.tradeAddress.focus();
+    return;
+  }
+
+  const looksLikeCombinedQuery = /\d+단지|마을|아파트|자이|래미안|푸르지오|힐스테이트|아이파크|센트럴|파크|타운/i.test(addressQuery);
+  if (!aptName && !looksLikeCombinedQuery) {
+    showTradeMessage(els, "아파트명을 입력하거나 주소칸에 지역과 단지명을 함께 입력해 주세요. 예: 세종 아름동 범지기마을3단지", "error");
     clearTradeResults(els);
     els.tradeAptName.focus();
     return;
@@ -440,40 +477,51 @@ async function lookupAptTrades(els) {
 
   setTradeLoading(els, true);
   clearTradeResults(els);
-  showTradeMessage(els, "주소를 확인하고 최근 매매 실거래가를 조회하는 중입니다. 조회가 지연되면 매매가격을 직접 입력해도 됩니다.", "loading");
+  showTradeMessage(els, "주소와 단지명을 해석하고 최근 매매 실거래가를 조회하는 중입니다. 조회가 지연되면 매매가격을 직접 입력해도 됩니다.", "loading");
 
   try {
-    const addressData = await fetchJson(`/api/jeonse-risk/address-search?query=${encodeURIComponent(addressQuery)}&size=5`, {
-      signal: controller.signal,
-      timeoutMs: TRADE_LOOKUP_TIMEOUT_MS
-    });
-    const addressItem = selectAddressItem(addressData.items);
-
-    if (!addressItem?.lawdCd) {
-      showTradeMessage(els, "주소를 찾지 못했습니다. 시·군·구와 동 이름을 함께 입력해 주세요. 매매가격 직접 입력도 가능합니다.", "error");
-      return;
-    }
-
-    const tradeUrl = `/api/jeonse-risk/apt-trades?lawdCd=${encodeURIComponent(addressItem.lawdCd)}&aptName=${encodeURIComponent(aptName)}&months=${months}`;
+    const tradeUrl = buildTradeSearchUrl({ addressQuery, aptName, months });
     const tradeData = await fetchJson(tradeUrl, {
       signal: controller.signal,
       timeoutMs: TRADE_LOOKUP_TIMEOUT_MS
     });
+    const addressItem = tradeData.addressItem || selectAddressItem(tradeData.addressCandidates) || { label: addressQuery };
+    const resolvedAptName = tradeData.query?.inferredAptName || aptName || combinedQuery;
     const items = Array.isArray(tradeData.items) ? tradeData.items : [];
+    const candidates = Array.isArray(tradeData.candidates) ? tradeData.candidates : [];
 
     if (!items.length) {
-      showTradeMessage(
-        els,
-        tradeData.noDataMessage || `${addressItem.label || addressQuery} 기준 최근 ${months}개월 내 입력한 아파트명과 일치하는 매매 실거래가를 찾지 못했습니다. 기간을 늘리거나 아파트명을 줄여 조회해 보세요. 매매가격을 직접 입력해 계산할 수도 있습니다.`,
-        "error"
-      );
-      clearTradeResults(els);
+      if (candidates.length) {
+        renderTradeCandidateResults(els, {
+          addressItem,
+          aptName: resolvedAptName,
+          months,
+          candidates,
+          noDataMessage: tradeData.noDataMessage || "정확히 일치하는 거래는 없지만 비슷한 단지 후보를 찾았습니다."
+        });
+        showTradeMessage(
+          els,
+          tradeData.noDataMessage || `${addressItem.label || addressQuery} 기준으로 비슷한 단지 후보 ${candidates.length}개를 찾았습니다. 찾는 단지를 선택해 다시 조회해 주세요.`,
+          "warning"
+        );
+        return;
+      }
+
+      const noDataMessage = tradeData.noDataMessage || `${addressItem.label || addressQuery} 기준 최근 ${months}개월 내 입력 조건과 일치하는 매매 실거래가를 찾지 못했습니다. 기간을 늘리거나 단지명을 더 구체적으로 입력해 보세요. 매매가격을 직접 입력해 계산할 수도 있습니다.`;
+      renderTradeNoDataActions(els, {
+        title: "일치하는 최근 매매 거래가 없습니다",
+        message: noDataMessage,
+        months,
+        addressQuery,
+        aptName: resolvedAptName
+      });
+      showTradeMessage(els, noDataMessage, "warning");
       return;
     }
 
     renderTradeResults(els, {
       addressItem,
-      aptName,
+      aptName: resolvedAptName,
       months,
       count: tradeData.count || items.length,
       failedMonths: Array.isArray(tradeData.failedMonths) ? tradeData.failedMonths : [],
@@ -494,14 +542,30 @@ async function lookupAptTrades(els) {
     if (error?.name === "AbortError" && controller.signal.aborted) {
       return;
     }
-    showTradeMessage(els, getLookupErrorMessage(error), "error");
-    clearTradeResults(els);
+    const message = getLookupErrorMessage(error);
+    showTradeMessage(els, message, "warning");
+    renderTradeNoDataActions(els, {
+      title: "실거래가 보조 조회가 지연되고 있습니다",
+      message,
+      months,
+      addressQuery,
+      aptName: aptName || combinedQuery
+    });
   } finally {
     if (activeTradeLookupController === controller) {
       activeTradeLookupController = null;
       setTradeLoading(els, false);
     }
   }
+}
+
+function buildTradeSearchUrl({ addressQuery, aptName, months }) {
+  const params = new URLSearchParams();
+  params.set("address", addressQuery || "");
+  if (aptName) params.set("aptName", aptName);
+  params.set("query", [addressQuery, aptName].filter(Boolean).join(" "));
+  params.set("months", String(months));
+  return `/api/jeonse-risk/trade-search?${params.toString()}`;
 }
 
 async function fetchJson(url, { signal, timeoutMs = TRADE_LOOKUP_TIMEOUT_MS } = {}) {
@@ -527,11 +591,12 @@ async function fetchJson(url, { signal, timeoutMs = TRADE_LOOKUP_TIMEOUT_MS } = 
       data = null;
     }
     if (!response.ok || data?.ok === false) {
-      const message = data?.error || `조회 요청이 실패했습니다. (${response.status})`;
+      const message = data?.error || buildHttpLookupMessage(response.status);
       const error = new Error(message);
       error.status = response.status;
       error.code = data?.code || "LOOKUP_FAILED";
       error.fallback = data?.fallback || "매매가격을 직접 입력해 계산할 수 있습니다.";
+      error.noDataMessage = data?.noDataMessage || "";
       throw error;
     }
     return data || { ok: true, items: [] };
@@ -539,6 +604,16 @@ async function fetchJson(url, { signal, timeoutMs = TRADE_LOOKUP_TIMEOUT_MS } = 
     window.clearTimeout(timer);
     if (signal) signal.removeEventListener("abort", abortFromParent);
   }
+}
+
+function buildHttpLookupMessage(status) {
+  if (status >= 500) {
+    return "실거래가 보조 조회가 일시적으로 지연되고 있습니다. 조회 기간을 줄이거나 단지명을 더 구체적으로 입력해 주세요. 매매가격을 직접 입력해 계산할 수도 있습니다.";
+  }
+  if (status === 404) {
+    return "실거래가 조회 경로를 찾지 못했습니다. 매매가격을 직접 입력해 계산할 수 있습니다.";
+  }
+  return `조회 요청이 실패했습니다. 매매가격을 직접 입력해 계산할 수 있습니다.`;
 }
 
 function selectAddressItem(items) {
@@ -593,6 +668,207 @@ function renderTradeResults(els, { addressItem, aptName, months, count, failedMo
 
   els.tradeResults.append(wrapper);
   els.tradeResults.hidden = false;
+}
+
+
+function renderTradeCandidateResults(els, { addressItem, aptName, months, candidates, noDataMessage }) {
+  clearTradeResults(els);
+  const wrapper = document.createElement("div");
+  wrapper.className = "jeonse-trade-results-inner";
+
+  const heading = document.createElement("div");
+  heading.className = "jeonse-trade-results-heading";
+  const title = document.createElement("strong");
+  title.textContent = "비슷한 단지 후보";
+  const summary = document.createElement("span");
+  summary.textContent = `${addressItem.label || "선택 지역"} · ${aptName} · 최근 ${months}개월`;
+  heading.append(title, summary);
+  wrapper.append(heading);
+
+  const notice = document.createElement("p");
+  notice.className = "fine-print jeonse-trade-warning";
+  notice.textContent = noDataMessage || "정확히 일치하는 매매 실거래가는 없지만 비슷한 단지 후보를 찾았습니다. 찾는 단지를 선택해 다시 조회해 주세요.";
+  wrapper.append(notice);
+
+  const list = document.createElement("div");
+  list.className = "jeonse-trade-card-list jeonse-candidate-card-list";
+  candidates.slice(0, 10).forEach((candidate, index) => {
+    list.append(createCandidateCard(candidate, index));
+  });
+  wrapper.append(list);
+
+  wrapper.append(createLookupActionPanel({
+    message: "후보가 맞는데 거래가 보이지 않으면 조회 기간을 늘려 다시 확인해 보세요.",
+    months,
+    showAptFocus: true
+  }));
+
+  const fallbackNotice = document.createElement("p");
+  fallbackNotice.className = "fine-print";
+  fallbackNotice.textContent = "후보 단지를 선택해도 거래가 없으면 조회 기간을 6개월 또는 12개월로 늘리거나, 매매가격을 직접 입력해 계산할 수 있습니다.";
+  wrapper.append(fallbackNotice);
+
+  els.tradeResults.append(wrapper);
+  els.tradeResults.hidden = false;
+}
+
+function renderTradeNoDataActions(els, { title, message, months, addressQuery, aptName }) {
+  clearTradeResults(els);
+  const wrapper = document.createElement("div");
+  wrapper.className = "jeonse-trade-results-inner";
+
+  const panel = document.createElement("div");
+  panel.className = "jeonse-lookup-action-panel";
+
+  const heading = document.createElement("strong");
+  heading.textContent = title || "실거래가 조회 결과가 없습니다";
+
+  const copy = document.createElement("p");
+  copy.className = "fine-print";
+  copy.textContent = message || "조회 기간을 늘리거나 단지명을 더 구체적으로 입력해 보세요. 매매가격을 직접 입력해 계산할 수도 있습니다.";
+
+  panel.append(heading, copy);
+  panel.append(createLookupActionPanel({
+    message: buildLookupActionHint({ months, addressQuery, aptName }),
+    months,
+    showAptFocus: true,
+    showAddressFocus: true
+  }));
+
+  wrapper.append(panel);
+  els.tradeResults.append(wrapper);
+  els.tradeResults.hidden = false;
+}
+
+function createLookupActionPanel({ message, months, showAptFocus = false, showAddressFocus = false }) {
+  const panel = document.createElement("div");
+  panel.className = "jeonse-lookup-action-list";
+
+  const help = document.createElement("p");
+  help.className = "fine-print";
+  help.textContent = message || "아래 방법으로 다시 조회할 수 있습니다.";
+  panel.append(help);
+
+  const actions = document.createElement("div");
+  actions.className = "jeonse-lookup-action-buttons";
+
+  [6, 12].forEach((targetMonths) => {
+    if (Number(months) >= targetMonths) return;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "subtle-button jeonse-lookup-action-button";
+    button.textContent = `최근 ${targetMonths}개월로 다시 조회`;
+    button.dataset.jeonseExpandMonths = String(targetMonths);
+    actions.append(button);
+  });
+
+  if (showAptFocus) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "subtle-button jeonse-lookup-action-button";
+    button.textContent = "단지명 수정";
+    button.dataset.jeonseFocusInput = "apt";
+    actions.append(button);
+  }
+
+  if (showAddressFocus) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "subtle-button jeonse-lookup-action-button";
+    button.textContent = "주소 수정";
+    button.dataset.jeonseFocusInput = "address";
+    actions.append(button);
+  }
+
+  const manual = document.createElement("button");
+  manual.type = "button";
+  manual.className = "subtle-button jeonse-lookup-action-button";
+  manual.textContent = "매매가격 직접 입력";
+  manual.dataset.jeonseFocusInput = "market";
+  actions.append(manual);
+
+  panel.append(actions);
+  return panel;
+}
+
+function buildLookupActionHint({ months, aptName }) {
+  const parts = [];
+  if (Number(months) < 12) parts.push("거래가 드문 단지는 조회 기간을 늘리면 찾을 수 있습니다.");
+  if (aptName) parts.push("단지명은 전체 이름 또는 핵심 단어 두 개 이상을 입력하면 더 정확합니다.");
+  parts.push("조회가 계속 안 되면 매매가격을 직접 입력해 전세가율 계산을 이어갈 수 있습니다.");
+  return parts.join(" ");
+}
+
+function applyTradeMonthExpansion(els, button) {
+  const nextMonths = clampNumber(button.dataset.jeonseExpandMonths, 1, 12, 3);
+  els.tradeMonths.value = String(nextMonths);
+  showTradeMessage(els, `최근 ${nextMonths}개월 기준으로 다시 조회합니다.`, "loading");
+  lookupAptTrades(els);
+}
+
+function focusTradeInput(els, target) {
+  const map = {
+    address: els.tradeAddress,
+    apt: els.tradeAptName,
+    market: els.marketPrice
+  };
+  const input = map[target] || els.tradeAptName || els.marketPrice;
+  input.focus({ preventScroll: true });
+  if (typeof input.select === "function") input.select();
+  if (target === "market") {
+    showTradeMessage(els, "매매가격을 직접 입력해도 전세가율 계산을 계속할 수 있습니다.", "default");
+  }
+}
+
+function createCandidateCard(candidate, index) {
+  const card = document.createElement("article");
+  card.className = "jeonse-trade-card jeonse-candidate-card";
+
+  const body = document.createElement("div");
+  body.className = "jeonse-trade-card-body";
+
+  const title = document.createElement("strong");
+  title.textContent = candidate.aptName || "단지명 후보";
+
+  const location = document.createElement("span");
+  const locationParts = [candidate.umdNm, candidate.lastAmountLabel ? `최근 ${candidate.lastAmountLabel}` : ""].filter(Boolean);
+  location.textContent = locationParts.join(" · ") || "같은 지역에서 찾은 단지 후보";
+
+  const meta = document.createElement("small");
+  meta.textContent = formatCandidateMeta(candidate);
+
+  body.append(title, location, meta);
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "subtle-button jeonse-use-candidate-button";
+  button.textContent = "이 단지명으로 조회";
+  button.dataset.jeonseUseCandidate = "true";
+  button.dataset.aptName = candidate.searchValue || candidate.aptName || "";
+  button.setAttribute("aria-label", `${index + 1}번째 후보 ${candidate.aptName || "단지"}명으로 다시 조회`);
+
+  card.append(body, button);
+  return card;
+}
+
+function formatCandidateMeta(candidate) {
+  const parts = [];
+  if (candidate.lastDealDate) parts.push(`최근 거래일 ${candidate.lastDealDate.replaceAll("-", ".")}`);
+  if (candidate.dealCount) parts.push(`표시 기간 내 ${candidate.dealCount}건`);
+  if (Array.isArray(candidate.areaLabels) && candidate.areaLabels.length) parts.push(`면적 ${candidate.areaLabels.join(", ")}`);
+  if (candidate.matchScore) parts.push(`유사도 ${Math.round(candidate.matchScore)}`);
+  return parts.join(" · ") || "후보 단지를 선택하면 해당 단지명으로 다시 조회합니다.";
+}
+
+function applyAptCandidate(els, button) {
+  const aptName = String(button.dataset.aptName || "").trim();
+  if (!aptName) {
+    showTradeMessage(els, "선택한 후보 단지명을 읽지 못했습니다. 단지명을 직접 입력해 주세요.", "error");
+    return;
+  }
+  els.tradeAptName.value = aptName;
+  showTradeMessage(els, `${aptName} 단지명으로 다시 조회합니다.`, "loading");
+  lookupAptTrades(els);
 }
 
 function createTradeStats(stats) {
@@ -756,7 +1032,7 @@ function clearTradeLookup(els) {
   clearSelectedTrade(els, { keepMarketPrice: true });
   if (els.tradeAddress) els.tradeAddress.value = "";
   if (els.tradeAptName) els.tradeAptName.value = "";
-  if (els.tradeMonths) els.tradeMonths.value = "12";
+  if (els.tradeMonths) els.tradeMonths.value = "3";
   showTradeMessage(els, TRADE_LOOKUP_DEFAULT_MESSAGE, "default");
   clearTradeResults(els);
   setTradeLoading(els, false);
@@ -768,17 +1044,32 @@ function clearTradeResults(els) {
 }
 
 function getLookupErrorMessage(error) {
-  if (error?.name === "AbortError") return "실거래가 조회 응답이 지연되고 있습니다. 잠시 후 다시 시도하거나 매매가격을 직접 입력해 계산해 주세요.";
-  const message = String(error?.message || "");
+  const fallback = error?.fallback || "매매가격을 직접 입력해 계산할 수 있습니다.";
+  const message = String(error?.message || "").trim();
   const code = String(error?.code || "");
-  if (code === "MISSING_KAKAO_KEY" || message.includes("KAKAO_REST_API_KEY")) return "주소 검색 설정을 확인하는 중 문제가 발생했습니다. 매매가격을 직접 입력해 계산할 수 있습니다.";
-  if (code === "MISSING_PUBLIC_DATA_KEY" || message.includes("MOLIT_RTMS_API_KEY") || message.includes("PUBLIC_DATA_API_KEY")) return "실거래가 조회 설정을 확인하는 중 문제가 발생했습니다. 매매가격을 직접 입력해 계산할 수 있습니다.";
-  if (code.includes("TIMEOUT") || message.includes("지연")) return "실거래가 조회 응답이 지연되고 있습니다. 잠시 후 다시 시도하거나 매매가격을 직접 입력해 계산해 주세요.";
-  if (code === "RTMS_ALL_MONTHS_FAILED") return "최근 매매 실거래가 조회가 일시적으로 실패했습니다. 잠시 후 다시 시도하거나 매매가격을 직접 입력해 계산할 수 있습니다.";
-  if (message.includes("주소")) return message;
-  if (message.includes("실거래가") || message.includes("조회")) return `${message} 매매가격을 직접 입력해 계산할 수 있습니다.`;
-  return "실거래가 조회 중 문제가 발생했습니다. 잠시 후 다시 시도하거나 매매가격을 직접 입력해 계산해 주세요.";
+  const status = Number(error?.status || 0);
+
+  if (error?.name === "AbortError") {
+    return "실거래가 조회 응답이 지연되고 있습니다. 조회 기간을 줄이거나 잠시 후 다시 시도해 주세요. " + fallback;
+  }
+
+  if (code === "MISSING_KAKAO_KEY" || message.includes("KAKAO_REST_API_KEY")) {
+    return "주소 검색 설정을 확인하는 중 문제가 발생했습니다. " + fallback;
+  }
+
+  if (code === "MISSING_PUBLIC_DATA_KEY" || message.includes("MOLIT_RTMS_API_KEY") || message.includes("PUBLIC_DATA_API_KEY")) {
+    return "실거래가 조회 설정을 확인하는 중 문제가 발생했습니다. " + fallback;
+  }
+
+  if (code === "RTMS_ALL_MONTHS_FAILED" || code === "RTMS_TIMEOUT" || status >= 500 || code.includes("TIMEOUT")) {
+    return (message || "실거래가 보조 조회가 일시적으로 실패했습니다.") + " 조회 기간을 3개월로 줄이거나 단지명을 더 구체적으로 입력해 주세요. " + fallback;
+  }
+
+  if (message.includes("주소")) return message + " " + fallback;
+  if (message.includes("실거래가") || message.includes("조회")) return `${message} ${fallback}`;
+  return "실거래가 조회 중 문제가 발생했습니다. 조회 기간을 줄이거나 단지명을 더 구체적으로 입력해 주세요. " + fallback;
 }
+
 
 function bootJeonseRiskCalculator() {
   initJeonseRiskCalculator();

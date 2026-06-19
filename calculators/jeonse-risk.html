@@ -11,10 +11,16 @@
     </script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
+    <link rel="shortcut icon" href="/favicon.ico" sizes="any">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-    <link rel="shortcut icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
     <meta name="theme-color" content="#146c5f">
     <meta name="google-adsense-account" content="ca-pub-6340743169950430">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6340743169950430"
+         crossorigin="anonymous"></script>
     <meta name="msvalidate.01" content="71220435128A45EF179793784E9AFC3E">
     <meta name="naver-site-verification" content="0f429adf1d8d3475017f3824ee96355074bcfd23">
     <meta name="description" content="매매가격, 전세보증금, 선순위채권, 예상 낙찰가율을 입력해 전세가율, 총 부담 비율, 보증 기준 참고 한도, 예상 회수 가능 금액과 전세 보증금 위험도를 참고용으로 확인합니다.">
@@ -127,7 +133,7 @@
 }</script>
     <link rel="stylesheet" href="../assets/css/base.css">
     <link rel="stylesheet" href="../assets/css/layout.css">
-    <link rel="stylesheet" href="../assets/css/components.css?v=20260619-jeonse-api-final">
+    <link rel="stylesheet" href="../assets/css/components.css?v=20260619-jeonse-api-stability4">
   </head>
   <body>
     <header class="site-header"><a class="brand" href="../index.html"><span class="brand-mark">한</span><span><strong>한눈계산</strong><small>생활 계산기</small></span></a><nav class="site-nav" aria-label="주요 메뉴"><a href="../index.html#calculators" data-tool-drawer>다른 계산기</a><a href="../index.html#how-to">사용 방법</a><a href="../index.html#faq">질문</a><a href="../about.html">소개</a><a href="../contact.html">문의</a></nav></header>
@@ -161,34 +167,40 @@
                     <h3 id="jeonse-trade-lookup-title">최근 아파트 매매 실거래가로 매매가격 채우기</h3>
                   </div>
                 </div>
-                <p class="field-help">주소와 아파트명을 입력하면 공공데이터 기반 최근 매매 실거래가를 조회하고, 선택한 거래금액을 기준 매매가격에 반영할 수 있습니다.</p>
+                <p class="field-help">주소와 아파트명을 입력하면 공공데이터 기반 최근 매매 실거래가를 조회하고, 선택한 거래금액을 기준 매매가격에 반영할 수 있습니다. 주소칸에 지역과 단지명을 한 번에 입력해도 됩니다.</p>
+
+                <div class="jeonse-query-examples" aria-label="실거래가 조회 입력 예시">
+                  <span>입력 예시</span>
+                  <button type="button" data-jeonse-fill-query data-address="세종 아름동 범지기마을3단지" data-apt-name="">세종 아름동 범지기마을3단지</button>
+                  <button type="button" data-jeonse-fill-query data-address="세종특별자치시 아름동" data-apt-name="범지기 3단지">주소와 단지명 나눠 입력</button>
+                </div>
 
                 <div class="jeonse-trade-lookup-grid">
                   <div class="field">
                     <label for="jeonse-address-query">주소 또는 동 이름</label>
-                    <input id="jeonse-address-query" type="search" autocomplete="street-address" placeholder="예: 서울 강서구 화곡동">
-                    <p class="field-help">시·군·구와 동 이름을 함께 입력하면 더 정확합니다.</p>
+                    <input id="jeonse-address-query" type="search" autocomplete="street-address" placeholder="예: 세종 아름동 또는 세종 아름동 범지기마을3단지">
+                    <p class="field-help">시·군·구와 동 이름을 함께 입력하면 더 정확합니다. 예: 세종 아름동, 서울 강서구 화곡동. 단지명까지 한 번에 적어도 됩니다.</p>
                   </div>
                   <div class="field">
-                    <label for="jeonse-apt-name">아파트명</label>
-                    <input id="jeonse-apt-name" type="search" autocomplete="off" placeholder="예: 우장산아이파크">
-                    <p class="field-help">단지명 일부만 입력해도 검색할 수 있습니다.</p>
+                    <label for="jeonse-apt-name">아파트명 또는 단지명 일부</label>
+                    <input id="jeonse-apt-name" type="search" autocomplete="off" placeholder="예: 범지기마을3단지, 범지기 3단지">
+                    <p class="field-help">정확한 단지명을 몰라도 범지기 3단지처럼 핵심 단어를 입력할 수 있습니다. 주소칸에 단지명까지 함께 적은 경우 이 칸은 비워도 됩니다.</p>
                   </div>
                   <div class="field">
                     <label for="jeonse-trade-months">조회 기간</label>
                     <select id="jeonse-trade-months">
-                      <option value="3">최근 3개월</option>
+                      <option value="3" selected>최근 3개월</option>
                       <option value="6">최근 6개월</option>
-                      <option value="12" selected>최근 12개월</option>
+                      <option value="12">최근 12개월</option>
                     </select>
-                    <p class="field-help">거래가 없으면 기간을 늘려 조회해 보세요.</p>
+                    <p class="field-help">기본은 3개월입니다. 거래가 드문 단지는 6개월·12개월로 늘려 조회해 보세요.</p>
                   </div>
                 </div>
 
                 <div class="jeonse-trade-action-row">
                   <button id="jeonse-trade-search-button" class="subtle-button" type="button">최근 매매가 조회</button>
                 </div>
-                <p id="jeonse-trade-message" class="fine-print jeonse-trade-message" role="status" aria-live="polite">실거래가 조회 결과는 기준 매매가격 입력을 돕는 참고 정보입니다. 조회 결과가 없으면 매매가격을 직접 입력해 계산할 수 있습니다.</p>
+                <p id="jeonse-trade-message" class="fine-print jeonse-trade-message" role="status" aria-live="polite">실거래가 조회 결과는 기준 매매가격 입력을 돕는 참고 정보입니다. 조회 결과가 없으면 기간을 늘리거나 단지명을 수정할 수 있고, 매매가격을 직접 입력해 계산할 수도 있습니다.</p>
                 <div id="jeonse-trade-results" class="jeonse-trade-results" aria-live="polite" hidden></div>
                 <div id="jeonse-selected-trade" class="jeonse-selected-trade" aria-live="polite" hidden>
                   <div>
@@ -418,6 +430,6 @@
     </main>
     <footer class="site-footer"><div class="container footer-grid"><div><strong>한눈계산</strong><p>© 한눈계산. 모든 계산 결과는 참고용이며, 실제 판단은 공식 기관 기준을 확인해야 합니다.</p></div><nav aria-label="정책 메뉴"><a href="../about.html">사이트 소개</a><a href="../privacy.html">개인정보 처리방침</a><a href="../disclaimer.html">면책 고지</a><a href="../licenses.html">오픈소스 라이선스</a><a href="../contact.html">문의하기</a></nav></div></footer>
     <script type="module" src="../assets/js/app.js?v=20260619-jeonse-risk-phase5"></script>
-    <script type="module" src="../assets/js/jeonse-risk.js?v=20260619-api-final"></script>
+    <script type="module" src="../assets/js/jeonse-risk.js?v=20260619-api-stability4"></script>
   </body>
 </html>

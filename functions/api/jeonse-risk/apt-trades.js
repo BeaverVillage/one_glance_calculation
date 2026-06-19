@@ -2,9 +2,9 @@ const RTMS_APT_TRADE_ENDPOINT = 'https://apis.data.go.kr/1613000/RTMSDataSvcAptT
 const MAX_MONTHS = 12;
 const MAX_NUM_OF_ROWS = 100;
 const MAX_RESULT_ITEMS = 50;
-const REQUEST_TIMEOUT_MS = 6500;
+const REQUEST_TIMEOUT_MS = 5000;
 const CACHE_SECONDS = 21600;
-const CONCURRENT_MONTH_REQUESTS = 4;
+const CONCURRENT_MONTH_REQUESTS = 2;
 
 class UpstreamApiError extends Error {
   constructor(message, code = 'RTMS_UPSTREAM_ERROR') {
@@ -26,28 +26,30 @@ function json(data, init = {}) {
 }
 
 function error(message, status = 400, code = 'BAD_REQUEST', detail = {}) {
+  const safeStatus = status >= 500 ? 200 : status;
   return json(
     {
       ok: false,
       code,
       error: message,
+      upstreamStatus: status >= 500 ? status : undefined,
       fallback: '실거래가 조회가 되지 않아도 매매가격을 직접 입력해 전세가율을 계산할 수 있습니다.',
       ...detail
     },
-    { status, cacheControl: 'no-store' }
+    { status: safeStatus, cacheControl: 'no-store' }
   );
 }
 
 export async function onRequestGet(context) {
-  const { request, env, waitUntil } = context;
+  const { request, env = {}, waitUntil } = context || {};
   const url = new URL(request.url);
   const lawdCd = normalizeLawdCd(url.searchParams.get('lawdCd') || url.searchParams.get('LAWD_CD'));
   const aptName = normalizePublicText(url.searchParams.get('aptName') || url.searchParams.get('apt') || '');
   const normalizedAptName = normalizeText(aptName);
-  const months = clampNumber(url.searchParams.get('months'), 1, MAX_MONTHS, 12);
+  const months = clampNumber(url.searchParams.get('months'), 1, MAX_MONTHS, 3);
   const dealYmd = normalizeDealYmd(url.searchParams.get('dealYmd') || url.searchParams.get('DEAL_YMD'));
   const numOfRows = clampNumber(url.searchParams.get('numOfRows'), 10, MAX_NUM_OF_ROWS, MAX_NUM_OF_ROWS);
-  const serviceKey = env.MOLIT_RTMS_API_KEY || env.PUBLIC_DATA_API_KEY;
+  const serviceKey = normalizeServiceKey(env.MOLIT_RTMS_API_KEY || env.PUBLIC_DATA_API_KEY || '');
 
   if (!serviceKey) return error('실거래가 조회 설정을 확인하는 중 문제가 발생했습니다.', 503, 'MISSING_PUBLIC_DATA_KEY');
   if (!lawdCd) return error('법정동코드 앞 5자리 LAWD_CD가 필요합니다. 예: 서울 강서구 11500', 400, 'MISSING_LAWD_CD');
@@ -75,7 +77,7 @@ export async function onRequestGet(context) {
       .filter(Boolean);
 
     if (!successfulMonths.length) {
-      return error('실거래가 조회 응답이 지연되거나 실패했습니다. 잠시 후 다시 시도하거나 매매가격을 직접 입력해 주세요.', 502, 'RTMS_ALL_MONTHS_FAILED', {
+      return error('실거래가 조회 응답이 일시적으로 지연되거나 공공데이터 응답을 처리하지 못했습니다. 조회 기간을 줄이거나 단지명을 더 구체적으로 입력해 주세요. 매매가격 직접 입력도 가능합니다.', 200, 'RTMS_ALL_MONTHS_FAILED', {
         query: { lawdCd, aptName, months: dealYmd ? 1 : months, dealYmd: dealYmd || null, numOfRows },
         monthsQueried: dealYmds,
         failedMonths,
@@ -87,17 +89,17 @@ export async function onRequestGet(context) {
       .filter((result) => result.status === 'fulfilled')
       .flatMap((result) => result.value.items);
 
-    const filteredItems = normalizedAptName
-      ? successful.filter((item) => normalizeText(item.aptName).includes(normalizedAptName))
-      : successful;
-    const dedupedItems = dedupeTrades(filteredItems);
+    const allDedupedItems = dedupeTrades(successful);
+    const matchResult = buildAptMatchResult(allDedupedItems, aptName);
+    const dedupedItems = matchResult.items;
     const sortedItems = dedupedItems
       .sort((a, b) => String(b.dealDate).localeCompare(String(a.dealDate)))
       .slice(0, MAX_RESULT_ITEMS);
+    const candidates = sortedItems.length ? [] : matchResult.candidates;
 
     const responseData = {
       ok: true,
-      query: { lawdCd, aptName, months: dealYmd ? 1 : months, dealYmd: dealYmd || null, numOfRows },
+      query: { lawdCd, aptName, normalizedAptName, months: dealYmd ? 1 : months, dealYmd: dealYmd || null, numOfRows },
       monthsQueried: dealYmds,
       successfulMonths,
       failedMonths,
@@ -106,16 +108,26 @@ export async function onRequestGet(context) {
       count: sortedItems.length,
       totalMatchedBeforeLimit: dedupedItems.length,
       totalFetchedBeforeFilter: successful.length,
+      totalUniqueFetchedBeforeFilter: allDedupedItems.length,
+      match: {
+        mode: matchResult.mode,
+        tokens: matchResult.tokens,
+        candidateCount: candidates.length
+      },
       stats: buildStats(sortedItems),
       items: sortedItems,
+      candidates,
       source: {
         name: '국토교통부_아파트 매매 실거래가 자료',
         url: 'https://www.data.go.kr/data/15126469/openapi.do'
       },
       note: '공공데이터포털 아파트 매매 실거래가 자료를 조회한 참고 정보입니다. 동/호 정보는 제공되지 않으며 거래 신고·공개 시점에 따라 실제 시세와 차이가 있을 수 있습니다.',
-      noDataMessage: sortedItems.length
-        ? ''
-        : '입력한 지역·기간·아파트명과 일치하는 매매 실거래가가 없습니다. 기간을 늘리거나 아파트명을 줄여 조회한 뒤, 그래도 없으면 매매가격을 직접 입력해 주세요.'
+      noDataMessage: buildNoDataMessage({
+        hasItems: sortedItems.length > 0,
+        hasCandidates: candidates.length > 0,
+        aptName,
+        months: dealYmd ? 1 : months
+      })
     };
 
     const response = json(responseData, { headers: { 'x-hannun-cache': 'MISS' } });
@@ -128,7 +140,21 @@ export async function onRequestGet(context) {
     const message = isTimeout
       ? '실거래가 조회 응답이 지연되고 있습니다. 잠시 후 다시 시도하거나 매매가격을 직접 입력해 주세요.'
       : '아파트 매매 실거래가 조회 중 오류가 발생했습니다. 잠시 후 다시 시도하거나 매매가격을 직접 입력해 주세요.';
-    return error(message, status, code);
+    return error(message, status, code, {
+      noDataMessage: '실거래가 보조 조회가 실패했습니다. 조회 기간을 줄이거나 단지명을 더 구체적으로 입력해 보세요. 매매가격을 직접 입력해 계산할 수도 있습니다.'
+    });
+  }
+}
+
+
+function normalizeServiceKey(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  try {
+    const decoded = decodeURIComponent(raw);
+    return decoded || raw;
+  } catch (_) {
+    return raw;
   }
 }
 
@@ -247,6 +273,7 @@ function getRecentDealYmds(months) {
 }
 
 function clampNumber(value, min, max, fallback) {
+  if (value === null || value === undefined || String(value).trim() === '') return fallback;
   const number = Number(value);
   if (!Number.isFinite(number)) return fallback;
   return Math.min(max, Math.max(min, Math.round(number)));
@@ -258,6 +285,169 @@ function normalizePublicText(value) {
 
 function normalizeText(value) {
   return String(value || '').trim().replace(/[\s\-_.·]/g, '').toLowerCase();
+}
+
+
+function buildAptMatchResult(items, aptName) {
+  const query = normalizePublicText(aptName);
+  const normalizedQuery = normalizeText(query);
+  if (!normalizedQuery) {
+    return { mode: 'all', tokens: [], items, candidates: [] };
+  }
+
+  const tokens = buildAptSearchTokens(query);
+  const scored = items
+    .map((item) => {
+      const scoreInfo = scoreAptName(item.aptName, query, tokens);
+      return { item, ...scoreInfo };
+    })
+    .filter((entry) => entry.score > 0)
+    .sort(sortScoredAptEntry);
+
+  const matched = scored.filter((entry) => entry.score >= 70);
+  if (matched.length) {
+    return {
+      mode: 'matched',
+      tokens,
+      items: matched.map((entry) => ({ ...entry.item, matchScore: entry.score, matchedBy: entry.reason })),
+      candidates: []
+    };
+  }
+
+  return {
+    mode: 'candidates',
+    tokens,
+    items: [],
+    candidates: buildAptCandidates(scored, items, query)
+  };
+}
+
+function buildAptSearchTokens(value) {
+  const source = String(value || '').trim();
+  const compact = normalizeText(source);
+  const tokens = new Set();
+  String(source)
+    .replace(/[()\[\]{}]/g, ' ')
+    .split(/[\s,\/|+]+/)
+    .map(normalizeText)
+    .filter((token) => token.length >= 2)
+    .forEach((token) => tokens.add(token));
+
+  const villageMatches = compact.match(/[가-힣A-Za-z0-9]+?마을/g) || [];
+  villageMatches.forEach((token) => {
+    if (token.length >= 2) tokens.add(token);
+    const withoutMaeul = token.replace(/마을$/, '');
+    if (withoutMaeul.length >= 2) tokens.add(withoutMaeul);
+  });
+
+  const danjiMatches = compact.match(/\d+단지/g) || [];
+  danjiMatches.forEach((token) => tokens.add(token));
+
+  const prefixBeforeDanji = compact.match(/^(.+?)(\d+단지)$/);
+  if (prefixBeforeDanji) {
+    const prefix = prefixBeforeDanji[1];
+    if (prefix.length >= 2) tokens.add(prefix);
+    tokens.add(prefixBeforeDanji[2]);
+  }
+
+  if (!tokens.size && compact.length >= 2) tokens.add(compact);
+  return [...tokens].filter((token) => token.length >= 2 && token.length <= 30);
+}
+
+function scoreAptName(aptName, query, tokens = buildAptSearchTokens(query)) {
+  const apt = normalizeText(aptName);
+  const normalizedQuery = normalizeText(query);
+  if (!apt || !normalizedQuery) return { score: 0, reason: 'empty' };
+  if (apt === normalizedQuery) return { score: 100, reason: 'exact' };
+  if (apt.includes(normalizedQuery)) return { score: 94, reason: 'contains' };
+  if (normalizedQuery.includes(apt) && apt.length >= 4) return { score: 78, reason: 'query-contains-apt' };
+
+  const meaningfulTokens = tokens.filter((token) => token.length >= 2 && token !== normalizedQuery);
+  const fallbackTokens = meaningfulTokens.length ? meaningfulTokens : tokens;
+  if (!fallbackTokens.length) return { score: 0, reason: 'no-token' };
+
+  const matchedTokens = fallbackTokens.filter((token) => apt.includes(token));
+  if (!matchedTokens.length) return { score: 0, reason: 'no-token-match' };
+
+  const ratio = matchedTokens.length / fallbackTokens.length;
+  const hasDanjiToken = matchedTokens.some((token) => /\d+단지/.test(token));
+  const hasNameToken = matchedTokens.some((token) => !/\d+단지/.test(token));
+  let score = Math.round(ratio * 78);
+  if (matchedTokens.length === fallbackTokens.length) score = Math.max(score, 86);
+  if (hasDanjiToken && hasNameToken) score = Math.max(score, 78);
+  if (hasDanjiToken && !hasNameToken) score = Math.max(score, 68);
+  return { score, reason: 'token', matchedTokens };
+}
+
+function sortScoredAptEntry(a, b) {
+  if (b.score !== a.score) return b.score - a.score;
+  return String(b.item.dealDate).localeCompare(String(a.item.dealDate));
+}
+
+function buildAptCandidates(scoredEntries, allItems, query) {
+  const sourceEntries = scoredEntries.length
+    ? scoredEntries
+    : allItems.map((item) => ({ item, score: 0, reason: 'recent' }));
+  const grouped = new Map();
+  for (const entry of sourceEntries) {
+    const item = entry.item || {};
+    const key = [normalizeText(item.aptName), normalizeText(item.umdNm)].join('|');
+    if (!item.aptName || !key.trim()) continue;
+    const previous = grouped.get(key);
+    const candidate = previous || {
+      aptName: item.aptName,
+      umdNm: item.umdNm || '',
+      searchValue: item.aptName,
+      dealCount: 0,
+      matchScore: 0,
+      lastDealDate: '',
+      lastAmountManwon: 0,
+      lastAmountLabel: '',
+      areaLabels: new Set(),
+      floors: new Set()
+    };
+    candidate.dealCount += 1;
+    candidate.matchScore = Math.max(candidate.matchScore, entry.score || 0);
+    if (item.areaLabel) candidate.areaLabels.add(item.areaLabel);
+    if (item.floor) candidate.floors.add(String(item.floor));
+    if (!candidate.lastDealDate || String(item.dealDate).localeCompare(candidate.lastDealDate) > 0) {
+      candidate.lastDealDate = item.dealDate || '';
+      candidate.lastAmountManwon = item.dealAmountManwon || 0;
+      candidate.lastAmountLabel = item.dealAmountLabel || '';
+    }
+    grouped.set(key, candidate);
+  }
+
+  return [...grouped.values()]
+    .sort((a, b) => {
+      if (b.matchScore !== a.matchScore) return b.matchScore - a.matchScore;
+      if (b.dealCount !== a.dealCount) return b.dealCount - a.dealCount;
+      return String(b.lastDealDate).localeCompare(String(a.lastDealDate));
+    })
+    .slice(0, 10)
+    .map((candidate) => ({
+      aptName: candidate.aptName,
+      umdNm: candidate.umdNm,
+      searchValue: candidate.searchValue,
+      dealCount: candidate.dealCount,
+      matchScore: candidate.matchScore,
+      lastDealDate: candidate.lastDealDate,
+      lastAmountManwon: candidate.lastAmountManwon,
+      lastAmountLabel: candidate.lastAmountLabel,
+      areaLabels: [...candidate.areaLabels].slice(0, 4),
+      floorLabels: [...candidate.floors].slice(0, 4),
+      note: query
+        ? `'${query}'와 정확히 일치하지는 않지만 같은 지역·기간에서 비슷하게 찾은 단지 후보입니다.`
+        : '같은 지역·기간에서 거래가 확인된 단지 후보입니다.'
+    }));
+}
+
+function buildNoDataMessage({ hasItems, hasCandidates, aptName, months }) {
+  if (hasItems) return '';
+  if (hasCandidates) {
+    return `입력한 단지명 '${aptName || '미입력'}'과 정확히 일치하는 거래는 찾지 못했습니다. 아래 후보 단지를 선택해 다시 조회하거나, 기간을 늘려 보세요. 매매가격 직접 입력도 가능합니다.`;
+  }
+  return `최근 ${months}개월 내 입력한 지역·아파트명과 일치하는 매매 실거래가가 없습니다. 기간을 늘리거나 단지명을 더 구체적으로 입력한 뒤, 그래도 없으면 매매가격을 직접 입력해 주세요.`;
 }
 
 function parseAptTradeXml(xml) {
