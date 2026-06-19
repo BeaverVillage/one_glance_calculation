@@ -10992,3 +10992,330 @@ body {
     text-align: left;
   }
 }
+
+/* Jeonse risk calculator skeleton */
+.jeonse-risk-panel {
+  align-items: start;
+}
+
+.jeonse-risk-input-panel .form-panel-heading {
+  margin-bottom: 16px;
+}
+
+.jeonse-risk-input-panel .form-panel-heading h2 {
+  margin-bottom: 8px;
+  font-size: 1.35rem;
+}
+
+.jeonse-action-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) auto auto;
+  gap: 10px;
+  align-items: stretch;
+  margin-top: 8px;
+}
+
+.jeonse-risk-metrics {
+  margin-top: 14px;
+}
+
+.jeonse-risk-metrics strong {
+  overflow-wrap: anywhere;
+}
+
+.jeonse-checklist-panel {
+  margin-top: 18px;
+  padding: 18px;
+}
+
+.jeonse-checklist-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 14px;
+  margin-top: 14px;
+}
+
+.jeonse-checklist-grid label {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  color: var(--muted);
+  font-size: 0.94rem;
+}
+
+.jeonse-checklist-grid input {
+  margin-top: 0.35em;
+  accent-color: var(--green);
+}
+
+.related-calculators .compact-cards {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 820px) {
+  .jeonse-action-row,
+  .jeonse-checklist-grid,
+  .related-calculators .compact-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Jeonse risk calculator phase 2 states */
+.decision-badge.danger {
+  color: var(--danger);
+  background: #fee2e2;
+}
+
+.jeonse-risk-level-low {
+  color: var(--green);
+}
+
+.jeonse-risk-level-normal {
+  color: var(--blue);
+}
+
+.jeonse-risk-level-caution {
+  color: var(--amber);
+}
+
+.jeonse-risk-level-high,
+.jeonse-risk-level-very-high {
+  color: var(--danger);
+}
+
+#jeonse-form-message[data-message-type="success"] {
+  color: var(--green);
+  font-weight: 800;
+}
+
+#jeonse-form-message[data-message-type="error"] {
+  color: var(--danger);
+  font-weight: 800;
+}
+
+/* Jeonse risk calculator API lookup */
+.jeonse-trade-lookup {
+  margin: 18px 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface-soft);
+}
+
+.jeonse-trade-lookup .compact-row {
+  margin-bottom: 8px;
+}
+
+.jeonse-trade-lookup h3 {
+  margin: 4px 0 0;
+  font-size: 1.05rem;
+}
+
+.jeonse-trade-lookup-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(150px, 0.55fr);
+  gap: 12px;
+  align-items: start;
+  margin-top: 14px;
+}
+
+.jeonse-trade-action-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.jeonse-trade-message[data-message-type="success"] {
+  color: var(--green);
+  font-weight: 800;
+}
+
+.jeonse-trade-message[data-message-type="error"] {
+  color: var(--danger);
+  font-weight: 800;
+}
+
+.jeonse-trade-message[data-message-type="loading"] {
+  color: var(--blue);
+  font-weight: 800;
+}
+
+.jeonse-trade-results {
+  margin-top: 14px;
+}
+
+.jeonse-trade-results-inner {
+  display: grid;
+  gap: 12px;
+}
+
+.jeonse-trade-results-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.jeonse-trade-results-heading strong {
+  color: var(--ink);
+}
+
+.jeonse-trade-results-heading span {
+  color: var(--muted);
+  font-size: 0.9rem;
+  text-align: right;
+}
+
+.jeonse-trade-card-list {
+  display: grid;
+  gap: 10px;
+}
+
+.jeonse-trade-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.jeonse-trade-card-body {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.jeonse-trade-card-body strong {
+  color: var(--green);
+  font-size: 1.05rem;
+}
+
+.jeonse-trade-card-body span,
+.jeonse-trade-card-body small {
+  overflow-wrap: anywhere;
+}
+
+.jeonse-trade-card-body span {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.jeonse-trade-card-body small {
+  color: var(--muted);
+}
+
+.jeonse-use-trade-button {
+  white-space: nowrap;
+}
+
+.jeonse-trade-warning {
+  color: var(--amber);
+  font-weight: 800;
+}
+
+@media (max-width: 820px) {
+  .jeonse-trade-lookup-grid,
+  .jeonse-trade-card {
+    grid-template-columns: 1fr;
+  }
+
+  .jeonse-trade-action-row {
+    justify-content: stretch;
+  }
+
+  .jeonse-trade-action-row .subtle-button,
+  .jeonse-use-trade-button {
+    width: 100%;
+  }
+
+  .jeonse-trade-results-heading {
+    display: grid;
+  }
+
+  .jeonse-trade-results-heading span {
+    text-align: left;
+  }
+}
+
+/* Jeonse risk selected trade state */
+.jeonse-selected-trade {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid rgba(37, 99, 235, 0.22);
+  border-radius: 14px;
+  background: rgba(37, 99, 235, 0.06);
+}
+
+.jeonse-selected-trade strong {
+  color: var(--ink);
+}
+
+.jeonse-selected-trade p {
+  margin: 4px 0 0;
+}
+
+.jeonse-trade-card.is-selected {
+  border-color: rgba(22, 163, 74, 0.55);
+  box-shadow: 0 10px 24px rgba(22, 163, 74, 0.12);
+}
+
+.jeonse-trade-card.is-selected .jeonse-use-trade-button {
+  border-color: rgba(22, 163, 74, 0.45);
+  background: rgba(22, 163, 74, 0.1);
+  color: var(--green);
+}
+
+@media (max-width: 820px) {
+  .jeonse-selected-trade {
+    grid-template-columns: 1fr;
+  }
+
+  .jeonse-selected-trade .subtle-button {
+    width: 100%;
+  }
+}
+
+.jeonse-selected-trade[hidden] {
+  display: none;
+}
+
+/* Jeonse risk API phase 4: resilient lookup states */
+.jeonse-trade-message[data-message-type="warning"] {
+  color: var(--amber);
+  font-weight: 800;
+}
+
+.jeonse-trade-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid rgba(37, 99, 235, 0.16);
+  border-radius: 14px;
+  background: rgba(37, 99, 235, 0.05);
+}
+
+.jeonse-trade-stats span {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+
+.jeonse-trade-stats strong {
+  color: var(--blue);
+}
+
+.jeonse-trade-stats small {
+  flex-basis: 100%;
+  color: var(--muted);
+  line-height: 1.45;
+}

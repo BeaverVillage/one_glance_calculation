@@ -35,6 +35,7 @@ const TOOL_GROUPS = [
       ["월 실수령액 계산기", "calculators/net-salary.html"],
       ["대출 이자 계산기", "calculators/loan-interest.html"],
       ["전세 월세 비교 계산기", "calculators/rent-vs-jeonse.html"],
+      ["전세가율·보증금 위험도 계산기", "calculators/jeonse-risk.html"],
       ["실시간 환율 계산기", "calculators/exchange-rate.html"],
       ["주휴수당 계산기", "calculators/weekly-holiday-pay.html"],
       ["군적금 계산기", "calculators/military-savings.html"],
@@ -128,7 +129,6 @@ const els = {};
 async function initApp() {
   initResponsiveNav();
   initToolDrawer();
-  // AdSense review mode: affiliate ads are disabled until approval.
   initCalculatorClickRanking();
   initScientificCalculator();
   initMilitarySavingsCalculator();
@@ -407,7 +407,7 @@ function bindElements() {
 }
 
 async function loadDataset() {
-  const dataUrl = new URL("../../data/market-prices-draft.json", import.meta.url);
+  const dataUrl = new URL("../data/market-prices-draft.json", import.meta.url);
   const response = await fetch(dataUrl);
   if (!response.ok) throw new Error("가격 정보를 불러오지 못했습니다.");
   state.dataset = await response.json();
