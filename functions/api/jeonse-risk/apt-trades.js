@@ -443,11 +443,15 @@ function buildAptCandidates(scoredEntries, allItems, query) {
 }
 
 function buildNoDataMessage({ hasItems, hasCandidates, aptName, months }) {
+  const hasAptName = Boolean(normalizeText(aptName));
   if (hasItems) return '';
   if (hasCandidates) {
     return `입력한 단지명 '${aptName || '미입력'}'과 정확히 일치하는 거래는 찾지 못했습니다. 아래 후보 단지를 선택해 다시 조회하거나, 기간을 늘려 보세요. 매매가격 직접 입력도 가능합니다.`;
   }
-  return `최근 ${months}개월 내 입력한 지역·아파트명과 일치하는 매매 실거래가가 없습니다. 기간을 늘리거나 단지명을 더 구체적으로 입력한 뒤, 그래도 없으면 매매가격을 직접 입력해 주세요.`;
+  if (!hasAptName) {
+    return `최근 ${months}개월 내 선택 지역의 아파트 매매 실거래가를 찾지 못했습니다. 기간을 늘리거나 매매가격을 직접 입력해 계산할 수 있습니다.`;
+  }
+  return `최근 ${months}개월 내 입력한 지역·단지명과 일치하는 매매 실거래가가 없습니다. 기간을 늘리거나 단지명을 조정한 뒤, 그래도 없으면 매매가격을 직접 입력해 주세요.`;
 }
 
 function parseAptTradeXml(xml) {

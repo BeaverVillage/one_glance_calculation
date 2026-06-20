@@ -534,7 +534,7 @@ function clampNumber(value, min, max, fallback) {
   return Math.min(max, Math.max(min, Math.round(number)));
 }
 
-const TRADE_LOOKUP_DEFAULT_MESSAGE = "지역을 선택하고 단지명을 입력하면 최근 매매 실거래가를 조회할 수 있습니다.";
+const TRADE_LOOKUP_DEFAULT_MESSAGE = "단지명을 비우면 선택 지역의 최근 거래를 보여줍니다.";
 const MAX_RENDERED_TRADES = 25;
 const TRADE_LOOKUP_TIMEOUT_MS = 12000;
 let activeTradeLookupController = null;
@@ -637,8 +637,8 @@ async function selectPlaceCandidate(els, item) {
     }
 
     closePlaceModal(els);
-    showTradeMessage(els, "지역이 선택되었습니다. 단지명과 조회 기간을 확인한 뒤 최근 매매가를 조회해 주세요.", "success");
-    window.setTimeout(() => els.tradeAptName?.focus({ preventScroll: true }), 120);
+    showTradeMessage(els, "지역이 선택되었습니다. 단지명을 비워두면 선택 지역의 최근 거래를 조회합니다.", "success");
+    window.setTimeout(() => els.tradeSearchButton?.focus({ preventScroll: true }), 120);
   } catch (error) {
     showTradeMessage(els, error?.message || "법정동코드 확인에 실패했습니다.", "error");
   }
@@ -699,12 +699,6 @@ async function lookupAptTrades(els) {
     return;
   }
 
-  if (!aptName) {
-    showTradeMessage(els, "단지명 필터를 입력해 주세요. 예: 은마, 리센츠, 범지기마을3단지", "error");
-    clearTradeResults(els);
-    els.tradeAptName.focus();
-    return;
-  }
 
   if (activeTradeLookupController) activeTradeLookupController.abort();
   const controller = new AbortController();
@@ -712,7 +706,7 @@ async function lookupAptTrades(els) {
 
   setTradeLoading(els, true);
   clearTradeResults(els);
-  showTradeMessage(els, `${selectedLabel} 기준 최근 ${months}개월 매매 실거래가를 조회하는 중입니다.`, "loading");
+  showTradeMessage(els, `${selectedLabel} 기준 최근 ${months}개월 매매 실거래가를 조회하는 중입니다.${aptName ? "" : " 단지명 없이 지역 전체 거래를 확인합니다."}`, "loading");
 
   try {
     const tradeUrl = buildAptTradesUrl({ lawdCd, aptName, months });
@@ -737,7 +731,7 @@ async function lookupAptTrades(els) {
           candidates,
           noDataMessage: tradeData.noDataMessage || "정확히 일치하는 거래는 없지만 비슷한 단지 후보를 찾았습니다."
         });
-        openTradeModal(els, `${selectedLabel} · ${resolvedAptName} · 후보 ${candidates.length}개`);
+        openTradeModal(els, `${selectedLabel} · ${resolvedAptName || "지역 전체"} · 후보 ${candidates.length}개`);
         showTradeMessage(
           els,
           tradeData.noDataMessage || `${selectedLabel} 기준으로 비슷한 단지 후보 ${candidates.length}개를 찾았습니다. 찾는 단지를 선택해 다시 조회해 주세요.`,
@@ -746,7 +740,7 @@ async function lookupAptTrades(els) {
         return;
       }
 
-      const noDataMessage = tradeData.noDataMessage || `${selectedLabel} 기준 최근 ${months}개월 내 ${resolvedAptName} 매매 실거래가를 찾지 못했습니다. 기간을 늘리거나 단지명을 더 구체적으로 입력해 보세요. 매매가격을 직접 입력할 수도 있습니다.`;
+      const noDataMessage = tradeData.noDataMessage || (resolvedAptName ? `${selectedLabel} 기준 최근 ${months}개월 내 ${resolvedAptName} 매매 실거래가를 찾지 못했습니다. 기간을 늘리거나 단지명을 더 구체적으로 입력해 보세요. 매매가격을 직접 입력할 수도 있습니다.` : `${selectedLabel} 기준 최근 ${months}개월 내 아파트 매매 실거래가를 찾지 못했습니다. 기간을 늘리거나 매매가격을 직접 입력해 계산할 수 있습니다.`);
       renderTradeNoDataActions(els, {
         title: "일치하는 최근 매매 거래가 없습니다",
         message: noDataMessage,
@@ -754,7 +748,7 @@ async function lookupAptTrades(els) {
         addressQuery: selectedLabel,
         aptName: resolvedAptName
       });
-      openTradeModal(els, `${selectedLabel} · ${resolvedAptName} · 최근 ${months}개월`);
+      openTradeModal(els, `${selectedLabel} · ${resolvedAptName || "지역 전체"} · 최근 ${months}개월`);
       showTradeMessage(els, noDataMessage, "warning");
       return;
     }
@@ -769,14 +763,14 @@ async function lookupAptTrades(els) {
       stats: tradeData.stats || null,
       items
     });
-    openTradeModal(els, `${selectedLabel} · ${resolvedAptName} · 최근 ${months}개월 · ${items.length}건`);
+    openTradeModal(els, `${selectedLabel} · ${resolvedAptName || "지역 전체"} · 최근 ${months}개월 · ${items.length}건`);
 
     const failNotice = tradeData.failedMonths?.length
       ? ` 일부 월(${tradeData.failedMonths.join(", ")})은 조회에 실패했지만 가능한 결과를 표시했습니다.`
       : "";
     showTradeMessage(
       els,
-      `${selectedLabel} 기준 최근 ${months}개월 매매 실거래가 ${items.length}건을 찾았습니다.${failNotice}`,
+      `${selectedLabel} 기준 최근 ${months}개월 ${resolvedAptName ? `${resolvedAptName} ` : ""}매매 실거래가 ${items.length}건을 찾았습니다.${failNotice}`,
       tradeData.failedMonths?.length ? "warning" : "success"
     );
   } catch (error) {
@@ -792,7 +786,7 @@ async function lookupAptTrades(els) {
       addressQuery: selectedLabel,
       aptName
     });
-    openTradeModal(els, `${selectedLabel} · ${aptName || "단지명"} · 조회 지연`);
+    openTradeModal(els, `${selectedLabel} · ${aptName || "지역 전체"} · 조회 지연`);
   } finally {
     if (activeTradeLookupController === controller) {
       activeTradeLookupController = null;
@@ -878,7 +872,7 @@ function renderTradeResults(els, { addressItem, aptName, months, count, failedMo
   const title = document.createElement("strong");
   title.textContent = "최근 아파트 매매 실거래가";
   const summary = document.createElement("span");
-  summary.textContent = `${addressItem.label || "선택 지역"} · ${aptName} · 최근 ${months}개월 · ${count}건`;
+  summary.textContent = [addressItem.label || "선택 지역", aptName || "지역 전체", `최근 ${months}개월`, `${count}건`].filter(Boolean).join(" · ");
   heading.append(title, summary);
   wrapper.append(heading);
 
@@ -903,7 +897,7 @@ function renderTradeResults(els, { addressItem, aptName, months, count, failedMo
   if (items.length > visibleItems.length) {
     const limitNotice = document.createElement("p");
     limitNotice.className = "fine-print";
-    limitNotice.textContent = `화면에는 최신 거래 ${visibleItems.length}건만 표시합니다. 아파트명을 더 구체적으로 입력하면 결과를 줄일 수 있습니다.`;
+    limitNotice.textContent = aptName ? `화면에는 최신 거래 ${visibleItems.length}건만 표시합니다. 단지명을 더 구체적으로 입력하면 결과를 줄일 수 있습니다.` : `화면에는 최신 거래 ${visibleItems.length}건만 표시합니다. 단지명으로 좁히면 원하는 거래를 더 빨리 찾을 수 있습니다.`;
     wrapper.append(limitNotice);
   }
 
@@ -927,7 +921,7 @@ function renderTradeCandidateResults(els, { addressItem, aptName, months, candid
   const title = document.createElement("strong");
   title.textContent = "비슷한 단지 후보";
   const summary = document.createElement("span");
-  summary.textContent = `${addressItem.label || "선택 지역"} · ${aptName} · 최근 ${months}개월`;
+  summary.textContent = [addressItem.label || "선택 지역", aptName || "지역 전체", `최근 ${months}개월`].filter(Boolean).join(" · ");
   heading.append(title, summary);
   wrapper.append(heading);
 
@@ -1040,7 +1034,7 @@ function createLookupActionPanel({ message, months, showAptFocus = false, showAd
 function buildLookupActionHint({ months, aptName }) {
   const parts = [];
   if (Number(months) < 12) parts.push("거래가 드문 단지는 조회 기간을 늘리면 찾을 수 있습니다.");
-  if (aptName) parts.push("단지명은 전체 이름 또는 핵심 단어 두 개 이상을 입력하면 더 정확합니다.");
+  if (aptName) parts.push("단지명을 줄이거나 핵심 단어로 바꿔 다시 조회할 수 있습니다."); else parts.push("단지명으로 좁히면 원하는 거래를 더 빨리 찾을 수 있습니다.");
   parts.push("조회가 계속 안 되면 매매가격을 직접 입력해 전세가율 계산을 이어갈 수 있습니다.");
   return parts.join(" ");
 }
