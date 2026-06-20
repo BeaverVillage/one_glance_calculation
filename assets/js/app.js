@@ -1,6 +1,6 @@
 import { calculateReport } from "./calculator.js?v=20260614-cache-fix";
 import { initBmiCalculator } from "./bmi-calculator.js?v=20260614-cache-fix";
-import { initCaffeineSleepCalculator } from "./caffeine-sleep.js?v=20260614-cache-fix";
+import { initCaffeineSleepCalculator } from "./caffeine-sleep.js?v=20260620-caffeine-phase5-final";
 import { initCigaretteCostCalculator } from "./cigarette-cost.js?v=20260614-cache-fix";
 import { initApplianceElectricityCalculator } from "./appliance-electricity.js?v=20260614-cache-fix";
 import { initAustraliaPayCalculator } from "./australia-pay.js?v=20260616-mobile-exchange-whv-final";
@@ -15,7 +15,7 @@ import { renderPriceChart } from "./chart.js?v=20260614-cache-fix";
 import { initEvCostCalculator } from "./ev-cost.js?v=20260614-cache-fix";
 import { initMilitarySavingsCalculator } from "./military-savings.js?v=20260614-cache-fix";
 import { initScientificCalculator } from "./scientific.js?v=20260614-cache-fix";
-import { initSpaceTravelCalculator } from "./space-travel.js?v=20260614-cache-fix";
+import { initSpaceTravelCalculator } from "./space-travel.js?v=20260620-space-phase5-final";
 import { initTextCounter } from "./text-counter.js?v=20260614-cache-fix";
 import { formatWon, getCheckedValue, getFormNumber } from "./utils.js?v=20260614-cache-fix";
 import { initWeeklyHolidayPayCalculator } from "./weekly-holiday-pay.js?v=20260614-cache-fix";

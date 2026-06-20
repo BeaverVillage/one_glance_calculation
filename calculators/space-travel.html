@@ -41,7 +41,7 @@
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Any",
   "inLanguage": "ko-KR",
-  "description": "속도와 목적지를 선택해 행성, 별, 은하까지 이동 시간을 계산하는 생활 계산기입니다.",
+  "description": "목적지와 이동 수단을 선택해 우주 이동 시간, 빛 도달 시간, 왕복 통신 지연을 비교하는 과학 참고 계산기입니다.",
   "offers": {
     "@type": "Offer",
     "price": "0",
@@ -54,41 +54,65 @@
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "행성 거리는 왜 정확한 값이 아닌가요?",
+      "name": "우주 이동 시간은 실제 우주선 소요 시간과 같은가요?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "행성은 계속 공전하므로 지구와의 거리가 매일 바뀝니다. 이 계산기는 대표적인 평균 또는 접근 거리로 단순 비교합니다."
+        "text": "아닙니다. 이 계산기는 거리와 속도를 단순히 나눈 참고 계산입니다. 실제 우주 임무는 궤도, 발사 시점, 연료, 가속과 감속, 중력 도움, 행성 위치 변화를 함께 고려합니다."
       }
     },
     {
       "@type": "Question",
-      "name": "빛의 속도로 가면 실제로 사람도 갈 수 있나요?",
+      "name": "행성까지의 거리는 왜 매번 달라지나요?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "아닙니다. 질량이 있는 물체는 빛의 속도에 도달할 수 없습니다. 빛의 속도 선택지는 거리 감각을 보기 위한 기준입니다."
+        "text": "지구와 다른 행성은 각자 태양 주위를 공전하므로 서로의 거리가 계속 바뀝니다. 그래서 화성, 금성, 목성 같은 행성은 가까운 거리, 먼 거리, 대표 거리를 구분해서 참고하는 것이 좋습니다."
       }
     },
     {
       "@type": "Question",
-      "name": "로켓 속도는 어떤 기준인가요?",
+      "name": "빛의 편도 시간과 왕복 통신 지연은 무엇인가요?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "지구 탈출속도에 가까운 11.2km/s를 단순 기준으로 사용했습니다. 실제 임무 속도는 궤도와 추진 방식에 따라 달라집니다."
+        "text": "빛의 편도 시간은 빛이나 전파가 목적지까지 가는 데 걸리는 최소 시간에 가까운 참고값입니다. 왕복 통신 지연은 신호를 보내고 답을 받는 상황을 가정해 편도 시간의 두 배로 계산합니다."
       }
     },
     {
       "@type": "Question",
-      "name": "광년은 시간인가요?",
+      "name": "AU와 광년은 어떤 단위인가요?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "광년은 시간이 아니라 빛이 1년 동안 이동하는 거리 단위입니다."
+        "text": "AU는 지구와 태양 사이의 평균 거리에 가까운 천문단위이고, 광년은 빛이 1년 동안 이동하는 거리 단위입니다. 광년은 시간 단위가 아니라 거리 단위입니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "비행기나 자동차 속도로 우주 이동을 계산해도 되나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "현실적으로 비행기나 자동차로 우주를 이동할 수 있다는 뜻은 아닙니다. 해당 속도는 우주 거리의 규모를 생활 속 속도와 비교해 체감하기 위한 기준입니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "빛의 속도로 사람이나 우주선이 이동할 수 있나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "질량이 있는 물체는 빛의 속도에 도달할 수 없습니다. 계산기의 빛의 속도 결과는 물체 이동 가능성을 뜻하기보다 거리와 통신 지연을 이해하기 위한 비교 기준입니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "이 계산 결과를 과학 보고서에 그대로 써도 되나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "기본적인 거리 감각이나 교육용 예시에는 참고할 수 있지만, 정밀 보고서나 실제 임무 시간 산정에는 공식 천문 자료와 항법 계산을 확인해야 합니다."
       }
     }
   ]
 }</script>
     <link rel="stylesheet" href="../assets/css/base.css">
     <link rel="stylesheet" href="../assets/css/layout.css">
-    <link rel="stylesheet" href="../assets/css/components.css">
+    <link rel="stylesheet" href="../assets/css/components.css?v=20260620-space-phase5-final">
   </head>
   <body>
     <header class="site-header"><a class="brand" href="../index.html"><span class="brand-mark">한</span><span><strong>한눈계산</strong><small>생활 계산기</small></span></a><nav class="site-nav" aria-label="주요 메뉴"><a href="../index.html#calculators" data-tool-drawer>다른 계산기</a><a href="../index.html#how-to">사용 방법</a><a href="../index.html#faq">질문</a><a href="../about.html">소개</a><a href="../contact.html">문의</a></nav></header>
@@ -98,46 +122,137 @@
           <div class="section-intro">
             <p class="eyebrow">우주 상상 계산</p>
             <h1>우주 이동 시간 계산기</h1>
-            <p class="lead">빛의 속도, 로켓 속도, 탐사선 속도 등을 골라 달, 행성, 가까운 별, 안드로메다 은하까지 얼마나 걸리는지 계산합니다.</p>
+            <p class="lead">목적지와 이동 수단을 고르면 대표 거리 기준 이동 시간, 빛의 도달 시간, 왕복 통신 지연을 함께 계산합니다.</p>
           </div>
         </div>
       </section>
 
       <section class="content-band compact">
         <div class="container calculator-section">
-          <section class="tool-panel" aria-label="우주 이동 시간 계산기">
-            <form id="space-travel-form" class="input-panel">
-              <div class="field">
-                <label for="space-speed">이동 속도</label>
-                <select id="space-speed" name="speedKey"></select>
+          <section class="tool-panel space-tool-panel" aria-label="우주 이동 시간 계산기">
+            <form id="space-travel-form" class="input-panel space-input-panel">
+              <div class="space-preset-grid">
+                <div class="field">
+                  <label for="space-destination">목적지</label>
+                  <select id="space-destination" name="destinationKey"></select>
+                  <p class="field-hint">달, 화성, 태양, 가까운 별, 은하를 선택할 수 있습니다.</p>
+                </div>
+                <div class="field">
+                  <label for="space-distance-mode">거리 기준</label>
+                  <select id="space-distance-mode" name="distanceMode">
+                    <option value="representative">대표 거리</option>
+                    <option value="near">가까운 거리 참고</option>
+                    <option value="far">먼 거리 참고</option>
+                    <option value="custom">직접 입력</option>
+                  </select>
+                  <p class="field-hint">행성은 대표·가까운·먼 거리 기준이 다를 수 있고, 별·은하는 대표 거리로 계산합니다.</p>
+                </div>
+                <div class="field">
+                  <label for="space-speed">이동 수단</label>
+                  <select id="space-speed" name="speedKey"></select>
+                  <p class="field-hint">프리셋 선택 후 속도를 직접 조정할 수도 있습니다.</p>
+                </div>
               </div>
-              <div class="field">
-                <label for="space-destination">목적지</label>
-                <select id="space-destination" name="destinationKey"></select>
+
+              <button class="secondary-button space-advanced-toggle" type="button" id="space-advanced-toggle" aria-expanded="false" aria-controls="space-advanced-panel">직접 거리·속도 입력 열기</button>
+              <div class="space-advanced-panel" id="space-advanced-panel" hidden>
+                <div class="space-preset-grid is-compact">
+                  <div class="field">
+                    <label for="space-custom-distance">직접 거리</label>
+                    <input id="space-custom-distance" name="customDistance" type="number" min="0.000001" step="any" inputmode="decimal" placeholder="예: 384400">
+                  </div>
+                  <div class="field">
+                    <label for="space-custom-distance-unit">거리 단위</label>
+                    <select id="space-custom-distance-unit" name="customDistanceUnit">
+                      <option value="km">km</option>
+                      <option value="au">AU</option>
+                      <option value="ly">광년</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="space-custom-speed-kmh">직접 속도</label>
+                    <input id="space-custom-speed-kmh" name="customSpeedKmh" type="number" min="0.000001" step="any" inputmode="decimal" placeholder="예: 900">
+                    <p class="field-hint">km/h 기준입니다. 비워두면 선택한 이동 수단 속도를 사용하고, 직접 입력하면 선택 속도를 덮어씁니다.</p>
+                  </div>
+                </div>
               </div>
-              <button class="primary-button" type="submit">우주 이동 시간 계산하기</button>
-              <p class="fine-print">행성 거리는 궤도에 따라 계속 달라지므로 대표 거리로 보는 비교 계산입니다.</p>
+
+              <div class="button-row">
+                <button class="primary-button" type="submit">우주 이동 시간 계산하기</button>
+                <button class="ghost-button" type="button" id="space-example-button">예시 입력</button>
+                <button class="ghost-button" type="button" id="space-reset-button">초기화</button>
+              </div>
+              <p class="fine-print">이 계산기는 거리 ÷ 속도의 단순 참고 계산입니다. 실제 우주 비행은 궤도, 발사 시점, 연료, 가속·감속 조건에 따라 달라집니다.</p>
             </form>
 
-            <aside class="result-panel space-visual" aria-live="polite">
-              <div class="report-summary">
+            <aside class="result-panel space-visual" id="space-result-panel" aria-live="polite" tabindex="-1">
+              <div class="report-summary space-summary-card">
                 <span class="report-kicker">예상 이동 시간</span>
                 <strong id="space-travel-time" class="result-number">-</strong>
-                <span id="space-comment">속도와 목적지를 선택하면 이동 시간을 계산합니다.</span>
+                <span id="space-comment">목적지와 이동 수단을 선택하면 이동 시간을 계산합니다.</span>
               </div>
-              <div class="space-route">
-                <span>출발</span>
+              <p class="space-validation-message" id="space-validation" hidden></p>
+              <div class="space-route" aria-hidden="true">
+                <span>지구</span>
                 <div class="space-route-line"><i id="space-progress-bar"></i></div>
-                <span>도착</span>
+                <span id="space-route-destination">도착</span>
               </div>
-              <div class="metric-grid savings-metrics">
-                <div><span>거리</span><strong id="space-distance">-</strong></div>
+
+              <div class="space-highlight-grid" aria-label="우주 거리 핵심 요약">
+                <article class="space-insight-card is-distance">
+                  <span>거리 체감</span>
+                  <strong id="space-distance-feel">-</strong>
+                  <small id="space-distance-feel-note">선택한 목적지의 거리를 생활 단위로 바꿔 보여줍니다.</small>
+                </article>
+                <article class="space-insight-card is-light">
+                  <span>빛 기준 편도</span>
+                  <strong id="space-light-highlight">-</strong>
+                  <small id="space-light-note">빛이나 전파가 목적지까지 도달하는 최소 시간에 가까운 참고값입니다.</small>
+                </article>
+                <article class="space-insight-card is-signal">
+                  <span>왕복 통신</span>
+                  <strong id="space-signal-highlight">-</strong>
+                  <small id="space-signal-note">신호를 보내고 답을 받기까지의 지연 시간을 단순 계산합니다.</small>
+                </article>
+              </div>
+
+              <div class="space-scale-panel" aria-label="우주 거리 스케일">
+                <div class="space-panel-head">
+                  <span class="report-kicker">거리 스케일</span>
+                  <p id="space-scale-note">목적지가 어느 거리대에 있는지 표시합니다.</p>
+                </div>
+                <div class="space-scale-track" aria-hidden="true">
+                  <i id="space-scale-fill"></i>
+                  <b id="space-scale-marker">현재 위치</b>
+                </div>
+                <div class="space-scale-labels" aria-hidden="true">
+                  <span>달</span><span>태양</span><span>행성</span><span>외곽</span><span>별·은하</span>
+                </div>
+              </div>
+
+              <div class="metric-grid savings-metrics space-main-metrics">
+                <div><span>선택 거리</span><strong id="space-distance">-</strong></div>
                 <div><span>거리(km)</span><strong id="space-distance-km">-</strong></div>
+                <div><span>거리(AU)</span><strong id="space-distance-au">-</strong></div>
+                <div><span>거리(광년)</span><strong id="space-distance-ly">-</strong></div>
                 <div><span>선택 속도</span><strong id="space-speed-result">-</strong></div>
-                <div><span>빛 기준 시간</span><strong id="space-light-time">-</strong></div>
-                <div><span>30년 세대 기준</span><strong id="space-generation">-</strong></div>
+                <div><span>빛 편도 시간</span><strong id="space-light-time">-</strong></div>
+                <div><span>왕복 통신 지연</span><strong id="space-signal-delay">-</strong></div>
+                <div><span>지구 둘레 기준</span><strong id="space-earth-laps">-</strong></div>
               </div>
-              <p id="space-note" class="fine-print">거리와 속도 설명이 여기에 표시됩니다.</p>
+
+              <div class="space-comparison-panel">
+                <div class="space-panel-head">
+                  <span class="report-kicker">이동 수단별 비교</span>
+                  <p>같은 목적지를 여러 속도 기준으로 비교합니다.</p>
+                </div>
+                <div id="space-comparison-grid" class="space-comparison-grid"></div>
+              </div>
+
+              <div class="space-note-card">
+                <strong>계산 기준</strong>
+                <p id="space-note">거리와 속도 설명이 여기에 표시됩니다.</p>
+              </div>
             </aside>
           </section>
         </div>
@@ -147,11 +262,11 @@
         <div class="container two-column">
           <section class="info-block">
             <p class="eyebrow">사용 방법</p>
-            <h2>속도와 목적지만 고르면 됩니다.</h2>
+            <h2>목적지와 이동 수단을 고르면 됩니다.</h2>
             <ol class="step-list">
-              <li><strong>이동 속도 선택</strong><span>빛, 탐사선, 로켓, 여객기, KTX, 도보 중 하나를 고릅니다.</span></li>
-              <li><strong>목적지 선택</strong><span>달부터 행성, 가까운 별, 은하까지 선택할 수 있습니다.</span></li>
-              <li><strong>결과 확인</strong><span>걸리는 시간, 광년 거리, km 거리, 세대 단위 감각을 함께 봅니다.</span></li>
+              <li><strong>목적지 선택</strong><span>달, 화성, 태양, 가까운 별처럼 비교할 목적지를 먼저 고릅니다.</span></li>
+              <li><strong>이동 수단 선택</strong><span>빛, 탐사선, 로켓, 여객기, 자동차, 도보 중 하나를 고릅니다.</span></li>
+              <li><strong>결과 확인</strong><span>이동 시간, 빛 편도 시간, 왕복 통신 지연, 이동 수단별 비교를 함께 봅니다.</span></li>
             </ol>
           </section>
           <section class="info-block">
@@ -170,32 +285,74 @@
         <div class="container">
           <div class="section-intro narrow">
             <p class="eyebrow">계산 기준</p>
-            <h2>계산 전에 확인할 내용</h2>
-            <p>아래 내용은 계산 결과를 해석할 때 필요한 기준과 주의사항입니다.</p>
+            <h2>우주 이동 시간 결과를 해석하는 방법</h2>
+            <p>우주 이동 시간은 단순한 숫자보다 거리 기준, 속도 기준, 빛의 지연, 실제 우주 비행의 한계를 함께 봐야 이해하기 쉽습니다.</p>
           </div>
           <div class="guide-grid">
-            <article><h3>이 계산기는 무엇을 계산하나요?</h3><p>선택한 속도로 선택한 우주 목적지까지 직선으로 이동한다고 가정했을 때 걸리는 시간을 계산합니다.</p></article>
-            <article><h3>이런 상황에서 사용하면 좋습니다</h3><p>우주 거리의 규모를 체감하거나 교육·콘텐츠 제작용으로 빛의 속도, 탐사선 속도별 이동 시간을 비교하고 싶을 때 재미있는 참고값을 제공합니다.</p></article>
-            <article><h3>입력값 설명</h3><ul><li>이동 속도: 빛의 속도, 탐사선 속도, 로켓 속도 등 미리 정한 기준 속도입니다.</li><li>목적지: 달, 행성, 별, 은하처럼 거리값이 등록된 대상입니다.</li></ul></article>
-            <article><h3>계산식</h3><p>이동 시간(년) = 목적지 거리(광년) ÷ 선택 속도(빛의 속도 대비 비율)입니다. km 표시는 1광년 = 약 9.4607조 km로 환산합니다.</p></article>
-            <article><h3>예시 계산</h3><p>안드로메다 은하가 약 253만 7천 광년 떨어져 있다면, 빛의 속도 기준으로도 약 253만 7천 년이 걸립니다.</p></article>
-            <article><h3>결과 해석</h3><p>결과가 몇 만 년 이상으로 커지면 현실적인 여행 계획이라기보다 우주 거리의 크기를 체감하는 값으로 보는 편이 좋습니다.</p></article>
-            <article><h3>주의사항</h3><p>실제 우주 비행은 직선 이동이 아니며, 행성 위치, 중력 도움, 궤도 설계, 가속과 감속에 따라 시간이 크게 달라집니다.</p></article>
-            <article><h3>참고한 공식 자료 또는 안내 문구</h3><p>광년 정의와 천문 거리 단위, NASA가 공개한 태양계·탐사선 안내에서 자주 쓰는 대표 거리 개념을 바탕으로 한 참고 계산입니다.</p></article>
+            <article>
+              <h3>이 계산기는 무엇을 계산하나요?</h3>
+              <p>선택한 목적지까지의 거리를 선택한 이동 수단의 속도로 나누어 예상 이동 시간을 계산합니다. 결과는 실제 우주 임무 시간이 아니라 우주 거리의 규모를 체감하기 위한 참고값입니다.</p>
+            </article>
+            <article>
+              <h3>기본 계산식</h3>
+              <p>이동 시간 = 거리 ÷ 속도입니다. 계산기는 거리 단위를 km로 통일하고, 속도는 km/h 또는 km/s 기준으로 변환한 뒤 초·분·시간·일·년 단위로 보기 쉽게 표시합니다.</p>
+            </article>
+            <article>
+              <h3>행성 거리가 계속 달라지는 이유</h3>
+              <p>지구와 다른 행성은 서로 다른 궤도로 태양 주위를 공전합니다. 그래서 화성이나 금성까지의 거리는 특정 날짜의 위치에 따라 크게 달라질 수 있고, 이 계산기는 대표 거리·가까운 거리·먼 거리 참고값을 구분해 보여줍니다.</p>
+            </article>
+            <article>
+              <h3>대표 거리와 가까운 거리의 차이</h3>
+              <p>대표 거리는 거리 규모를 비교하기 위한 기준값이고, 가까운 거리와 먼 거리는 지구와 목적지가 상대적으로 가까워지거나 멀어지는 상황을 단순화한 참고값입니다. 실제 발사 가능 시기와 임무 경로는 이보다 훨씬 복잡합니다.</p>
+            </article>
+            <article>
+              <h3>빛의 편도 시간이 중요한 이유</h3>
+              <p>빛이나 전파는 진공에서 매우 빠르게 이동하지만 우주 거리가 크면 지연 시간이 생깁니다. 달은 약 1초대, 태양은 약 8분대처럼 빛도 목적지에 도달하는 데 시간이 필요합니다.</p>
+            </article>
+            <article>
+              <h3>왕복 통신 지연이란?</h3>
+              <p>왕복 통신 지연은 지구에서 신호를 보내고 목적지에서 다시 답이 돌아온다고 가정한 시간입니다. 계산식은 왕복 통신 지연 = 빛의 편도 시간 × 2입니다. 화성 탐사선 조종이 실시간으로 느껴지지 않는 이유를 이해할 때 유용합니다.</p>
+            </article>
+            <article>
+              <h3>AU와 광년의 차이</h3>
+              <p>AU는 지구와 태양 사이의 평균 거리에 가까운 천문단위입니다. 광년은 빛이 1년 동안 이동하는 거리로, 시간처럼 보이지만 실제로는 거리 단위입니다. 태양계 안쪽은 km·AU가, 별과 은하는 광년이 더 직관적입니다.</p>
+            </article>
+            <article>
+              <h3>이동 수단별 비교를 보는 방법</h3>
+              <p>자동차, 비행기, 로켓, 탐사선, 빛의 속도를 함께 보여주는 이유는 실제 이동 가능성을 말하기 위해서가 아니라 속도 차이에 따른 거리 체감을 돕기 위해서입니다. 비행기나 자동차 기준 결과는 교육용 비교값으로 봐야 합니다.</p>
+            </article>
+            <article>
+              <h3>실제 우주 비행 시간이 다른 이유</h3>
+              <p>실제 우주선은 목적지까지 직선으로 일정 속도로 달리지 않습니다. 궤도, 발사 시점, 중력 도움, 연료, 가속과 감속, 목적지 진입 방식 때문에 단순 계산 결과와 실제 임무 기간은 달라질 수 있습니다.</p>
+            </article>
+            <article>
+              <h3>결과가 매우 큰 경우의 해석</h3>
+              <p>프록시마 센타우리, 안드로메다 은하처럼 광년 단위 거리는 빛의 속도 기준으로도 수년에서 수백만 년이 걸립니다. 이런 결과는 현실적인 여행 계획보다는 우주 규모를 체감하는 과학 참고값으로 해석하는 것이 좋습니다.</p>
+            </article>
+            <article>
+              <h3>직접 입력을 사용할 때</h3>
+              <p>직접 거리는 km, AU, 광년 중 하나로 입력할 수 있고, 직접 속도는 km/h 기준입니다. 너무 큰 수나 0 이하의 값을 넣으면 결과가 비정상적으로 커지거나 계산이 불가능하므로 입력 범위를 확인해야 합니다.</p>
+            </article>
+            <article class="guide-note-card">
+              <h3>주의사항</h3>
+              <p>본 계산기는 우주 거리와 이동 시간을 이해하기 위한 참고 도구입니다. 실제 탐사 임무, 항법 설계, 천문 관측, 과학 보고서에는 공식 천문 자료와 임무별 계산을 별도로 확인해야 합니다.</p>
+            </article>
           </div>
-      <p class="guide-updated">최종 업데이트 날짜: 2026-06-16</p>
-        </div>
-      </section>
+          <p class="guide-updated">최종 업데이트 날짜: 2026-06-20</p>
+        </div>      </section>
 
       <section class="content-band">
         <div class="container faq-wrap">
           <p class="eyebrow">자주 묻는 질문</p>
           <h2>우주 이동 시간 계산기 자주 묻는 질문</h2>
           <div class="faq-grid">
-            <details open><summary>행성 거리는 왜 정확한 값이 아닌가요?</summary><p>행성은 계속 공전하므로 지구와의 거리가 매일 바뀝니다. 이 계산기는 대표적인 평균 또는 접근 거리로 단순 비교합니다.</p></details>
-            <details><summary>빛의 속도로 가면 실제로 사람도 갈 수 있나요?</summary><p>아닙니다. 질량이 있는 물체는 빛의 속도에 도달할 수 없습니다. 빛의 속도 선택지는 거리 감각을 보기 위한 기준입니다.</p></details>
-            <details><summary>로켓 속도는 어떤 기준인가요?</summary><p>지구 탈출속도에 가까운 11.2km/s를 단순 기준으로 사용했습니다. 실제 임무 속도는 궤도와 추진 방식에 따라 달라집니다.</p></details>
-            <details><summary>광년은 시간인가요?</summary><p>광년은 시간이 아니라 빛이 1년 동안 이동하는 거리 단위입니다.</p></details>
+            <details open><summary>우주 이동 시간은 실제 우주선 소요 시간과 같은가요?</summary><p>아닙니다. 이 계산기는 거리와 속도를 단순히 나눈 참고 계산입니다. 실제 우주 임무는 궤도, 발사 시점, 연료, 가속과 감속, 중력 도움, 행성 위치 변화를 함께 고려합니다.</p></details>
+            <details><summary>행성까지의 거리는 왜 매번 달라지나요?</summary><p>지구와 다른 행성은 각자 태양 주위를 공전하므로 서로의 거리가 계속 바뀝니다. 그래서 화성, 금성, 목성 같은 행성은 가까운 거리, 먼 거리, 대표 거리를 구분해서 참고하는 것이 좋습니다.</p></details>
+            <details><summary>빛의 편도 시간과 왕복 통신 지연은 무엇인가요?</summary><p>빛의 편도 시간은 빛이나 전파가 목적지까지 가는 데 걸리는 최소 시간에 가까운 참고값입니다. 왕복 통신 지연은 신호를 보내고 답을 받는 상황을 가정해 편도 시간의 두 배로 계산합니다.</p></details>
+            <details><summary>AU와 광년은 어떤 단위인가요?</summary><p>AU는 지구와 태양 사이의 평균 거리에 가까운 천문단위이고, 광년은 빛이 1년 동안 이동하는 거리 단위입니다. 광년은 시간 단위가 아니라 거리 단위입니다.</p></details>
+            <details><summary>비행기나 자동차 속도로 우주 이동을 계산해도 되나요?</summary><p>현실적으로 비행기나 자동차로 우주를 이동할 수 있다는 뜻은 아닙니다. 해당 속도는 우주 거리의 규모를 생활 속 속도와 비교해 체감하기 위한 기준입니다.</p></details>
+            <details><summary>빛의 속도로 사람이나 우주선이 이동할 수 있나요?</summary><p>질량이 있는 물체는 빛의 속도에 도달할 수 없습니다. 계산기의 빛의 속도 결과는 물체 이동 가능성을 뜻하기보다 거리와 통신 지연을 이해하기 위한 비교 기준입니다.</p></details>
+            <details><summary>이 계산 결과를 과학 보고서에 그대로 써도 되나요?</summary><p>기본적인 거리 감각이나 교육용 예시에는 참고할 수 있지만, 정밀 보고서나 실제 임무 시간 산정에는 공식 천문 자료와 항법 계산을 확인해야 합니다.</p></details>
           </div>
         </div>
       </section>
@@ -212,6 +369,6 @@
         </nav>
       </div>
     </footer>
-    <script type="module" src="../assets/js/app.js?v=20260619-jeonse-risk-phase5"></script>
+    <script type="module" src="../assets/js/app.js?v=20260620-space-phase5-final"></script>
   </body>
 </html>
