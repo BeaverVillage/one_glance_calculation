@@ -25,6 +25,21 @@ function json(data, init = {}) {
   });
 }
 
+
+function isSuccessfulRtmsResultCode(value) {
+  const code = String(value || '').trim();
+  return !code || code === '00' || code === '000' || code === '0';
+}
+
+function createRtmsResultError(parsed) {
+  const code = String(parsed?.resultCode || '').trim() || 'UNKNOWN';
+  const message = parsed?.resultMsg || '공공데이터 응답이 정상 처리되지 않았습니다.';
+  const err = new UpstreamApiError(message, `RTMS_RESULT_${code}`);
+  err.resultCode = code;
+  err.resultMsg = parsed?.resultMsg || '';
+  return err;
+}
+
 function error(message, status = 400, code = 'BAD_REQUEST', detail = {}) {
   const safeStatus = status >= 500 ? 200 : status;
   return json(
@@ -73,13 +88,21 @@ export async function onRequestGet(context) {
       .map((result, index) => (result.status === 'rejected' ? dealYmds[index] : null))
       .filter(Boolean);
     const failureDetails = results
-      .map((result, index) => (result.status === 'rejected' ? { dealYmd: dealYmds[index], code: result.reason?.code || 'RTMS_MONTH_FAILED' } : null))
+      .map((result, index) => (result.status === 'rejected' ? {
+        dealYmd: dealYmds[index],
+        code: result.reason?.code || 'RTMS_MONTH_FAILED',
+        message: result.reason?.message || '',
+        resultCode: result.reason?.resultCode || '',
+        resultMsg: result.reason?.resultMsg || ''
+      } : null))
       .filter(Boolean);
 
     if (!successfulMonths.length) {
+      const primaryFailure = failureDetails[0] || {};
+      const debugSuffix = primaryFailure.code ? ` 확인 코드: ${primaryFailure.code}.` : '';
       const failMessage = dealYmd
-        ? '해당 계약년월의 실거래가 응답을 처리하지 못했습니다. 다른 계약년월이나 최근 기간 조회를 사용해 주세요. 매매가격 직접 입력도 가능합니다.'
-        : '실거래가 조회 응답이 일시적으로 지연되거나 공공데이터 응답을 처리하지 못했습니다. 조회 기간을 줄이거나 계약년월 직접 조회를 사용해 주세요. 매매가격 직접 입력도 가능합니다.';
+        ? `해당 계약년월의 실거래가 응답을 처리하지 못했습니다.${debugSuffix} 다른 계약년월이나 최근 기간 조회를 사용해 주세요. 매매가격 직접 입력도 가능합니다.`
+        : `실거래가 조회 응답이 일시적으로 지연되거나 공공데이터 응답을 처리하지 못했습니다.${debugSuffix} 조회 기간을 줄이거나 계약년월 직접 조회를 사용해 주세요. 매매가격 직접 입력도 가능합니다.`;
       return error(failMessage, 200, 'RTMS_ALL_MONTHS_FAILED', {
         query: { lawdCd, aptName, months: dealYmd ? 1 : months, dealYmd: dealYmd || null, lookupMode: dealYmd ? 'dealYmd' : 'recent', numOfRows },
         monthsQueried: dealYmds,
@@ -180,8 +203,8 @@ async function fetchAptTrades({ lawdCd, dealYmd, numOfRows, serviceKey }) {
   if (parsed.serviceErrorCode) {
     throw new UpstreamApiError(parsed.serviceErrorMessage || '공공데이터 인증 또는 조회 조건을 확인할 수 없습니다.', parsed.serviceErrorCode);
   }
-  if (parsed.resultCode && parsed.resultCode !== '00') {
-    throw new UpstreamApiError(parsed.resultMsg || '공공데이터 응답이 정상 처리되지 않았습니다.', `RTMS_RESULT_${parsed.resultCode}`);
+  if (!isSuccessfulRtmsResultCode(parsed.resultCode)) {
+    throw createRtmsResultError(parsed);
   }
 
   return {

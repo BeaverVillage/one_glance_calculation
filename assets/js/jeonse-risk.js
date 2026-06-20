@@ -884,6 +884,8 @@ async function fetchJson(url, { signal, timeoutMs = TRADE_LOOKUP_TIMEOUT_MS } = 
       error.code = data?.code || "LOOKUP_FAILED";
       error.fallback = data?.fallback || "매매가격을 직접 입력해 계산할 수 있습니다.";
       error.noDataMessage = data?.noDataMessage || "";
+      error.failureDetails = Array.isArray(data?.failureDetails) ? data.failureDetails : [];
+      error.debugCode = data?.code || error.code;
       throw error;
     }
     return data || { ok: true, items: [] };
@@ -1374,11 +1376,15 @@ function getLookupErrorMessage(error, options = {}) {
     return "실거래가 조회 설정을 확인하는 중 문제가 발생했습니다. " + fallback;
   }
 
-  if (code === "RTMS_ALL_MONTHS_FAILED" || code === "RTMS_TIMEOUT" || status >= 500 || code.includes("TIMEOUT")) {
+  if (code === "RTMS_ALL_MONTHS_FAILED" || code === "RTMS_TIMEOUT" || code.startsWith("RTMS_RESULT_") || status >= 500 || code.includes("TIMEOUT")) {
     const extra = options.dealYmd
       ? " 다른 계약년월을 입력하거나 최근 기간 조회로 다시 확인해 주세요. "
       : " 조회 기간을 3개월로 줄이거나 계약년월 직접 조회를 사용해 보세요. ";
-    return (message || "실거래가 보조 조회가 일시적으로 실패했습니다.") + extra + fallback;
+    const firstDetail = Array.isArray(error?.failureDetails) && error.failureDetails.length ? error.failureDetails[0] : null;
+    const debug = firstDetail?.code && /RTMS_RESULT_|RTMS_HTTP_ERROR|RTMS_PARSE|SERVICE|KEY/i.test(firstDetail.code)
+      ? ` 확인 코드: ${firstDetail.code}.`
+      : "";
+    return (message || "실거래가 보조 조회가 일시적으로 실패했습니다.") + debug + extra + fallback;
   }
 
   if (message.includes("주소")) return message + " " + fallback;

@@ -30,6 +30,21 @@ function json(data, init = {}) {
   });
 }
 
+
+function isSuccessfulRtmsResultCode(value) {
+  const code = String(value || '').trim();
+  return !code || code === '00' || code === '000' || code === '0';
+}
+
+function createRtmsResultError(parsed) {
+  const code = String(parsed?.resultCode || '').trim() || 'UNKNOWN';
+  const message = parsed?.resultMsg || '공공데이터 응답이 정상 처리되지 않았습니다.';
+  const err = new UpstreamApiError(message, `RTMS_RESULT_${code}`);
+  err.resultCode = code;
+  err.resultMsg = parsed?.resultMsg || '';
+  return err;
+}
+
 function error(message, status = 400, code = 'BAD_REQUEST', detail = {}) {
   const safeStatus = status >= 500 ? 200 : status;
   return json(
@@ -408,8 +423,8 @@ async function fetchAptTrades({ lawdCd, dealYmd, numOfRows, serviceKey }) {
   if (parsed.serviceErrorCode) {
     throw new UpstreamApiError(parsed.serviceErrorMessage || '공공데이터 인증 또는 조회 조건을 확인할 수 없습니다.', parsed.serviceErrorCode);
   }
-  if (parsed.resultCode && parsed.resultCode !== '00') {
-    throw new UpstreamApiError(parsed.resultMsg || '공공데이터 응답이 정상 처리되지 않았습니다.', `RTMS_RESULT_${parsed.resultCode}`);
+  if (!isSuccessfulRtmsResultCode(parsed.resultCode)) {
+    throw createRtmsResultError(parsed);
   }
 
   return {
