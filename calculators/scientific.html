@@ -24,14 +24,14 @@
      crossorigin="anonymous"></script>
     <meta name="msvalidate.01" content="71220435128A45EF179793784E9AFC3E">
     <meta name="naver-site-verification" content="0f429adf1d8d3475017f3824ee96355074bcfd23">
-    <meta name="description" content="사칙연산, 괄호, 지수, 제곱근, 로그, 삼각함수를 입력해 도와 라디안 모드로 계산할 수 있는 공학용 계산기입니다.">
+    <meta name="description" content="사칙연산, 로그, 삼각함수, 하이퍼볼릭 함수, 순열·조합, 공학 상수, 복소수 j 계산, Abs·Arg·Conj·Re·Im, 직교형·극형 표시를 지원하는 공학용 계산기입니다.">
     <title>공학용 계산기 - 한눈계산</title>
     <link rel="canonical" href="https://hannuncalc.com/calculators/scientific.html">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="ko_KR">
     <meta property="og:site_name" content="한눈계산">
     <meta property="og:title" content="공학용 계산기 - 한눈계산">
-    <meta property="og:description" content="사칙연산, 괄호, 지수, 제곱근, 로그, 삼각함수를 입력해 도와 라디안 모드로 계산할 수 있는 공학용 계산기입니다.">
+    <meta property="og:description" content="사칙연산, 로그, 삼각함수, 하이퍼볼릭 함수, 순열·조합, 공학 상수, 복소수 j 계산, Abs·Arg·Conj·Re·Im, 직교형·극형 표시를 지원하는 공학용 계산기입니다.">
     <meta property="og:url" content="https://hannuncalc.com/calculators/scientific.html">
     <script type="application/ld+json" data-schema="webapplication">{
   "@context": "https://schema.org",
@@ -41,7 +41,7 @@
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Any",
   "inLanguage": "ko-KR",
-  "description": "사칙연산, 괄호, 지수, 제곱근, 로그, 삼각함수를 입력해 도와 라디안 모드로 계산할 수 있는 공학용 계산기입니다.",
+  "description": "사칙연산, 로그, 삼각함수, 하이퍼볼릭 함수, 순열·조합, 공학 상수, 복소수 j 계산, Abs·Arg·Conj·Re·Im, 직교형·극형 표시를 지원하는 공학용 계산기입니다.",
   "offers": {
     "@type": "Offer",
     "price": "0",
@@ -57,7 +57,7 @@
       "name": "sin(30)은 0.5로 계산되나요?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "각도 모드가 도로 선택되어 있으면 sin(30)은 30도로 계산되어 0.5가 됩니다. 라디안 모드에서는 30라디안으로 계산됩니다."
+        "text": "각도 모드가 DEG로 선택되어 있으면 sin(30)은 30도로 계산되어 0.5가 됩니다. RAD에서는 30라디안, GRAD에서는 30그라디안으로 계산됩니다."
       }
     },
     {
@@ -65,7 +65,7 @@
       "name": "어떤 계산까지 할 수 있나요?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "현재는 sin, cos, tan, asin, acos, atan, log, ln, sqrt, abs, exp를 사용할 수 있습니다. 통계 계산이나 행렬 계산은 아직 제공하지 않습니다."
+        "text": "현재는 sin, cos, tan, asin, acos, atan, sinh, cosh, tanh, asinh, acosh, atanh, log, ln, sqrt, abs, exp, x!, nPr, nCr, mod, floor, ceil, round, 공학 상수, 복소수 j 계산, Abs·Arg·Conj·Re·Im, Pol·Rec, 페이저 입력을 사용할 수 있습니다."
       }
     },
     {
@@ -88,7 +88,7 @@
 }</script>
     <link rel="stylesheet" href="../assets/css/base.css">
     <link rel="stylesheet" href="../assets/css/layout.css">
-    <link rel="stylesheet" href="../assets/css/components.css">
+    <link rel="stylesheet" href="../assets/css/components.css?v=20260620-engineering-phase6-final">
   </head>
   <body>
     <header class="site-header">
@@ -127,85 +127,225 @@
       <section class="content-band compact">
         <div class="container calculator-section">
           <section class="scientific-workbench" aria-label="공학용 계산기">
-            <form id="scientific-form" class="calculator-body">
+            <form id="scientific-form" class="calculator-body engineering-calculator">
               <div class="calculator-top">
                 <span class="calculator-brand">한눈계산</span>
-                <span class="calculator-model">fx-style</span>
+                <span class="calculator-model">Engineering</span>
+              </div>
+
+              <div class="engineering-statusbar" aria-label="계산기 상태">
+                <span id="scientific-mode-badge" class="engineering-status-pill">일반 계산</span>
+                <span id="scientific-angle-badge" class="engineering-status-pill">DEG</span>
+                <span id="scientific-display-badge" class="engineering-status-pill">Norm</span>
+                <span id="scientific-imaginary-badge" class="engineering-status-pill">j 표시</span>
               </div>
 
               <div class="calculator-screen" aria-live="polite">
                 <div class="screen-status">
-                  <span id="scientific-angle-badge">DEG</span>
-                  <span>수식 입력</span>
+                  <span>입력식</span>
+                  <span>Ans 사용 가능</span>
                 </div>
                 <div id="pretty-expression" class="pretty-expression">sin(30)+√(16)</div>
                 <input id="scientific-expression" class="screen-input" name="expression" type="text" value="sin(30)+sqrt(16)" autocomplete="off" spellcheck="false" aria-label="계산식 직접 입력">
                 <div class="screen-result">
-                  <span>Ans</span>
+                  <span>결과</span>
                   <strong id="scientific-result">-</strong>
                 </div>
-                <p id="scientific-detail">키보드로 입력하거나 아래 버튼을 눌러 계산식을 만들 수 있습니다.</p>
+                <p id="scientific-detail">일반 계산 모드입니다. 키보드로 입력하거나 아래 버튼을 눌러 계산식을 만들 수 있습니다.</p>
               </div>
 
-              <fieldset class="angle-toggle">
-                <legend>각도 모드</legend>
-                <label><input type="radio" name="angleMode" value="deg" checked> DEG</label>
-                <label><input type="radio" name="angleMode" value="rad"> RAD</label>
-              </fieldset>
+              <div id="scientific-complex-summary" class="engineering-complex-summary" aria-live="polite" hidden>
+                <article class="engineering-complex-card primary">
+                  <span>직교형</span>
+                  <strong id="scientific-complex-rect">-</strong>
+                  <small>실수부와 허수부를 나누어 표시합니다.</small>
+                </article>
+                <article class="engineering-complex-card primary">
+                  <span>극형</span>
+                  <strong id="scientific-complex-polar">-</strong>
+                  <small>크기와 위상각으로 표시합니다.</small>
+                </article>
+                <article class="engineering-complex-card">
+                  <span>크기 |z|</span>
+                  <strong id="scientific-complex-magnitude">-</strong>
+                  <small>Abs 결과와 같습니다.</small>
+                </article>
+                <article class="engineering-complex-card">
+                  <span>위상각</span>
+                  <strong id="scientific-complex-angle">-</strong>
+                  <small id="scientific-complex-angle-note">DEG 기준</small>
+                </article>
+              </div>
 
-              <div class="casio-keypad" aria-label="공학용 계산기 버튼">
-                <button type="button" class="key function" data-insert="sin(">sin</button>
-                <button type="button" class="key function" data-insert="cos(">cos</button>
-                <button type="button" class="key function" data-insert="tan(">tan</button>
-                <button type="button" class="key function" data-insert="log(">log</button>
-                <button type="button" class="key function" data-insert="ln(">ln</button>
-                <button type="button" class="key function" data-insert="sqrt(">√</button>
+              <div class="engineering-option-grid" aria-label="계산 표시 설정">
+                <fieldset class="angle-toggle engineering-angle-toggle">
+                  <legend>각도 모드</legend>
+                  <label><input type="radio" name="angleMode" value="deg" checked> DEG</label>
+                  <label><input type="radio" name="angleMode" value="rad"> RAD</label>
+                  <label><input type="radio" name="angleMode" value="grad"> GRAD</label>
+                </fieldset>
+                <fieldset class="angle-toggle engineering-display-toggle">
+                  <legend>표시 모드</legend>
+                  <label><input type="radio" name="displayMode" value="norm" checked> Norm</label>
+                  <label><input type="radio" name="displayMode" value="sci"> Sci</label>
+                  <label><input type="radio" name="displayMode" value="eng"> Eng</label>
+                </fieldset>
+              </div>
 
+              <div class="engineering-mode-tabs" role="tablist" aria-label="계산 모드 선택">
+                <button type="button" class="is-active" data-engineering-mode="real" aria-pressed="true">일반 계산</button>
+                <button type="button" data-engineering-mode="complex" aria-pressed="false">복소수 계산</button>
+              </div>
+
+              <div class="engineering-key-tabs" role="tablist" aria-label="키패드 탭 선택">
+                <button type="button" class="is-active" data-key-tab="basic" aria-pressed="true">기본</button>
+                <button type="button" data-key-tab="function" aria-pressed="false">함수</button>
+                <button type="button" data-key-tab="constants" aria-pressed="false">상수</button>
+                <button type="button" data-key-tab="complex" aria-pressed="false">복소수</button>
+              </div>
+
+              <div class="casio-keypad engineering-keypad is-active" data-key-panel="basic" aria-label="기본 계산 버튼">
+                <button type="button" class="key danger" data-action="clear">AC</button>
+                <button type="button" class="key danger" data-action="backspace">DEL</button>
                 <button type="button" class="key soft" data-insert="(">(</button>
                 <button type="button" class="key soft" data-insert=")">)</button>
-                <button type="button" class="key soft" data-insert="^2">x²</button>
-                <button type="button" class="key soft" data-insert="^">x^y</button>
-                <button type="button" class="key soft" data-insert="π">π</button>
-                <button type="button" class="key soft" data-insert="ans">Ans</button>
 
                 <button type="button" class="key number" data-insert="7">7</button>
                 <button type="button" class="key number" data-insert="8">8</button>
                 <button type="button" class="key number" data-insert="9">9</button>
-                <button type="button" class="key danger" data-action="backspace">DEL</button>
-                <button type="button" class="key danger" data-action="clear">AC</button>
                 <button type="button" class="key operator" data-insert="/">÷</button>
 
                 <button type="button" class="key number" data-insert="4">4</button>
                 <button type="button" class="key number" data-insert="5">5</button>
                 <button type="button" class="key number" data-insert="6">6</button>
                 <button type="button" class="key operator" data-insert="*">×</button>
-                <button type="button" class="key operator" data-insert="-">−</button>
-                <button type="button" class="key function" data-insert="exp(">exp</button>
 
                 <button type="button" class="key number" data-insert="1">1</button>
                 <button type="button" class="key number" data-insert="2">2</button>
                 <button type="button" class="key number" data-insert="3">3</button>
-                <button type="button" class="key operator" data-insert="+">+</button>
-                <button type="button" class="key soft" data-insert="%">%</button>
-                <button type="button" class="key function" data-insert="abs(">abs</button>
+                <button type="button" class="key operator" data-insert="-">−</button>
 
                 <button type="button" class="key number" data-insert="0">0</button>
                 <button type="button" class="key number" data-insert=".">.</button>
-                <button type="button" class="key soft" data-insert="e">e</button>
-                <button type="button" class="key soft" data-insert="-">(-)</button>
-                <button type="button" class="key execute" data-action="evaluate">EXE</button>
+                <button type="button" class="key soft" data-insert="ans">Ans</button>
+                <button type="button" class="key operator" data-insert="+">+</button>
+
+                <button type="button" class="key function" data-insert="sqrt(">√</button>
+                <button type="button" class="key soft" data-insert="^2">x²</button>
+                <button type="button" class="key soft" data-insert="^">x^y</button>
                 <button type="submit" class="key execute">=</button>
               </div>
+
+              <div class="casio-keypad engineering-keypad" data-key-panel="function" aria-label="함수 계산 버튼" hidden>
+                <button type="button" class="key function" data-insert="sin(">sin</button>
+                <button type="button" class="key function" data-insert="cos(">cos</button>
+                <button type="button" class="key function" data-insert="tan(">tan</button>
+                <button type="button" class="key soft" data-insert="π">π</button>
+
+                <button type="button" class="key function" data-insert="asin(">asin</button>
+                <button type="button" class="key function" data-insert="acos(">acos</button>
+                <button type="button" class="key function" data-insert="atan(">atan</button>
+                <button type="button" class="key soft" data-insert="e">e</button>
+
+                <button type="button" class="key function" data-insert="sinh(">sinh</button>
+                <button type="button" class="key function" data-insert="cosh(">cosh</button>
+                <button type="button" class="key function" data-insert="tanh(">tanh</button>
+                <button type="button" class="key function" data-insert="exp(">exp</button>
+
+                <button type="button" class="key function" data-insert="asinh(">asinh</button>
+                <button type="button" class="key function" data-insert="acosh(">acosh</button>
+                <button type="button" class="key function" data-insert="atanh(">atanh</button>
+                <button type="button" class="key function" data-insert="abs(">Abs</button>
+
+                <button type="button" class="key function" data-insert="ln(">ln</button>
+                <button type="button" class="key function" data-insert="log(">log</button>
+                <button type="button" class="key soft" data-insert="!">x!</button>
+                <button type="button" class="key soft" data-insert="^">x^y</button>
+
+                <button type="button" class="key function" data-insert="nPr(">nPr</button>
+                <button type="button" class="key function" data-insert="nCr(">nCr</button>
+                <button type="button" class="key function" data-insert="mod(">mod</button>
+                <button type="button" class="key soft" data-insert=",">,</button>
+
+                <button type="button" class="key function" data-insert="floor(">floor</button>
+                <button type="button" class="key function" data-insert="ceil(">ceil</button>
+                <button type="button" class="key function" data-insert="round(">round</button>
+                <button type="button" class="key soft" data-insert="%">%</button>
+
+                <button type="button" class="key soft" data-action="set-angle" data-angle-mode="deg">DEG</button>
+                <button type="button" class="key soft" data-action="set-angle" data-angle-mode="rad">RAD</button>
+                <button type="button" class="key soft" data-action="set-angle" data-angle-mode="grad">GRAD</button>
+                <button type="button" class="key execute" data-action="evaluate">EXE</button>
+
+                <button type="button" class="key soft" data-action="set-display" data-display-mode="norm">Norm</button>
+                <button type="button" class="key soft" data-action="set-display" data-display-mode="sci">Sci</button>
+                <button type="button" class="key soft" data-action="set-display" data-display-mode="eng">Eng</button>
+                <button type="button" class="key danger" data-action="backspace">DEL</button>
+              </div>
+
+              <div class="casio-keypad engineering-keypad engineering-constant-keypad" data-key-panel="constants" aria-label="상수 버튼" hidden>
+                <div class="engineering-constant-group-title">수학·기본</div>
+                <button type="button" class="key soft" data-insert="π" data-constant-id="pi">π</button>
+                <button type="button" class="key soft" data-insert="e" data-constant-id="e">e</button>
+                <button type="button" class="key soft" data-insert="c" data-constant-id="c">c</button>
+                <button type="button" class="key soft" data-insert="g" data-constant-id="g">g</button>
+
+                <div class="engineering-constant-group-title">전자기</div>
+                <button type="button" class="key soft" data-insert="mu0" data-constant-id="mu0">μ0</button>
+                <button type="button" class="key soft" data-insert="eps0" data-constant-id="eps0">ε0</button>
+                <button type="button" class="key soft" data-insert="qe" data-constant-id="qe">qe</button>
+                <button type="button" class="key soft" data-insert="sigma" data-constant-id="sigma">σ</button>
+
+                <div class="engineering-constant-group-title">물리·화학</div>
+                <button type="button" class="key soft" data-insert="h" data-constant-id="h">h</button>
+                <button type="button" class="key soft" data-insert="grav" data-constant-id="grav">G</button>
+                <button type="button" class="key soft" data-insert="k" data-constant-id="k">k</button>
+                <button type="button" class="key soft" data-insert="NA" data-constant-id="na">NA</button>
+
+                <div class="engineering-constant-group-title">기체·입자</div>
+                <button type="button" class="key soft" data-insert="R" data-constant-id="r">R</button>
+                <button type="button" class="key soft" data-insert="me" data-constant-id="me">me</button>
+                <button type="button" class="key soft" data-insert="mp" data-constant-id="mp">mp</button>
+                <button type="button" class="key soft" data-insert="mn" data-constant-id="mn">mn</button>
+              </div>
+
+              <div id="scientific-constant-card" class="engineering-constant-card" aria-live="polite">
+                <div>
+                  <span class="engineering-constant-label">상수 정보</span>
+                  <strong id="scientific-constant-name">상수 탭에서 값을 선택하세요</strong>
+                </div>
+                <p id="scientific-constant-value">μ0, ε0, c 같은 상수를 누르면 입력명·값·단위를 여기서 확인할 수 있습니다.</p>
+                <p id="scientific-constant-insert">입력 예: <code>1/sqrt(mu0*eps0)</code></p>
+              </div>
+
+              <div class="casio-keypad engineering-keypad" data-key-panel="complex" aria-label="복소수 계산 버튼" hidden>
+                <button type="button" class="key soft" data-insert="j" data-complex-key="true" data-key-hint="허수 단위 j를 입력합니다. 예: 3+4j">j</button>
+                <button type="button" class="key soft" data-insert="∠" data-complex-key="true" data-key-hint="페이저 각도 기호를 입력합니다. 예: 5∠30">∠</button>
+                <button type="button" class="key function" data-insert="abs(" data-complex-key="true" data-key-hint="복소수의 크기 |z|를 계산합니다.">Abs</button>
+                <button type="button" class="key function" data-insert="arg(" data-complex-key="true" data-key-hint="복소수의 위상각을 현재 DEG/RAD/GRAD 기준으로 계산합니다.">Arg</button>
+
+                <button type="button" class="key function" data-insert="re(" data-complex-key="true" data-key-hint="복소수의 실수부를 계산합니다.">Re</button>
+                <button type="button" class="key function" data-insert="im(" data-complex-key="true" data-key-hint="복소수의 허수부를 계산합니다.">Im</button>
+                <button type="button" class="key function" data-insert="conj(" data-complex-key="true" data-key-hint="켤레복소수를 계산합니다.">Conj</button>
+                <button type="button" class="key soft" data-action="toggle-imaginary">j/i</button>
+
+                <button type="button" class="key function" data-insert="pol(" data-complex-key="true" data-key-hint="Pol(x,y)는 x+yj를 만들고 결과 카드에서 극형을 함께 보여줍니다.">Pol</button>
+                <button type="button" class="key function" data-insert="rec(" data-complex-key="true" data-key-hint="Rec(r,θ)는 r∠θ를 직교형으로 변환합니다.">Rec</button>
+                <button type="button" class="key soft" data-action="show-rect" aria-pressed="true">Rect</button>
+                <button type="button" class="key soft" data-action="show-polar" aria-pressed="false">Polar</button>
+              </div>
+
+              <p id="scientific-key-hint" class="engineering-key-hint">모바일에서도 버튼이 겹치지 않도록 4열 키패드로 구성했습니다.</p>
             </form>
 
             <aside class="result-panel scientific-side">
               <div class="formula-help">
                 <h3>이렇게 입력해 보세요</h3>
-                <p>예: <code>2^10</code>, <code>sqrt(2)</code>, <code>log(100)</code>, <code>sin(30)</code>, <code>3*(4+5)</code></p>
+                <p>예: <code>2^10</code>, <code>sqrt(2)</code>, <code>log(100)</code>, <code>sin(30)</code>, <code>5!</code>, <code>nCr(10,3)</code>, <code>1/sqrt(mu0*eps0)</code>, <code>3+4j</code>, <code>Abs(3+4j)</code>, <code>5∠30</code>, <code>Rec(5,30)</code>, <code>Pol(3,4)</code></p>
               </div>
               <div class="formula-help">
                 <h3>버튼 구성</h3>
-                <p>위쪽은 삼각함수와 로그, 가운데는 괄호와 제곱, 아래쪽은 숫자와 사칙연산입니다. 키보드로 직접 입력해도 화면에 바로 반영됩니다.</p>
+                <p>일반 계산과 복소수 계산 모드를 분리하고, 기본·함수·상수·복소수 탭으로 버튼을 나눴습니다. 함수 탭에는 하이퍼볼릭 함수, 순열·조합, mod, 표시 모드 버튼을 넣었고, 복소수 탭에는 j, ∠, Abs, Arg, Conj, Re, Im, Pol, Rec 버튼을 넣었습니다. 모바일에서도 4열 고정 키패드를 사용합니다.</p>
               </div>
               <div class="history-box">
                 <h3>최근 계산</h3>
@@ -223,7 +363,7 @@
             <h2>계산하고 싶은 식을 입력하세요.</h2>
             <ol class="step-list">
               <li><strong>식 입력</strong><span>키보드로 입력하거나 계산기 버튼을 눌러 식을 만듭니다.</span></li>
-              <li><strong>각도 선택</strong><span>삼각함수를 쓸 때 문제에서 도를 쓰는지 라디안을 쓰는지 확인합니다.</span></li>
+              <li><strong>각도 선택</strong><span>삼각함수를 쓸 때 문제에서 DEG, RAD, GRAD 중 어떤 단위를 쓰는지 확인합니다.</span></li>
               <li><strong>결과 확인</strong><span>계산 결과와 최근에 계산한 식을 함께 확인합니다.</span></li>
               <li><strong>다시 계산</strong><span>괄호나 숫자를 바꿔 다른 경우도 바로 비교해 봅니다.</span></li>
             </ol>
@@ -234,7 +374,9 @@
             <h2>기호를 이렇게 이해합니다.</h2>
             <ul class="plain-list">
               <li><code>^</code>는 제곱이나 거듭제곱을 뜻합니다.</li>
-              <li><code>log()</code>는 상용로그, <code>ln()</code>은 자연로그입니다.</li>
+              <li><code>log()</code>는 상용로그, <code>ln()</code>은 자연로그입니다.</li><li><code>nPr(n,r)</code>, <code>nCr(n,r)</code>, <code>mod(a,b)</code>처럼 쉼표로 값을 나누는 함수도 사용할 수 있습니다.</li>
+              <li><code>mu0</code>, <code>eps0</code>, <code>c</code>, <code>R</code> 같은 상수는 상수 탭에서 입력할 수 있습니다.</li>
+              <li>복소수 모드에서는 <code>3+4j</code>, <code>Abs(3+4j)</code>, <code>Arg(3+4j)</code>, <code>Conj(3+4j)</code>, <code>5∠30</code> 같은 입력을 사용할 수 있습니다.</li>
               <li><code>sqrt()</code>는 제곱근입니다. 예를 들어 <code>sqrt(16)</code>은 4입니다.</li>
               <li>삼각함수는 선택한 각도 모드에 맞춰 계산됩니다.</li>
             </ul>
@@ -282,14 +424,14 @@
             <p>아래 내용은 계산 결과를 해석할 때 필요한 기준과 주의사항입니다.</p>
           </div>
           <div class="guide-grid">
-            <article><h3>이 계산기는 무엇을 계산하나요?</h3><p>사칙연산, 괄호, 거듭제곱, 제곱근, 로그, 삼각함수를 입력한 순서와 연산 우선순위에 맞춰 계산합니다.</p></article>
-            <article><h3>이런 상황에서 사용하면 좋습니다</h3><p>과제, 실험값 정리, 단위 변환 전 계산처럼 괄호와 함수가 섞인 계산을 빠르게 확인하고, DEG/RAD 모드 차이를 점검할 때 사용하면 좋습니다.</p></article>
-            <article><h3>입력값 설명</h3><ul><li>계산식: 숫자, 연산자, 괄호, 함수명을 입력합니다.</li><li>각도 모드: 삼각함수를 도(DEG) 또는 라디안(RAD) 기준으로 계산합니다.</li></ul></article>
-            <article><h3>계산식</h3><p>입력식을 토큰으로 나눈 뒤 괄호, 함수, 거듭제곱, 곱셈·나눗셈, 덧셈·뺄셈 순서로 계산합니다.</p></article>
-            <article><h3>예시 계산</h3><p>DEG 모드에서 sin(30)+sqrt(16)을 입력하면 0.5+4로 계산해 4.5를 표시합니다.</p></article>
+            <article><h3>이 계산기는 무엇을 계산하나요?</h3><p>사칙연산, 괄호, 거듭제곱, 제곱근, 로그, 삼각함수, 하이퍼볼릭 함수, 순열·조합, 나머지 계산, 물리·전자기 공학 상수를 입력한 순서와 연산 우선순위에 맞춰 계산합니다.</p></article>
+            <article><h3>이런 상황에서 사용하면 좋습니다</h3><p>과제, 실험값 정리, 단위 변환 전 계산처럼 괄호와 함수가 섞인 계산을 빠르게 확인하고, DEG/RAD/GRAD 모드와 Norm/Sci/Eng 표시 차이를 점검할 때 사용하면 좋습니다.</p></article>
+            <article><h3>입력값 설명</h3><ul><li>계산식: 숫자, 연산자, 괄호, 함수명을 입력합니다.</li><li>각도 모드: 삼각함수를 도(DEG), 라디안(RAD), 그라디안(GRAD) 기준으로 계산합니다.</li><li>표시 모드: 결과를 일반 표기, 과학 표기, 공학 표기 중 선택해 확인합니다.</li></ul></article>
+            <article><h3>계산식</h3><p>입력식을 토큰으로 나눈 뒤 괄호, 함수, 팩토리얼, 거듭제곱, 곱셈·나눗셈, 덧셈·뺄셈 순서로 계산합니다. <code>nCr(10,3)</code>, <code>mod(17,5)</code>처럼 2개 인수를 쓰는 함수는 쉼표로 구분합니다.</p></article>
+            <article><h3>예시 계산</h3><p>DEG 모드에서 sin(30)+sqrt(16)을 입력하면 0.5+4로 계산해 4.5를 표시합니다. <code>nCr(10,3)</code>은 120, <code>mod(17,5)</code>는 2로 계산합니다.</p></article>
             <article><h3>결과 해석</h3><p>결과가 예상과 다르면 괄호 위치와 DEG/RAD 모드를 먼저 확인하세요.</p></article>
             <article><h3>주의사항</h3><p>보고서, 시험, 실무에 사용할 때는 유효숫자, 반올림, 단위 기준을 별도로 확인해야 합니다.</p></article>
-            <article><h3>참고한 공식 자료 또는 안내 문구</h3><p>수학 표기와 브라우저 JavaScript Math 함수 기준을 사용합니다.</p></article>
+            <article><h3>참고한 공식 자료 또는 안내 문구</h3><p>수학 표기와 브라우저 JavaScript Math 함수 기준을 사용합니다. 공학 상수는 CODATA 계열의 널리 쓰이는 고정값 또는 표준값을 참고 계산용으로 사용합니다.</p></article>
           </div>
           <p class="guide-updated">최종 업데이트 날짜: 2026-06-16</p>
         </div>
@@ -302,11 +444,11 @@
           <div class="faq-grid">
             <details open>
               <summary>sin(30)은 0.5로 계산되나요?</summary>
-              <p>각도 모드가 도로 선택되어 있으면 sin(30)은 30도로 계산되어 0.5가 됩니다. 라디안 모드에서는 30라디안으로 계산됩니다.</p>
+              <p>각도 모드가 DEG로 선택되어 있으면 sin(30)은 30도로 계산되어 0.5가 됩니다. RAD에서는 30라디안, GRAD에서는 30그라디안으로 계산됩니다.</p>
             </details>
             <details>
               <summary>어떤 계산까지 할 수 있나요?</summary>
-              <p>현재는 sin, cos, tan, asin, acos, atan, log, ln, sqrt, abs, exp를 사용할 수 있습니다. 통계 계산이나 행렬 계산은 아직 제공하지 않습니다.</p>
+              <p>현재는 sin, cos, tan, asin, acos, atan, sinh, cosh, tanh, asinh, acosh, atanh, log, ln, sqrt, abs, exp, x!, nPr, nCr, mod, floor, ceil, round, 공학 상수, 복소수 j 계산, Abs·Arg·Conj·Re·Im, Pol·Rec, 페이저 입력을 사용할 수 있습니다.</p>
             </details>
             <details>
               <summary>계산 기록은 저장되나요?</summary>
@@ -334,6 +476,6 @@
       </div>
     </footer>
 
-    <script type="module" src="../assets/js/app.js?v=20260619-jeonse-risk-phase5"></script>
+    <script type="module" src="../assets/js/app.js?v=20260620-engineering-phase6-final"></script>
   </body>
 </html>

@@ -13605,3 +13605,746 @@ body.modal-open {
     display: none;
   }
 }
+
+
+/* UI consistency pass: space/caffeine buttons and mobile overflow fixes */
+.ghost-button {
+  min-height: 42px;
+  padding: 9px 14px;
+  border: 1px solid rgba(20, 108, 95, 0.2);
+  border-radius: 12px;
+  background: rgba(20, 108, 95, 0.07);
+  color: var(--green, #0f7664);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+}
+
+.ghost-button:hover,
+.ghost-button:focus-visible {
+  background: rgba(20, 108, 95, 0.12);
+  border-color: rgba(20, 108, 95, 0.42);
+  transform: translateY(-1px);
+}
+
+.space-action-row {
+  grid-template-columns: minmax(0, 1fr) minmax(120px, 0.34fr);
+  align-items: stretch;
+}
+
+.space-advanced-note,
+.caffeine-field-note {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(20, 108, 95, 0.12);
+  border-radius: 12px;
+  background: rgba(246, 252, 250, 0.78);
+  color: var(--muted-text, #64748b);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.caffeine-input-panel > .field-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+}
+
+.caffeine-input-panel .field,
+.caffeine-input-panel .field-row,
+.caffeine-input-panel input,
+.caffeine-input-panel select,
+.caffeine-input-panel .input-suffix {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.caffeine-input-panel input[type="time"] {
+  width: 100%;
+  min-width: 0;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.caffeine-intake-actions #caffeine-add-intake {
+  background: var(--green, #0f7664);
+  border-color: var(--green, #0f7664);
+  color: #fff;
+}
+
+.caffeine-intake-actions #caffeine-add-intake:hover,
+.caffeine-intake-actions #caffeine-add-intake:focus-visible {
+  background: #0d6a57;
+  border-color: #0d6a57;
+}
+
+.caffeine-timeline {
+  min-height: 66px;
+  margin-bottom: 8px;
+}
+
+.caffeine-timeline-node {
+  width: auto;
+  min-width: 34px;
+  max-width: 58px;
+}
+
+.caffeine-timeline-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.caffeine-timeline-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0 10px;
+}
+
+.caffeine-timeline-detail {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 11px;
+  border: 1px solid rgba(20, 108, 95, 0.12);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.caffeine-timeline-detail span {
+  color: var(--muted-text, #64748b);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.caffeine-timeline-detail strong {
+  color: var(--text-strong, #142522);
+  font-size: 0.9rem;
+  text-align: right;
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .space-action-row,
+  .caffeine-input-panel > .field-row,
+  .caffeine-timeline-details {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .space-advanced-panel,
+  .caffeine-intake-panel,
+  .caffeine-preset-card {
+    overflow: hidden;
+  }
+
+  .caffeine-input-panel input[type="time"] {
+    display: block;
+    width: 100%;
+  }
+
+  .caffeine-timeline {
+    min-height: 70px;
+  }
+
+  .caffeine-timeline-node {
+    max-width: 44px;
+  }
+
+  .caffeine-timeline-label {
+    font-size: 0.62rem;
+    padding: 4px 5px;
+  }
+
+  .caffeine-timeline-detail {
+    align-items: flex-start;
+  }
+
+  .caffeine-timeline-detail strong {
+    white-space: normal;
+  }
+}
+
+/* Engineering calculator phase 1: mobile-safe tabbed keypad */
+.engineering-calculator {
+  min-width: 0;
+  padding: 18px;
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbfa 100%);
+  border: 1px solid #cfe0dc;
+  border-radius: 22px;
+  box-shadow: 0 16px 32px rgba(15, 61, 54, 0.1);
+}
+
+.engineering-calculator .calculator-top {
+  color: var(--ink);
+}
+
+.engineering-calculator .calculator-model {
+  color: var(--green);
+  font-style: normal;
+  font-weight: 900;
+}
+
+.engineering-statusbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 0 0 10px;
+  min-width: 0;
+}
+
+.engineering-status-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 4px 9px;
+  color: #0f5f55;
+  background: #eaf8f4;
+  border: 1px solid #c9e8df;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.engineering-calculator .calculator-screen {
+  min-width: 0;
+  padding: 12px;
+  background: #f8fffc;
+  border: 1px solid #b9d7d1;
+  border-radius: 16px;
+  box-shadow: inset 0 0 0 1px rgba(20, 108, 95, 0.06);
+}
+
+.engineering-calculator .pretty-expression,
+.engineering-calculator .screen-input,
+.engineering-calculator .screen-result strong {
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.engineering-calculator .pretty-expression {
+  border: 1px solid #d7e5e2;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.engineering-calculator .screen-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.engineering-angle-toggle {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.engineering-angle-toggle label {
+  color: #0f5f55;
+  background: #f2fbf8;
+  border: 1px solid #cfe6df;
+}
+
+.engineering-mode-tabs,
+.engineering-key-tabs {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.engineering-mode-tabs {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 12px 0 8px;
+}
+
+.engineering-key-tabs {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0 0 10px;
+}
+
+.engineering-mode-tabs button,
+.engineering-key-tabs button {
+  min-width: 0;
+  min-height: 40px;
+  padding: 8px 6px;
+  color: #35524d;
+  background: #fff;
+  border: 1px solid #cfe0dc;
+  border-radius: 14px;
+  box-shadow: 0 2px 7px rgba(22, 68, 60, 0.07);
+  font-size: 0.84rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.engineering-mode-tabs button.is-active,
+.engineering-key-tabs button.is-active {
+  color: #fff;
+  background: var(--green);
+  border-color: var(--green);
+}
+
+.casio-keypad.engineering-keypad {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  min-width: 0;
+}
+
+.engineering-keypad[hidden] {
+  display: none !important;
+}
+
+.engineering-keypad .key {
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px 4px;
+  border-radius: 13px;
+  box-shadow: none;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.engineering-keypad .key.number {
+  background: #213f3a;
+}
+
+.engineering-keypad .key.operator,
+.engineering-keypad .key.execute {
+  background: var(--green);
+  border-color: #0d564d;
+}
+
+.engineering-keypad .key.function {
+  background: #44645f;
+}
+
+.engineering-keypad .key.soft {
+  color: #16443e;
+  background: #eef8f5;
+  border-color: #cfe6df;
+}
+
+.engineering-keypad .key.danger {
+  color: #7a321f;
+  background: #fff7f2;
+  border-color: #edd0c4;
+}
+
+.engineering-key-hint {
+  min-height: 20px;
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 520px) {
+  .engineering-calculator {
+    padding: 12px;
+    border-radius: 18px;
+  }
+
+  .engineering-statusbar {
+    gap: 5px;
+  }
+
+  .engineering-status-pill {
+    min-height: 24px;
+    padding: 4px 7px;
+    font-size: 0.66rem;
+  }
+
+  .engineering-mode-tabs,
+  .engineering-key-tabs,
+  .casio-keypad.engineering-keypad {
+    gap: 6px;
+  }
+
+  .engineering-mode-tabs button,
+  .engineering-key-tabs button {
+    min-height: 36px;
+    padding: 7px 4px;
+    font-size: 0.72rem;
+  }
+
+  .engineering-keypad .key {
+    min-height: 39px;
+    padding: 6px 2px;
+    border-radius: 11px;
+    font-size: 0.76rem;
+  }
+
+  .engineering-keypad .key.number,
+  .engineering-keypad .key.operator {
+    font-size: 0.88rem;
+  }
+
+  .engineering-key-hint {
+    font-size: 0.76rem;
+  }
+}
+
+
+/* Engineering calculator phase 2: function/display expansion */
+.engineering-option-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 14px 0;
+  min-width: 0;
+}
+
+.engineering-option-grid .angle-toggle {
+  margin: 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  min-width: 0;
+}
+
+.engineering-display-toggle label,
+.engineering-angle-toggle label {
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.engineering-keypad .key {
+  min-width: 0;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .engineering-option-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .engineering-option-grid .angle-toggle {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+
+/* Engineering calculator phase 3: constant panel detail */
+.engineering-constant-keypad {
+  align-items: stretch;
+}
+
+.engineering-constant-group-title {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  min-height: 26px;
+  margin: 3px 0 -2px;
+  color: #0f5f55;
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+}
+
+.engineering-constant-card {
+  margin-top: 10px;
+  padding: 12px;
+  color: #26423d;
+  background: #f7fcfa;
+  border: 1px solid #cfe5df;
+  border-radius: 15px;
+  min-width: 0;
+}
+
+.engineering-constant-card > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.engineering-constant-card strong {
+  color: #113d37;
+  font-size: 0.96rem;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.engineering-constant-label {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 4px 8px;
+  color: #0f5f55;
+  background: #e8f7f3;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.engineering-constant-card p {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.engineering-constant-card code {
+  white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+  .engineering-constant-group-title {
+    min-height: 22px;
+    font-size: 0.68rem;
+  }
+
+  .engineering-constant-card {
+    padding: 10px;
+    border-radius: 13px;
+  }
+
+  .engineering-constant-card strong {
+    font-size: 0.88rem;
+  }
+
+  .engineering-constant-card p {
+    font-size: 0.74rem;
+  }
+}
+
+
+/* Engineering calculator phase 5: complex/phasor result UX */
+.engineering-complex-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 12px 0 2px;
+  min-width: 0;
+}
+
+.engineering-complex-summary[hidden] {
+  display: none !important;
+}
+
+.engineering-complex-card {
+  min-width: 0;
+  padding: 11px;
+  background: #ffffff;
+  border: 1px solid #d6e7e2;
+  border-radius: 15px;
+  box-shadow: 0 6px 16px rgba(18, 73, 65, 0.06);
+}
+
+.engineering-complex-card.primary {
+  background: #f3fbf8;
+  border-color: #c6e4dc;
+}
+
+.engineering-complex-card span,
+.engineering-complex-card small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+
+.engineering-complex-card strong {
+  display: block;
+  max-width: 100%;
+  margin: 5px 0 4px;
+  color: #113d37;
+  font-size: 0.96rem;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.engineering-keypad .key.is-active {
+  color: #ffffff;
+  background: #146c5f;
+  border-color: #0d564d;
+}
+
+@media (max-width: 520px) {
+  .engineering-complex-summary {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .engineering-complex-card {
+    padding: 10px;
+    border-radius: 13px;
+  }
+
+  .engineering-complex-card strong {
+    font-size: 0.86rem;
+  }
+
+  .engineering-complex-card span,
+  .engineering-complex-card small {
+    font-size: 0.68rem;
+  }
+}
+
+
+/* Engineering calculator phase 6: final mobile stability guard */
+.scientific-workbench,
+.scientific-workbench *,
+.engineering-calculator,
+.engineering-calculator * {
+  box-sizing: border-box;
+}
+
+.scientific-workbench,
+.scientific-side,
+.engineering-calculator,
+.engineering-calculator fieldset,
+.engineering-calculator label,
+.engineering-calculator input,
+.engineering-calculator button {
+  min-width: 0;
+}
+
+.engineering-calculator {
+  overflow: hidden;
+}
+
+.engineering-calculator .calculator-top,
+.engineering-calculator .screen-status,
+.engineering-option-grid .angle-toggle,
+.engineering-statusbar {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.engineering-mode-tabs button,
+.engineering-key-tabs button,
+.engineering-keypad .key {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  touch-action: manipulation;
+}
+
+.engineering-calculator .screen-result strong,
+.engineering-complex-card strong,
+.engineering-constant-card code {
+  -webkit-overflow-scrolling: touch;
+}
+
+.engineering-constant-card code {
+  display: inline-block;
+  max-width: 100%;
+  overflow-x: auto;
+  vertical-align: bottom;
+}
+
+.engineering-complex-summary,
+.engineering-constant-card,
+.engineering-key-hint {
+  max-width: 100%;
+}
+
+@media (max-width: 420px) {
+  .engineering-calculator {
+    padding: 10px;
+  }
+
+  .engineering-calculator .calculator-top {
+    gap: 8px;
+  }
+
+  .engineering-statusbar {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .engineering-status-pill {
+    justify-content: center;
+    width: 100%;
+    padding-inline: 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .engineering-option-grid {
+    gap: 8px;
+    margin: 10px 0;
+  }
+
+  .engineering-option-grid .angle-toggle {
+    gap: 5px;
+  }
+
+  .engineering-option-grid .angle-toggle legend {
+    margin-bottom: 5px;
+    font-size: 0.72rem;
+  }
+
+  .engineering-option-grid .angle-toggle label {
+    min-height: 30px;
+    padding: 5px 4px;
+    font-size: 0.68rem;
+  }
+
+  .engineering-key-tabs {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .engineering-mode-tabs button,
+  .engineering-key-tabs button {
+    min-height: 34px;
+    font-size: 0.68rem;
+    letter-spacing: -0.04em;
+  }
+
+  .casio-keypad.engineering-keypad {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  .engineering-keypad .key {
+    min-height: 38px;
+    padding: 6px 1px;
+    font-size: 0.7rem;
+    letter-spacing: -0.04em;
+  }
+
+  .engineering-keypad .key.number,
+  .engineering-keypad .key.operator,
+  .engineering-keypad .key.execute {
+    font-size: 0.84rem;
+  }
+
+  .engineering-complex-card strong {
+    font-size: 0.82rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .engineering-calculator {
+    padding: 8px;
+  }
+
+  .engineering-mode-tabs,
+  .engineering-key-tabs,
+  .casio-keypad.engineering-keypad {
+    gap: 4px;
+  }
+
+  .engineering-keypad .key {
+    min-height: 36px;
+    font-size: 0.66rem;
+  }
+
+  .engineering-keypad .key.number,
+  .engineering-keypad .key.operator,
+  .engineering-keypad .key.execute {
+    font-size: 0.8rem;
+  }
+}

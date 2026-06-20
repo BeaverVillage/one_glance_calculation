@@ -78,7 +78,6 @@ export function initSpaceTravelCalculator(root = document) {
   const customSpeedInput = form.elements.customSpeedKmh;
   const advancedToggle = root.querySelector("#space-advanced-toggle");
   const advancedPanel = root.querySelector("#space-advanced-panel");
-  const exampleButton = root.querySelector("#space-example-button");
   const resetButton = root.querySelector("#space-reset-button");
 
   populateSpeedSelect(speedSelect);
@@ -177,15 +176,6 @@ export function initSpaceTravelCalculator(root = document) {
   form.addEventListener("input", () => update());
   form.addEventListener("change", () => update());
 
-  exampleButton?.addEventListener("click", () => {
-    destinationSelect.value = "mars";
-    distanceModeSelect.value = "near";
-    speedSelect.value = "voyager";
-    customDistanceInput.value = "";
-    customSpeedInput.value = "";
-    customDistanceUnitSelect.value = "km";
-    update({ scroll: true });
-  });
 
   resetButton?.addEventListener("click", () => {
     destinationSelect.value = "moon";

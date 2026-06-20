@@ -120,7 +120,7 @@
 }</script>
     <link rel="stylesheet" href="../assets/css/base.css">
     <link rel="stylesheet" href="../assets/css/layout.css">
-    <link rel="stylesheet" href="../assets/css/components.css?v=20260620-caffeine-phase5-final">
+    <link rel="stylesheet" href="../assets/css/components.css?v=20260620-caffeine-ui-fix-1">
   </head>
   <body>
     <header class="site-header"><a class="brand" href="../index.html"><span class="brand-mark">한</span><span><strong>한눈계산</strong><small>생활 계산기</small></span></a><nav class="site-nav" aria-label="주요 메뉴"><a href="../index.html#calculators" data-tool-drawer>다른 계산기</a><a href="../index.html#how-to">사용 방법</a><a href="../index.html#faq">질문</a><a href="../about.html">소개</a><a href="../contact.html">문의</a></nav></header>
@@ -193,14 +193,13 @@
             <div class="field">
               <label for="caffeine-mg">카페인 양</label>
               <div class="input-suffix"><input id="caffeine-mg" name="caffeineMg" type="number" min="0" max="1000" step="5" value="120" inputmode="numeric"><span>mg</span></div>
-              <p class="helper-text">선택한 음료의 대표값이 들어가며, 실제 제품 라벨에 맞게 수정할 수 있습니다.</p>
             </div>
             <div class="field">
               <label for="half-life-hours">반감기</label>
               <div class="input-suffix"><input id="half-life-hours" name="halfLifeHours" type="number" min="1" max="12" step="0.5" value="5" inputmode="decimal"><span>시간</span></div>
-              <p class="helper-text">기본값 5시간입니다. 민감한 편이면 6~8시간으로 조정해 볼 수 있습니다.</p>
             </div>
           </div>
+          <p class="helper-text caffeine-field-note">대표 카페인 양은 자동 입력되며 직접 수정할 수 있습니다. 반감기는 기본 5시간 기준입니다.</p>
           <div class="field-row"><div class="field"><label for="consumed-at">마신 시간</label><input id="consumed-at" name="consumedAt" type="time" value="15:00"></div><div class="field"><label for="bedtime">취침 시간</label><input id="bedtime" name="bedtime" type="time" value="23:30"></div></div>
           <div class="caffeine-intake-panel" aria-label="오늘 마신 카페인 목록">
             <div class="mini-card-heading">
@@ -304,6 +303,6 @@
         </nav>
       </div>
     </footer>
-    <script type="module" src="../assets/js/app.js?v=20260620-caffeine-phase5-final"></script>
+    <script type="module" src="../assets/js/app.js?v=20260620-caffeine-ui-fix-1"></script>
   </body>
 </html>

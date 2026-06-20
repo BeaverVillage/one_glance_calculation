@@ -422,16 +422,29 @@ function renderCaffeineVisual(container, result) {
     dot.className = "caffeine-timeline-dot";
     const text = document.createElement("span");
     text.className = "caffeine-timeline-label";
-    text.textContent = `${node.label} · ${node.timeLabel}`;
+    text.textContent = node.shortLabel || node.label;
     marker.append(dot, text);
     timeline.append(marker);
+  });
+
+  const detailList = document.createElement("div");
+  detailList.className = "caffeine-timeline-details";
+  result.timeline.nodes.forEach((node) => {
+    const item = document.createElement("div");
+    item.className = `caffeine-timeline-detail ${node.kind ? `is-${node.kind}` : ""}`;
+    const label = document.createElement("span");
+    label.textContent = node.label;
+    const time = document.createElement("strong");
+    time.textContent = node.timeLabel;
+    item.append(label, time);
+    detailList.append(item);
   });
 
   const caption = document.createElement("p");
   caption.className = "helper-text caffeine-visual-caption";
   caption.textContent = result.timeline.caption;
 
-  visualCard.append(heading, bar, barLabels, timeline, caption);
+  visualCard.append(heading, bar, barLabels, timeline, detailList, caption);
   container.append(visualCard);
 }
 
@@ -551,6 +564,7 @@ function buildCaffeineTimeline({ itemResults, caffeineMg, halfLifeHours, bedtime
   nodes.push({
     kind: "intake",
     label: itemResults.length > 1 ? "첫 섭취" : "마신 시간",
+    shortLabel: itemResults.length > 1 ? "첫 섭취" : "시작",
     timeLabel: formatTimeLabel(firstItem.consumedAt),
     position: toPosition(firstOffset)
   });
@@ -558,6 +572,7 @@ function buildCaffeineTimeline({ itemResults, caffeineMg, halfLifeHours, bedtime
     nodes.push({
       kind: "latest",
       label: "마지막 섭취",
+      shortLabel: "마지막",
       timeLabel: formatTimeLabel(latestItem.consumedAt),
       position: toPosition(latestOffset)
     });
@@ -565,6 +580,7 @@ function buildCaffeineTimeline({ itemResults, caffeineMg, halfLifeHours, bedtime
   nodes.push({
     kind: "bedtime",
     label: "취침",
+    shortLabel: "취침",
     timeLabel: formatTimeLabel(bedtime),
     position: toPosition(0)
   });
@@ -572,6 +588,7 @@ function buildCaffeineTimeline({ itemResults, caffeineMg, halfLifeHours, bedtime
     nodes.push({
       kind: item.kind,
       label: item.label,
+      shortLabel: item.label.replace(" 이하", ""),
       timeLabel: formatOffsetTimeLabel(bedtime, item.offset),
       position: toPosition(item.offset)
     });

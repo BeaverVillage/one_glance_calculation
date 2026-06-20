@@ -4,7 +4,6 @@ export function initPercentileCalculator(root = document) {
 
   const optionalToggle = root.querySelector("#exam-optional-toggle");
   const optionalPanel = root.querySelector("#exam-optional-panel");
-  const exampleButton = root.querySelector("#percentile-example");
   const resultPanel = root.querySelector("#exam-result-panel");
 
   const els = {
@@ -37,19 +36,6 @@ export function initPercentileCalculator(root = document) {
     setOptionalPanel(optionalPanel.hasAttribute("hidden"));
   });
 
-  exampleButton?.addEventListener("click", () => {
-    setFormValue(form, "students", 320);
-    setFormValue(form, "rank", 40);
-    setFormValue(form, "targetPercent", 10);
-    setFormValue(form, "tieMode", "simple");
-    setFormValue(form, "tieCount", 1);
-    setFormValue(form, "score", 85);
-    setFormValue(form, "mean", 70);
-    setFormValue(form, "stdDev", 12);
-    const rankMode = form.querySelector('input[name="mode"][value="rank"]');
-    if (rankMode) rankMode.checked = true;
-    update({ scroll: true });
-  });
 
   form.addEventListener("reset", () => {
     window.setTimeout(() => {
