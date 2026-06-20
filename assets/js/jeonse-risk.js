@@ -83,6 +83,10 @@ export function initJeonseRiskCalculator(root = document) {
     placeModalSummary: root.querySelector("#jeonse-place-modal-summary"),
     placeModalCloseButtons: root.querySelectorAll("[data-jeonse-place-close]"),
     tradeAptName: root.querySelector("#jeonse-apt-name"),
+    tradePropertyType: root.querySelector("#jeonse-trade-property-type"),
+    tradePropertyHelp: root.querySelector("#jeonse-trade-property-help"),
+    tradeLookupTitle: root.querySelector("#jeonse-trade-lookup-title"),
+    tradeFilterLabel: root.querySelector('label[for="jeonse-apt-name"]'),
     tradeMonths: root.querySelector("#jeonse-trade-months"),
     tradeDealYmd: root.querySelector("#jeonse-trade-deal-ymd"),
     dealYmdPanel: root.querySelector("#jeonse-dealymd-panel"),
@@ -139,6 +143,14 @@ export function initJeonseRiskCalculator(root = document) {
       fetchPlaceCandidates(els);
     });
   }
+
+  if (els.tradePropertyType) {
+    els.tradePropertyType.addEventListener("change", () => {
+      updateTradePropertyUi(els, { syncHomeType: true, announce: true });
+    });
+  }
+
+  updateTradePropertyUi(els);
 
   els.tradeSearchButton.addEventListener("click", () => {
     lookupAptTrades(els, { mode: "recent" });
@@ -574,9 +586,92 @@ function formatDealYmdLabel(dealYmd) {
 }
 
 const TRADE_LOOKUP_DEFAULT_MESSAGE = "기본은 최근 기간 조회입니다. 계약년월은 필요한 경우에만 직접 입력하세요.";
+
+const TRADE_PROPERTY_TYPES = {
+  apartment: {
+    value: "apartment",
+    label: "아파트",
+    homeType: "apartment",
+    connected: true,
+    heading: "아파트 매매 실거래가 참고",
+    modalTitle: "최근 아파트 매매 실거래가",
+    searchButton: "매매 실거래가 조회",
+    filterLabel: "단지명으로 좁히기",
+    filterPlaceholder: "선택 입력: 은마, 리센츠, 범지기",
+    filterHelp: "비워두면 선택 지역의 최근 아파트 거래를 보여줍니다.",
+    connectedHelp: "아파트 매매 실거래가를 조회해 기준 매매가격에 반영할 수 있습니다."
+  },
+  officetel: {
+    value: "officetel",
+    label: "오피스텔",
+    homeType: "officetel",
+    connected: true,
+    heading: "오피스텔 매매 실거래가 참고",
+    modalTitle: "최근 오피스텔 매매 실거래가",
+    searchButton: "오피스텔 매매 실거래가 조회",
+    filterLabel: "오피스텔명으로 좁히기",
+    filterPlaceholder: "선택 입력: 힐스테이트, 푸르지오시티",
+    filterHelp: "비워두면 선택 지역의 최근 오피스텔 거래를 보여줍니다.",
+    connectedHelp: "오피스텔 매매 실거래가를 조회해 기준 매매가격에 반영할 수 있습니다."
+  },
+  multi: {
+    value: "multi",
+    label: "연립·다세대",
+    homeType: "multi",
+    connected: true,
+    heading: "연립·다세대 매매 실거래가 참고",
+    modalTitle: "최근 연립·다세대 매매 실거래가",
+    searchButton: "연립·다세대 매매 실거래가 조회",
+    filterLabel: "건물명으로 좁히기",
+    filterPlaceholder: "선택 입력: 빌라, 주택명, 건물명 일부",
+    filterHelp: "비워두면 선택 지역의 최근 연립·다세대 거래를 보여줍니다. 건물명 표기가 다를 수 있으니 면적·층을 함께 확인하세요.",
+    connectedHelp: "연립·다세대 매매 실거래가를 조회해 기준 매매가격에 반영할 수 있습니다. 같은 건물 여부는 면적·층·거래일을 함께 확인하세요."
+  },
+  single: {
+    value: "single",
+    label: "단독·다가구",
+    homeType: "single",
+    connected: true,
+    heading: "단독·다가구 매매 실거래가 참고",
+    modalTitle: "최근 단독·다가구 매매 실거래가",
+    searchButton: "단독·다가구 매매 실거래가 조회",
+    filterLabel: "지번·면적으로 참고하기",
+    filterPlaceholder: "선택 입력: 지번 일부 또는 면적 기준",
+    filterHelp: "비워두면 선택 지역의 최근 단독·다가구 거래를 보여줍니다. 지번 일부만 공개될 수 있어 대지·연면적을 함께 확인하세요.",
+    connectedHelp: "단독·다가구 매매 실거래가를 지역 내 참고 거래로 조회할 수 있습니다. 같은 건물 여부는 대지면적·연면적·거래일을 함께 확인하세요."
+  }
+};
+
+function getTradePropertyConfig(els) {
+  const value = String(els?.tradePropertyType?.value || "apartment");
+  return TRADE_PROPERTY_TYPES[value] || TRADE_PROPERTY_TYPES.apartment;
+}
 const MAX_RENDERED_TRADES = 25;
 const TRADE_LOOKUP_TIMEOUT_MS = 12000;
 let activeTradeLookupController = null;
+
+
+function updateTradePropertyUi(els, { syncHomeType = false, announce = false } = {}) {
+  const config = getTradePropertyConfig(els);
+  if (els.tradeLookupTitle) els.tradeLookupTitle.textContent = config.heading;
+  if (els.tradeModal) {
+    const modalTitle = els.tradeModal.querySelector("#jeonse-trade-modal-title");
+    if (modalTitle) modalTitle.textContent = config.modalTitle;
+  }
+  if (els.tradeFilterLabel) els.tradeFilterLabel.textContent = config.filterLabel;
+  if (els.tradeAptName) {
+    els.tradeAptName.placeholder = config.filterPlaceholder;
+    els.tradeAptName.disabled = false;
+  }
+  const compactHelp = els.tradeAptName?.closest(".field")?.querySelector(".jeonse-compact-help");
+  if (compactHelp) compactHelp.textContent = config.filterHelp;
+  if (els.tradePropertyHelp) els.tradePropertyHelp.textContent = config.connectedHelp;
+  if (els.tradeSearchButton) els.tradeSearchButton.textContent = config.connected ? config.searchButton : "매매가격 직접 입력 또는 다음 단계 연결";
+  if (syncHomeType && els.homeType && config.homeType) els.homeType.value = config.homeType;
+  if (announce) {
+    showTradeMessage(els, config.connected ? `${config.label} 매매 실거래가 조회를 사용할 수 있습니다.` : `${config.label} 매매 실거래가 조회는 다음 단계에서 연결 예정입니다. 현재는 매매가격을 직접 입력해 계산할 수 있습니다.`, config.connected ? "success" : "warning");
+  }
+}
 
 async function fetchPlaceCandidates(els) {
   const query = String(els.tradeAddress?.value || "").trim();
@@ -764,6 +859,14 @@ async function lookupAptTrades(els, { mode = "recent" } = {}) {
   const dealYmd = lookupMode === "dealYmd" ? normalizeDealYmdInput(rawDealYmd) : "";
   const lawdCd = getSelectedLawdCd(els);
   const selectedLabel = els.selectedRegion?.dataset.regionLabel || "선택 지역";
+  const propertyConfig = getTradePropertyConfig(els);
+
+  if (!propertyConfig.connected) {
+    clearTradeResults(els);
+    showTradeMessage(els, `${propertyConfig.label} 매매 실거래가 조회는 다음 단계에서 연결 예정입니다. 현재는 매매가격을 직접 입력해 전세가율을 계산해 주세요.`, "warning");
+    els.marketPrice?.focus({ preventScroll: false });
+    return;
+  }
 
   if (!lawdCd) {
     showTradeMessage(els, "먼저 지역/단지를 검색하고 팝업에서 지역을 선택해 주세요.", "error");
@@ -793,7 +896,7 @@ async function lookupAptTrades(els, { mode = "recent" } = {}) {
   );
 
   try {
-    const tradeUrl = buildAptTradesUrl({ lawdCd, aptName, months, dealYmd });
+    const tradeUrl = buildSaleTradesUrl({ propertyType: propertyConfig.value, lawdCd, aptName, months, dealYmd });
     const tradeData = await fetchJson(tradeUrl, {
       signal: controller.signal,
       timeoutMs: TRADE_LOOKUP_TIMEOUT_MS
@@ -826,7 +929,7 @@ async function lookupAptTrades(els, { mode = "recent" } = {}) {
         return;
       }
 
-      const noDataMessage = tradeData.noDataMessage || (resolvedAptName ? `${selectedLabel} 기준 ${periodLabel} 내 ${resolvedAptName} 매매 실거래가를 찾지 못했습니다. 조회 기간을 늘리거나 계약년월을 직접 입력해 보세요. 매매가격을 직접 입력할 수도 있습니다.` : `${selectedLabel} 기준 ${periodLabel} 내 아파트 매매 실거래가를 찾지 못했습니다. 조회 기간을 늘리거나 계약년월을 직접 입력해 보세요.`);
+      const noDataMessage = tradeData.noDataMessage || (resolvedAptName ? `${selectedLabel} 기준 ${periodLabel} 내 ${resolvedAptName} 매매 실거래가를 찾지 못했습니다. 조회 기간을 늘리거나 계약년월을 직접 입력해 보세요. 매매가격을 직접 입력할 수도 있습니다.` : `${selectedLabel} 기준 ${periodLabel} 내 ${propertyConfig.label} 매매 실거래가를 찾지 못했습니다. 조회 기간을 늘리거나 계약년월을 직접 입력해 보세요.`);
       renderTradeNoDataActions(els, {
         title: "일치하는 매매 거래가 없습니다",
         message: noDataMessage,
@@ -885,14 +988,19 @@ async function lookupAptTrades(els, { mode = "recent" } = {}) {
   }
 }
 
-function buildAptTradesUrl({ lawdCd, aptName, months, dealYmd }) {
+function buildSaleTradesUrl({ propertyType = "apartment", lawdCd, aptName, months, dealYmd }) {
   const params = new URLSearchParams();
   params.set("lawdCd", lawdCd);
   params.set("aptName", aptName || "");
   if (dealYmd) params.set("dealYmd", dealYmd);
   else params.set("months", String(months));
   params.set("numOfRows", "100");
-  return `/api/jeonse-risk/apt-trades?${params.toString()}`;
+  if (propertyType === "apartment") {
+    return `/api/jeonse-risk/apt-trades?${params.toString()}`;
+  }
+  params.set("propertyType", propertyType);
+  params.set("keyword", aptName || "");
+  return `/api/jeonse-risk/sale-trades?${params.toString()}`;
 }
 
 function getSelectedLawdCd(els) {
@@ -962,8 +1070,9 @@ function renderTradeResults(els, { addressItem, aptName, months, dealYmd, period
 
   const heading = document.createElement("div");
   heading.className = "jeonse-trade-results-heading";
+  const config = getTradePropertyConfig(els);
   const title = document.createElement("strong");
-  title.textContent = "최근 아파트 매매 실거래가";
+  title.textContent = config.modalTitle || "최근 매매 실거래가";
   const summary = document.createElement("span");
   summary.textContent = [addressItem.label || "선택 지역", aptName || "지역 전체", periodLabel || (dealYmd ? formatDealYmdLabel(dealYmd) : `최근 ${months}개월`), `${count}건`].filter(Boolean).join(" · ");
   heading.append(title, summary);
@@ -990,7 +1099,7 @@ function renderTradeResults(els, { addressItem, aptName, months, dealYmd, period
   if (items.length > visibleItems.length) {
     const limitNotice = document.createElement("p");
     limitNotice.className = "fine-print";
-    limitNotice.textContent = aptName ? `화면에는 최신 거래 ${visibleItems.length}건만 표시합니다. 단지명을 더 구체적으로 입력하면 결과를 줄일 수 있습니다.` : `화면에는 최신 거래 ${visibleItems.length}건만 표시합니다. 단지명으로 좁히면 원하는 거래를 더 빨리 찾을 수 있습니다.`;
+    limitNotice.textContent = aptName ? `화면에는 최신 거래 ${visibleItems.length}건만 표시합니다. 이름을 더 구체적으로 입력하면 결과를 줄일 수 있습니다.` : `화면에는 최신 거래 ${visibleItems.length}건만 표시합니다. 이름으로 좁히면 원하는 거래를 더 빨리 찾을 수 있습니다.`;
     wrapper.append(limitNotice);
   }
 
@@ -1011,8 +1120,9 @@ function renderTradeCandidateResults(els, { addressItem, aptName, months, dealYm
 
   const heading = document.createElement("div");
   heading.className = "jeonse-trade-results-heading";
+  const config = getTradePropertyConfig(els);
   const title = document.createElement("strong");
-  title.textContent = "비슷한 단지 후보";
+  title.textContent = `비슷한 ${config.filterLabel.replace("으로 좁히기", "")} 후보`;
   const summary = document.createElement("span");
   summary.textContent = [addressItem.label || "선택 지역", aptName || "지역 전체", periodLabel || (dealYmd ? formatDealYmdLabel(dealYmd) : `최근 ${months}개월`)].filter(Boolean).join(" · ");
   heading.append(title, summary);
@@ -1255,12 +1365,18 @@ function createTradeCard(item, index) {
   amount.textContent = item.dealAmountLabel || formatManwon(item.dealAmountManwon || 0);
 
   const name = document.createElement("span");
-  name.textContent = [item.aptName, item.umdNm].filter(Boolean).join(" · ") || "아파트 거래";
+  name.textContent = [item.aptName || item.name, item.umdNm].filter(Boolean).join(" · ") || "매매 거래";
 
   const meta = document.createElement("small");
   meta.textContent = formatTradeMeta(item);
 
   body.append(amount, name, meta);
+  if (item.caution) {
+    const caution = document.createElement("small");
+    caution.className = "jeonse-trade-card-caution";
+    caution.textContent = item.caution;
+    body.append(caution);
+  }
 
   const button = document.createElement("button");
   button.type = "button";
@@ -1269,7 +1385,7 @@ function createTradeCard(item, index) {
   button.dataset.jeonseUseTrade = "true";
   button.dataset.amountManwon = String(Math.round(Number(item.dealAmountManwon) || 0));
   button.dataset.amountLabel = item.dealAmountLabel || formatManwon(item.dealAmountManwon || 0);
-  button.dataset.tradeSummary = `${item.dealDate || "거래일 미상"} ${item.aptName || "아파트"}`;
+  button.dataset.tradeSummary = `${item.dealDate || "거래일 미상"} ${item.aptName || item.name || "거래"}`;
   button.dataset.tradeDetail = buildTradeDetail(item);
   button.dataset.tradeIndex = String(index);
   button.setAttribute("aria-label", `${index + 1}번째 거래금액 ${button.dataset.amountLabel}을 매매가격으로 사용`);
@@ -1282,17 +1398,21 @@ function formatTradeMeta(item) {
   const parts = [];
   if (item.dealDate) parts.push(item.dealDate.replaceAll("-", "."));
   if (item.areaLabel) parts.push(item.areaLabel);
+  if (item.landAreaLabel) parts.push(item.landAreaLabel);
+  if (item.totalFloorAreaLabel) parts.push(item.totalFloorAreaLabel);
   if (item.floor) parts.push(`${item.floor}층`);
   if (item.buildYear) parts.push(`${item.buildYear}년식`);
+  if (item.propertyType === "single" && item.jibun) parts.push("지번 일부 공개");
   return parts.join(" · ") || "거래 상세 정보 없음";
 }
 
 function buildTradeDetail(item) {
   const parts = [];
-  if (item.aptName) parts.push(item.aptName);
+  if (item.aptName || item.name) parts.push(item.aptName || item.name);
   if (item.umdNm) parts.push(item.umdNm);
   const meta = formatTradeMeta(item);
   if (meta) parts.push(meta);
+  if (item.caution) parts.push(item.caution);
   return parts.join(" · ") || "거래 상세 정보 없음";
 }
 
@@ -1348,7 +1468,8 @@ function applyTradePrice(els, button) {
   els.marketPrice.value = String(roundedAmount);
   els.marketPrice.dataset.priceSource = "trade";
   els.marketPrice.dataset.selectedTradeAmount = String(roundedAmount);
-  if (els.homeType) els.homeType.value = "apartment";
+  const propertyConfig = getTradePropertyConfig(els);
+  if (els.homeType && propertyConfig.homeType) els.homeType.value = propertyConfig.homeType;
 
   renderSelectedTrade(els, {
     amountLabel: button.dataset.amountLabel || formatManwon(amountManwon),
@@ -1368,8 +1489,9 @@ function applyTradePrice(els, button) {
 }
 
 function setTradeLoading(els, isLoading) {
+  const config = getTradePropertyConfig(els);
   els.tradeSearchButton.disabled = isLoading;
-  els.tradeSearchButton.textContent = isLoading ? "조회 중..." : "매매 실거래가 조회";
+  els.tradeSearchButton.textContent = isLoading ? "조회 중..." : (config.connected ? config.searchButton : "매매가격 직접 입력 또는 다음 단계 연결");
   els.tradeSearchButton.setAttribute("aria-busy", isLoading ? "true" : "false");
   if (els.dealYmdSearchButton) {
     els.dealYmdSearchButton.disabled = isLoading;
@@ -1387,6 +1509,8 @@ function clearTradeLookup(els) {
   clearSelectedTrade(els, { keepMarketPrice: true });
   if (els.tradeAddress) els.tradeAddress.value = "";
   if (els.tradeAptName) els.tradeAptName.value = "";
+  if (els.tradePropertyType) els.tradePropertyType.value = "apartment";
+  updateTradePropertyUi(els);
   if (els.tradeMonths) els.tradeMonths.value = "3";
   if (els.tradeDealYmd) els.tradeDealYmd.value = "";
   hideDealYmdPanel(els);

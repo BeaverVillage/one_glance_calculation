@@ -11708,3 +11708,29 @@ body.modal-open {
     width: 100%;
   }
 }
+
+
+/* Jeonse risk property type phase 1 */
+.jeonse-trade-property-field {
+  margin-top: 12px;
+  max-width: 260px;
+}
+
+.jeonse-trade-property-field select {
+  width: 100%;
+}
+
+@media (max-width: 820px) {
+  .jeonse-trade-property-field {
+    max-width: none;
+  }
+}
+
+
+.jeonse-trade-card-caution {
+  display: block;
+  margin-top: 6px;
+  color: #8a5a00;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
