@@ -77,8 +77,11 @@ export async function onRequestGet(context) {
       .filter(Boolean);
 
     if (!successfulMonths.length) {
-      return error('실거래가 조회 응답이 일시적으로 지연되거나 공공데이터 응답을 처리하지 못했습니다. 조회 기간을 줄이거나 단지명을 더 구체적으로 입력해 주세요. 매매가격 직접 입력도 가능합니다.', 200, 'RTMS_ALL_MONTHS_FAILED', {
-        query: { lawdCd, aptName, months: dealYmd ? 1 : months, dealYmd: dealYmd || null, numOfRows },
+      const failMessage = dealYmd
+        ? '해당 계약년월의 실거래가 응답을 처리하지 못했습니다. 다른 계약년월이나 최근 기간 조회를 사용해 주세요. 매매가격 직접 입력도 가능합니다.'
+        : '실거래가 조회 응답이 일시적으로 지연되거나 공공데이터 응답을 처리하지 못했습니다. 조회 기간을 줄이거나 계약년월 직접 조회를 사용해 주세요. 매매가격 직접 입력도 가능합니다.';
+      return error(failMessage, 200, 'RTMS_ALL_MONTHS_FAILED', {
+        query: { lawdCd, aptName, months: dealYmd ? 1 : months, dealYmd: dealYmd || null, lookupMode: dealYmd ? 'dealYmd' : 'recent', numOfRows },
         monthsQueried: dealYmds,
         failedMonths,
         failureDetails
@@ -99,7 +102,7 @@ export async function onRequestGet(context) {
 
     const responseData = {
       ok: true,
-      query: { lawdCd, aptName, normalizedAptName, months: dealYmd ? 1 : months, dealYmd: dealYmd || null, numOfRows },
+      query: { lawdCd, aptName, normalizedAptName, months: dealYmd ? 1 : months, dealYmd: dealYmd || null, lookupMode: dealYmd ? 'dealYmd' : 'recent', numOfRows },
       monthsQueried: dealYmds,
       successfulMonths,
       failedMonths,
@@ -126,7 +129,8 @@ export async function onRequestGet(context) {
         hasItems: sortedItems.length > 0,
         hasCandidates: candidates.length > 0,
         aptName,
-        months: dealYmd ? 1 : months
+        months: dealYmd ? 1 : months,
+        dealYmd
       })
     };
 
@@ -442,14 +446,21 @@ function buildAptCandidates(scoredEntries, allItems, query) {
     }));
 }
 
-function buildNoDataMessage({ hasItems, hasCandidates, aptName, months }) {
+function buildNoDataMessage({ hasItems, hasCandidates, aptName, months, dealYmd }) {
   const hasAptName = Boolean(normalizeText(aptName));
   if (hasItems) return '';
   if (hasCandidates) {
     return `입력한 단지명 '${aptName || '미입력'}'과 정확히 일치하는 거래는 찾지 못했습니다. 아래 후보 단지를 선택해 다시 조회하거나, 기간을 늘려 보세요. 매매가격 직접 입력도 가능합니다.`;
   }
+  if (dealYmd) {
+    const period = `${String(dealYmd).slice(0, 4)}년 ${Number(String(dealYmd).slice(4, 6))}월`;
+    if (!hasAptName) {
+      return `${period} 선택 지역의 아파트 매매 실거래가를 찾지 못했습니다. 다른 계약년월이나 최근 기간 조회를 사용해 보세요. 매매가격 직접 입력도 가능합니다.`;
+    }
+    return `${period} 입력한 지역·단지명과 일치하는 매매 실거래가가 없습니다. 단지명을 줄이거나 다른 계약년월로 다시 조회해 주세요.`;
+  }
   if (!hasAptName) {
-    return `최근 ${months}개월 내 선택 지역의 아파트 매매 실거래가를 찾지 못했습니다. 기간을 늘리거나 매매가격을 직접 입력해 계산할 수 있습니다.`;
+    return `최근 ${months}개월 내 선택 지역의 아파트 매매 실거래가를 찾지 못했습니다. 기간을 늘리거나 계약년월을 직접 입력해 조회할 수 있습니다.`;
   }
   return `최근 ${months}개월 내 입력한 지역·단지명과 일치하는 매매 실거래가가 없습니다. 기간을 늘리거나 단지명을 조정한 뒤, 그래도 없으면 매매가격을 직접 입력해 주세요.`;
 }
