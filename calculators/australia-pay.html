@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-D4SBV1Y07N"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-D4SBV1Y07N');
+    </script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
+    <link rel="shortcut icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <meta name="theme-color" content="#146c5f">
+<meta name="google-adsense-account" content="ca-pub-6340743169950430">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6340743169950430"
+     crossorigin="anonymous"></script>
+    <meta name="msvalidate.01" content="71220435128A45EF179793784E9AFC3E">
+    <meta name="naver-site-verification" content="0f429adf1d8d3475017f3824ee96355074bcfd23">
+    <meta name="description" content="호주 급여명세서를 읽어 실수령액, 세금, 퇴직연금을 추출하고 원화로 환산해 보세요.">
+    <title>호주 급여명세서 원화 환산 계산기 | 한눈계산</title>
+    <link rel="canonical" href="https://hannuncalc.com/calculators/australia-pay.html">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="ko_KR">
+    <meta property="og:site_name" content="한눈계산">
+    <meta property="og:title" content="호주 급여명세서 원화 환산 계산기 | 한눈계산">
+    <meta property="og:description" content="호주 급여명세서를 읽어 실수령액, 세금, 퇴직연금을 추출하고 원화로 환산해 보세요.">
+    <meta property="og:url" content="https://hannuncalc.com/calculators/australia-pay.html">
+    <script type="application/ld+json" data-schema="webapplication">{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "호주 급여명세서 원화 환산 계산기",
+  "url": "https://hannuncalc.com/calculators/australia-pay.html",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "Any",
+  "inLanguage": "ko-KR",
+  "description": "호주 급여명세서를 읽어 실수령액, 세금, 퇴직연금을 추출하고 원화로 환산해 보세요.",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "KRW"
+  }
+}</script>
+    <script type="application/ld+json" data-schema="faqpage">{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "PDF나 이미지 파일은 서버에 저장되나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "아니요. PDF 텍스트 추출과 이미지 OCR은 브라우저 안에서 처리합니다. 다만 민감정보는 가능하면 가린 뒤 사용하는 것을 권장합니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "OCR 결과가 틀릴 수 있나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "네. 명세서 양식, 스캔 품질, 글자 흐림 정도에 따라 결과가 달라질 수 있습니다. 입력칸에 들어간 값은 계산 전에 직접 수정할 수 있습니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Net Pay가 없으면 어떻게 계산하나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Net Pay가 없고 Gross Pay와 Tax Withheld가 있으면 Gross Pay - Tax Withheld를 임시 실수령액으로 계산합니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "환율은 어떤 기준을 사용하나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "환율 조회는 API 키가 필요 없는 공개 환율 API의 최신 AUD/KRW 환율을 사용하며, 조회 실패 시 최근 저장 환율 또는 사용자가 직접 입력한 환율을 사용할 수 있습니다."
+      }
+    }
+  ]
+}</script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <link rel="stylesheet" href="../assets/css/base.css">
+    <link rel="stylesheet" href="../assets/css/layout.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="../index.html" aria-label="한눈계산 홈">
+        <span class="brand-mark">한</span>
+        <span><strong>한눈계산</strong><small>생활 계산기</small></span>
+      </a>
+      <nav class="site-nav" aria-label="주요 메뉴">
+        <a href="../index.html#calculators" data-tool-drawer>다른 계산기</a>
+        <a href="net-salary.html">실수령액</a>
+        <a href="text-counter.html">글자수</a>
+        <a href="../about.html">소개</a>
+        <a href="../contact.html">문의</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero-band">
+        <div class="container">
+          <div class="section-intro">
+            <p class="eyebrow">호주 워홀 급여 환산</p>
+            <h1>호주 급여명세서 원화 환산 계산기</h1>
+            <p class="lead">
+              호주 급여명세서를 읽어 실수령액, 세금, 퇴직연금을 추출하고 원화로 환산해 보세요.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="content-band compact">
+        <div class="container calculator-section">
+          <section class="tool-panel australia-pay-panel" aria-label="호주 급여명세서 원화 환산 계산기">
+            <form id="australia-pay-form" class="input-panel">
+              <div class="notice-box privacy-note notice-compact">
+                <strong>개인정보와 자동 인식 안내</strong>
+                <p>선택한 급여명세서 PDF·이미지는 브라우저에서 분석됩니다. 현재 코드상 선택한 파일은 한눈계산 서버에 저장되지 않습니다. 이름, 주소, 직원번호, 계좌번호, TFN 등 민감정보가 포함된 파일은 업로드 전 반드시 가리거나 제거해 주세요.</p>
+                <p>사진 품질, 기울기, 그림자, 해상도와 명세서 양식에 따라 OCR 결과가 틀릴 수 있습니다. 자동 추출값은 반드시 직접 확인한 뒤 계산하세요. 자동으로 채워진 Gross Pay, Net Pay, Tax Withheld, Superannuation, Hours Worked 값은 계산 전에 직접 확인해 주세요.</p>
+              </div>
+
+              <div class="field">
+                <label for="au-pdf-file">월급명세서 PDF 또는 이미지 업로드</label>
+                <input id="au-pdf-file" class="file-input" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp">
+                <p class="field-help">PDF, JPG, PNG, WEBP 파일을 지원합니다. PDF와 이미지는 서버에 저장하지 않고 브라우저에서 처리됩니다. PDF는 5MB 이하·3페이지 이하, 이미지는 5MB 이하만 지원합니다. 사진은 글자가 선명하고 그림자가 적으며, 명세서 전체가 잘리지 않게 촬영한 파일을 사용하면 인식률이 높아집니다.</p>
+              </div>
+
+              <div class="ocr-status-box" aria-live="polite">
+                <span id="au-ocr-status" data-tone="info">PDF 또는 이미지를 업로드하면 파일 종류에 맞게 분석합니다. PDF는 텍스트 추출을 먼저 시도하고, 이미지는 OCR로 텍스트를 추출합니다. 추출된 값을 확인해 주세요.</span>
+                <progress id="au-ocr-progress" max="100" value="0" aria-label="PDF 분석 진행률"></progress>
+              </div>
+
+
+              <div class="field-row au-core-fields">
+                <div class="field">
+                  <label for="au-net-pay">Net Pay(세후급여)</label>
+                  <div class="input-suffix">
+                    <input id="au-net-pay" name="netPay" type="number" min="0" step="0.01" inputmode="decimal">
+                    <span>AUD</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="au-pay-period">Pay Period</label>
+                  <select id="au-pay-period" name="payPeriod">
+                    <option value="weekly">주급</option>
+                    <option value="fortnightly" selected>2주급</option>
+                    <option value="monthly">월급</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="field-row au-core-fields">
+                <div class="field exchange-rate-field">
+                  <label for="au-exchange-rate">AUD/KRW 환율</label>
+                  <div class="exchange-rate-control">
+                    <div class="input-suffix">
+                      <input id="au-exchange-rate" name="exchangeRate" type="number" min="0" step="0.0001" inputmode="decimal" placeholder="예: 900">
+                      <span>원</span>
+                    </div>
+                    <button id="au-refresh-rate" class="subtle-button" type="button">환율 조회</button>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="au-hours-worked">Hours Worked(근무시간)</label>
+                  <div class="input-suffix">
+                    <input id="au-hours-worked" name="hoursWorked" type="number" min="0" step="0.01" inputmode="decimal">
+                    <span>시간</span>
+                  </div>
+                </div>
+              </div>
+
+              <details class="au-optional-fields" open>
+                <summary>추가 입력 접기/펼치기</summary>
+                <div class="field-row">
+                  <div class="field">
+                    <label for="au-gross-pay">Gross Pay(세전급여)</label>
+                    <div class="input-suffix">
+                      <input id="au-gross-pay" name="grossPay" type="number" min="0" step="0.01" inputmode="decimal">
+                      <span>AUD</span>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label for="au-tax-withheld">Tax Withheld / PAYG(원천징수)</label>
+                    <div class="input-suffix">
+                      <input id="au-tax-withheld" name="taxWithheld" type="number" min="0" step="0.01" inputmode="decimal">
+                      <span>AUD</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="field-row">
+                  <div class="field">
+                    <label for="au-superannuation">Superannuation(퇴직연금)</label>
+                    <div class="input-suffix">
+                      <input id="au-superannuation" name="superannuation" type="number" min="0" step="0.01" inputmode="decimal">
+                      <span>AUD</span>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label for="au-pay-date">Pay Date(지급일)</label>
+                    <input id="au-pay-date" name="payDate" type="date">
+                  </div>
+                </div>
+                <div class="field-row">
+                  <div class="field">
+                    <label for="au-employer-name">Employer Name(고용주 이름)</label>
+                    <input id="au-employer-name" name="employerName" type="text" autocomplete="off">
+                  </div>
+                  <div class="field">
+                    <label for="au-employee-name">Employee Name(직원 이름)</label>
+                    <input id="au-employee-name" name="employeeName" type="text" autocomplete="off">
+                  </div>
+                </div>
+              </details>
+
+              <p id="au-rate-meta" class="fine-print">환율 정보는 공개 환율 API를 통해 조회한 참고용 시세입니다. 실제 송금 환율, 카드사 환율, 은행 환전 환율과 다를 수 있으며, 중요한 거래 전에는 금융기관의 고시 환율을 확인해야 합니다. 사용 환율 데이터 제공자: ExchangeRate-API Open Access, @fawazahmed0/currency-api(jsDelivr 및 Cloudflare Pages 미러).</p>
+              <div class="button-row">
+                <button class="primary-button" type="submit">이 값으로 계산하기</button>
+              </div>
+            </form>
+
+            <aside id="australia-pay-result" class="result-panel">
+              <div class="report-summary">
+                <span class="report-kicker">원화 환산 결과</span>
+                <strong id="au-period-net-krw" class="result-number">-</strong>
+                <span id="au-result-summary">값을 입력하거나 PDF에서 읽어오면 계산 버튼을 눌러 주세요.</span>
+              </div>
+              <div class="metric-grid australia-pay-metrics">
+                <div>
+                  <span>기간 실수령액</span>
+                  <strong id="au-period-net-aud">-</strong>
+                </div>
+                <div>
+                  <span>연 환산 실수령액</span>
+                  <strong id="au-annual-net-aud">-</strong>
+                  <em id="au-annual-net-krw">-</em>
+                </div>
+                <div>
+                  <span>시간당 실수령액</span>
+                  <strong id="au-hourly-net-aud">-</strong>
+                  <em id="au-hourly-net-krw">-</em>
+                </div>
+                <div>
+                  <span>Superannuation(퇴직연금)</span>
+                  <strong id="au-super-aud">-</strong>
+                  <em id="au-super-krw">-</em>
+                </div>
+              </div>
+              <div class="notice-box notice-compact">
+                <strong>계산 기준</strong>
+                <p>Superannuation(퇴직연금)은 실수령액에 포함하지 않고 별도로 표시합니다. 이 계산기는 참고용이며, 실제 급여·세금·환율 판단 자료가 아닙니다. 급여명세서, 고용계약서, 고용주 안내, 금융기관 기준을 확인해야 합니다.</p>
+                <p>다른 통화도 환산해야 하나요? <a href="exchange-rate.html">실시간 환율 계산기</a>에서 여러 나라 통화를 비교해 보세요.</p>
+              </div>
+            </aside>
+          </section>
+        </div>
+      </section>
+
+      <section class="content-band au-context-band">
+        <div class="container">
+          <div class="section-intro narrow">
+            <p class="eyebrow">활용 상황</p>
+            <h2>호주 워홀 급여를 원화 기준으로 정리할 때 사용하세요.</h2>
+            <p>주급·2주급·월급 명세서의 핵심 금액을 한 화면에 모아 보고, 환율을 적용한 원화 금액과 연 환산액을 함께 비교할 수 있습니다.</p>
+          </div>
+          <div class="guide-grid au-context-grid">
+            <article>
+              <h3>명세서 PDF에서 주요 금액 정리</h3>
+              <p>Gross Pay, Net Pay, Tax Withheld/PAYG, Superannuation, Hours Worked처럼 계산에 필요한 항목을 입력칸에 모아 보여줍니다. 자동으로 채워진 값은 입력칸에서 바로 수정할 수 있습니다.</p>
+            </article>
+            <article>
+              <h3>원화 실수령액과 연 환산액 확인</h3>
+              <p>Net Pay를 기준으로 기간 실수령액, 연 환산 실수령액, 시간당 실수령액을 AUD와 KRW로 나누어 표시합니다. 주급은 52회, 2주급은 26회, 월급은 12회 기준으로 연 환산합니다.</p>
+            </article>
+            <article>
+              <h3>Superannuation 별도 표시</h3>
+              <p>호주 급여명세서의 Superannuation은 일반적인 실수령액과 성격이 다르기 때문에 결과 카드에서 따로 표시합니다. 통장 입금액과 퇴직연금 성격의 금액을 구분해 볼 수 있습니다.</p>
+            </article>
+            <article>
+              <h3>브라우저 안에서 처리</h3>
+              <p>PDF 분석은 사용자의 브라우저에서 처리되도록 구성되어 있습니다. TFN, 은행 계좌, 주소 등 민감정보가 보이는 파일은 가능한 범위에서 가린 뒤 사용하는 것이 좋고, 자동 추출값은 계산 전 직접 확인해야 합니다.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="content-band muted">
+        <div class="container two-column">
+          <section class="info-block">
+            <p class="eyebrow">사용 방법</p>
+            <h2>PDF를 넣고, 값은 한 번 확인한 뒤 계산하세요.</h2>
+            <ol class="step-list">
+              <li><strong>PDF 업로드</strong><span>텍스트 기반 PDF는 텍스트 추출을 먼저 시도하고, 스캔본은 OCR을 실행합니다.</span></li>
+              <li><strong>입력값 살펴보기</strong><span>Gross Pay, Net Pay, Tax, Super, 근무시간, Pay Date가 입력칸에 채워지며, 필요하면 직접 수정할 수 있습니다.</span></li>
+              <li><strong>환율 적용</strong><span>최신 AUD/KRW 환율을 조회하거나 직접 환율을 입력합니다. Pay Date는 명세서 확인용으로 유지합니다.</span></li>
+              <li><strong>계산 실행</strong><span>“이 값으로 계산하기”를 눌러 원화 실수령액과 연 환산액을 확인합니다.</span></li>
+            </ol>
+          </section>
+          <section class="info-block">
+            <p class="eyebrow">개인정보와 계산 기준</p>
+            <h2>민감정보는 줄이고, 입력값은 직접 수정할 수 있습니다.</h2>
+            <ul class="plain-list">
+              <li>PDF와 이미지 파일은 서버에 저장하지 않고 브라우저에서 처리됩니다.</li>
+              <li>TFN, 은행 정보, 직원번호, 주소 같은 민감정보는 가능하면 가린 뒤 사용하세요.</li>
+              <li>계산은 화면의 입력칸에 들어간 값을 기준으로 실행됩니다.</li>
+              <li>실제 급여, 세금, 환율 판단은 명세서와 금융기관 기준을 확인해야 합니다.</li>
+            </ul>
+          </section>
+        </div>
+      </section>
+
+      <section class="content-band calculation-guide" data-quality-section="calculator">
+        <div class="container">
+          <div class="section-intro narrow">
+            <p class="eyebrow">계산 기준</p>
+            <h2>계산 전에 확인할 내용</h2>
+            <p>아래 내용은 호주 월급명세서 금액을 원화로 환산할 때 사용하는 기준입니다.</p>
+          </div>
+          <div class="guide-grid">
+            <article><h3>이 계산기는 무엇을 계산하나요?</h3><p>호주 월급명세서의 Net Pay 또는 Gross Pay와 Tax Withheld를 기준으로 기간별 실수령액, 연 환산 실수령액, 시간당 실수령액, Superannuation 원화 환산액을 계산합니다.</p></article>
+            <article><h3>이런 상황에서 사용하면 좋습니다</h3><p>호주 워홀이나 유학 중 받은 주급·2주급 명세서를 한국 원화 기준으로 정리하고, 통장 입금액과 Superannuation을 구분해 보고 싶을 때 유용합니다.</p></article>
+            <article><h3>입력값 설명</h3><ul><li>Gross Pay: 세전 급여입니다.</li><li>Net Pay: 세금 등을 뺀 실제 지급액입니다.</li><li>Tax Withheld/PAYG: 원천징수된 세금입니다.</li><li>Superannuation: 퇴직연금 성격의 고용주 부담금입니다.</li><li>Hours Worked: 해당 급여 기간의 근무시간입니다.</li></ul></article>
+            <article><h3>계산식</h3><p>Net Pay가 있으면 실수령액은 Net Pay를 사용합니다. Net Pay가 없고 Gross Pay와 Tax Withheld가 있으면 Gross Pay - Tax Withheld를 임시 실수령액으로 사용합니다. 주급은 ×52, 2주급은 ×26, 월급은 ×12로 연 환산합니다.</p></article>
+            <article><h3>예시 계산</h3><p>2주급 Net Pay가 A$1,600이고 환율이 900원이면 기간 실수령액은 약 144만원, 연 환산 실수령액은 A$41,600 × 900원으로 계산합니다.</p></article>
+            <article><h3>결과 해석</h3><p>원화 환산액은 적용 환율에 따라 달라집니다. Superannuation은 통장에 바로 들어오는 실수령액이 아니므로 별도 항목으로 표시합니다.</p></article>
+            <article><h3>주의사항</h3><p>OCR은 명세서 양식과 이미지 품질에 따라 틀릴 수 있고, 환율은 공개 환율 API의 조회 시점 기준이라 실제 송금·카드·은행 환전 환율과 다를 수 있습니다. 이 결과는 세무·급여·금융 자문이 아니며, 세금 신고, 비자, 고용 조건 판단에는 공식 자료와 고용주 명세서를 확인하세요.</p></article>
+            <article><h3>참고한 공식 자료 또는 안내 문구</h3><p>환율 조회는 API 키가 필요 없는 공개 환율 API를 사용하며, 조회 실패 시 최근 저장 환율 또는 사용자가 직접 입력한 환율을 사용할 수 있습니다. 실제 급여 항목의 의미는 고용주가 발급한 payslip 기준을 우선하세요.</p></article>
+          </div>
+          <p class="guide-updated">최종 업데이트 날짜: 2026-06-16</p>
+        </div>
+      </section>
+
+      <section class="content-band">
+        <div class="container faq-wrap">
+          <p class="eyebrow">자주 묻는 질문</p>
+          <h2>호주 워홀 월급 환산 자주 묻는 질문</h2>
+          <div class="faq-grid">
+            <details open><summary>PDF나 이미지 파일은 서버에 저장되나요?</summary><p>아니요. PDF 텍스트 추출과 이미지 OCR은 브라우저 안에서 처리합니다. 다만 민감정보는 가능하면 가린 뒤 사용하는 것을 권장합니다.</p></details>
+            <details><summary>PDF나 이미지 인식 결과가 틀릴 수 있나요?</summary><p>네. 명세서 양식, 스캔 품질, 글자 흐림 정도에 따라 결과가 달라질 수 있습니다. 입력칸에 들어간 값은 계산 전에 직접 수정할 수 있습니다.</p></details>
+            <details><summary>Net Pay가 없으면 어떻게 계산하나요?</summary><p>Net Pay가 없고 Gross Pay와 Tax Withheld가 있으면 Gross Pay - Tax Withheld를 임시 실수령액으로 계산합니다.</p></details>
+            <details><summary>환율은 어떤 기준을 사용하나요?</summary><p>환율 조회는 API 키가 필요 없는 공개 환율 API의 최신 AUD/KRW 환율을 사용하며, 조회 실패 시 최근 저장 환율 또는 사용자가 직접 입력한 환율을 사용할 수 있습니다.</p></details>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-grid">
+        <div><strong>한눈계산</strong><p>© 한눈계산. 모든 계산 결과는 참고용이며, 실제 판단은 공식 기관 기준을 확인해야 합니다.</p></div>
+        <nav aria-label="정책 메뉴">
+          <a href="../about.html">사이트 소개</a>
+          <a href="../privacy.html">개인정보 처리방침</a>
+          <a href="../disclaimer.html">면책 고지</a>
+          <a href="../licenses.html">오픈소스 라이선스</a>
+          <a href="../contact.html">문의하기</a>
+        </nav>
+      </div>
+    </footer>
+    <script type="module" src="../assets/js/australia-pay.js?v=20260616-mobile-ui-final"></script>
+    <script type="module" src="../assets/js/app.js?v=20260619-jeonse-risk-phase5"></script>
+  </body>
+</html>

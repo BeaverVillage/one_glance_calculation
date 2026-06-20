@@ -977,7 +977,7 @@ async function selectPlaceFromPopup(index, els) {
   syncDesktopMapToolbar(els);
   closePlacePopup(els);
   els.searchStatus.textContent = state.lastPlaceSearchUsedSampleFallback
-    ? `목적지 검색 API를 사용할 수 없어 ${place.name} 샘플 위치 기준으로 계산합니다.`
+    ? `목적지 검색 API를 사용할 수 없어 ${place.name} 기본 위치 기준으로 계산합니다.`
     : `${place.name} 기준으로 주변 주차장을 계산했습니다.`;
   await calculateAndRender(els);
 }
@@ -1078,9 +1078,9 @@ async function calculateAndRender(els) {
     state.lastDataMode = "sample-fallback";
     state.lastDataSources = [];
     state.lastRealtimeMode = "sample-fallback";
-    state.lastRealtimeNote = "샘플 실시간 데이터를 사용합니다.";
+    state.lastRealtimeNote = "보조 실시간 데이터를 사용합니다.";
     state.lastHolidayContext = buildClientHolidayContext(input.arrivalAt);
-    state.lastFallbackReason = "API 호출이 실패해 로컬 샘플 주차장 데이터로 계산합니다.";
+    state.lastFallbackReason = "API 호출이 실패해 로컬 보조 주차장 데이터로 계산합니다.";
     state.lastStats = null;
   }
   state.results = rows;
@@ -1487,7 +1487,7 @@ async function loadKakaoMap(els) {
     state.mapMode = "fallback";
     els.map.classList.add("is-fallback");
     if (error?.message) console.info(`[parking-map] Kakao map fallback: ${error.message}`);
-    updateMapFallbackNotice(els, "샘플 지도 계산 모드", "카카오맵을 불러오지 못해 샘플 지도에서 예상 주차비를 표시합니다.");
+    updateMapFallbackNotice(els, "기본 지도 표시 모드", "카카오맵을 불러오지 못해 기본 지도에서 예상 주차비를 표시합니다.");
     renderMap(els);
   }
 }

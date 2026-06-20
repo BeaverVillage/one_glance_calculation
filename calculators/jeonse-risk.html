@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-D4SBV1Y07N"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-D4SBV1Y07N');
+    </script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
+    <link rel="shortcut icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <meta name="theme-color" content="#146c5f">
+    <meta name="google-adsense-account" content="ca-pub-6340743169950430">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6340743169950430"
+         crossorigin="anonymous"></script>
+    <meta name="msvalidate.01" content="71220435128A45EF179793784E9AFC3E">
+    <meta name="naver-site-verification" content="0f429adf1d8d3475017f3824ee96355074bcfd23">
+    <meta name="description" content="매매가격, 전세보증금, 선순위채권, 예상 낙찰가율을 입력해 전세가율, 총 부담 비율, 보증 기준 참고 한도, 예상 회수 가능 금액과 전세 보증금 위험도를 참고용으로 확인합니다.">
+    <title>전세가율·보증금 위험도 계산기 - 한눈계산</title>
+    <link rel="canonical" href="https://hannuncalc.com/calculators/jeonse-risk.html">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="ko_KR">
+    <meta property="og:site_name" content="한눈계산">
+    <meta property="og:title" content="전세가율·보증금 위험도 계산기 - 한눈계산">
+    <meta property="og:description" content="매매가격과 전세보증금, 선순위채권을 입력해 전세가율과 보증금 회수 위험도를 참고용으로 확인하세요.">
+    <meta property="og:url" content="https://hannuncalc.com/calculators/jeonse-risk.html">
+    <script type="application/ld+json" data-schema="webapplication">{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "전세가율·보증금 위험도 계산기",
+  "url": "https://hannuncalc.com/calculators/jeonse-risk.html",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Any",
+  "inLanguage": "ko-KR",
+  "description": "매매가격, 전세보증금, 선순위채권, 예상 낙찰가율을 입력해 전세가율, 총 부담 비율, 보증 기준 참고 한도와 보증금 위험도를 확인하는 참고용 계산기입니다.",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "KRW" }
+}</script>
+    <script type="application/ld+json" data-schema="breadcrumb">{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "한눈계산",
+      "item": "https://hannuncalc.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "전세가율·보증금 위험도 계산기",
+      "item": "https://hannuncalc.com/calculators/jeonse-risk.html"
+    }
+  ]
+}</script>
+    <script type="application/ld+json" data-schema="faqpage">{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "전세가율은 무엇인가요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "전세가율은 매매가격 대비 전세보증금의 비율입니다. 이 계산기는 사용자가 입력한 매매가격과 전세보증금을 기준으로 전세가율을 참고용으로 계산합니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "전세가율이 몇 퍼센트면 위험한가요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "전세가율만으로 위험 여부를 확정할 수는 없습니다. 이 계산기는 전세가율, 선순위채권을 포함한 총 부담 비율, 예상 부족 가능 금액을 함께 보고 낮은 위험부터 매우 높은 위험까지 참고 등급으로 표시합니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "선순위채권은 어디서 확인하나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "등기부등본 을구의 근저당권, 채권최고액, 기존 대출 등을 확인해야 합니다. 단독·다가구주택은 다른 세입자의 선순위 임차보증금도 함께 확인해야 할 수 있습니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "보증보험 가입 가능 여부를 알 수 있나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "아니요. 이 계산기는 보증 기준 참고 한도를 단순 계산하는 도구이며 실제 가입 가능 여부를 확정하지 않습니다. 실제 가능 여부는 HUG, HF, SGI 등 보증기관과 공식 자료를 통해 확인해야 합니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "예상 낙찰가율은 어떤 값을 넣어야 하나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "기본값은 75%입니다. 더 보수적으로 보고 싶다면 60~70%, 비교적 낙관적으로 보고 싶다면 80% 이상을 입력할 수 있습니다. 입력한 값은 단순 가정값입니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "부족 가능 금액은 실제 손실인가요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "아닙니다. 부족 가능 금액은 사용자가 입력한 낙찰가율과 선순위채권을 바탕으로 계산한 참고값입니다. 실제 회수 금액이나 손실을 보장하거나 예측하지 않습니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "단독·다가구주택은 왜 더 조심해야 하나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "단독·다가구주택은 같은 건물 안의 다른 임차인 보증금이 선순위로 작용할 수 있습니다. 따라서 내 보증금보다 먼저 변제될 수 있는 금액을 확인하는 과정이 특히 중요합니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "전세가율이 낮으면 무조건 안전한가요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "아니요. 전세가율이 낮아도 권리관계, 압류·가압류, 선순위채권, 전입신고와 확정일자, 보증보험 가능 여부, 시세 변동에 따라 실제 위험은 달라질 수 있습니다."
+      }
+    }
+  ]
+}</script>
+    <link rel="stylesheet" href="../assets/css/base.css">
+    <link rel="stylesheet" href="../assets/css/layout.css">
+    <link rel="stylesheet" href="../assets/css/components.css?v=20260620-jeonse-final-ux-4">
+  </head>
+  <body>
+    <header class="site-header"><a class="brand" href="../index.html"><span class="brand-mark">한</span><span><strong>한눈계산</strong><small>생활 계산기</small></span></a><nav class="site-nav" aria-label="주요 메뉴"><a href="../index.html#calculators" data-tool-drawer>다른 계산기</a><a href="../index.html#how-to">사용 방법</a><a href="../index.html#faq">질문</a><a href="../about.html">소개</a><a href="../contact.html">문의</a></nav></header>
+    <main>
+      <section class="hero-band">
+        <div class="container">
+          <div class="section-intro">
+            <p class="eyebrow">부동산 계산</p>
+            <h1>전세가율·보증금 위험도 계산기</h1>
+            <p class="lead">매매가격, 전세보증금, 선순위채권을 입력해 전세가율과 보증금 회수 위험도를 참고용으로 확인합니다. 결과는 계약 판단을 대신하지 않으며, 등기부등본과 보증기관 확인을 함께 진행해야 합니다.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="content-band compact">
+        <div class="container calculator-section jeonse-risk-section">
+          <section class="tool-panel jeonse-risk-panel" aria-label="전세가율·보증금 위험도 계산기">
+            <form id="jeonse-risk-form" class="input-panel jeonse-risk-input-panel" novalidate>
+              <div class="form-panel-heading">
+                <p class="eyebrow">입력값</p>
+                <h2>계약 조건 입력</h2>
+                <p class="field-help">금액은 모두 <strong>만원 단위</strong>로 입력합니다. 예: 5억 원은 50000 입력</p>
+              </div>
+
+
+
+              <section class="jeonse-trade-lookup" aria-labelledby="jeonse-trade-lookup-title">
+                <div class="section-heading-row compact-row">
+                  <div>
+                    <p class="eyebrow">실거래가 보조 조회</p>
+                    <h3 id="jeonse-trade-lookup-title">아파트 매매 실거래가 참고</h3>
+                  </div>
+                </div>
+                <p class="field-help">지역을 검색해 선택한 뒤 최근 매매 실거래가를 조회해 기준 매매가격에 반영할 수 있습니다.</p>
+
+                <div class="jeonse-place-search-row">
+                  <div class="field jeonse-place-search-field">
+                    <label for="jeonse-place-query">지역/단지 검색</label>
+                    <div class="rent-place-search-box jeonse-place-search-box">
+                      <input id="jeonse-place-query" type="search" autocomplete="street-address" placeholder="예: 서울 대치동 은마, 세종 아름동 범지기마을3단지">
+                      <button id="jeonse-place-search" class="subtle-button" type="button">검색</button>
+                    </div>
+                  </div>
+                </div>
+
+                <input id="jeonse-lawd-cd" type="hidden">
+                <p id="jeonse-selected-region" class="rent-selected-region jeonse-selected-region">선택된 지역이 없습니다. 지역/단지를 검색해 선택해 주세요.</p>
+
+                <div id="jeonse-place-modal" class="rent-place-modal jeonse-place-modal" hidden aria-hidden="true">
+                  <div class="rent-place-modal-backdrop" data-jeonse-place-close></div>
+                  <section class="rent-place-modal-sheet" role="dialog" aria-modal="true" aria-labelledby="jeonse-place-modal-title">
+                    <div class="rent-place-modal-head">
+                      <div>
+                        <span class="report-kicker">장소 검색 결과</span>
+                        <h4 id="jeonse-place-modal-title">지역 또는 단지를 선택해 주세요</h4>
+                        <p id="jeonse-place-modal-summary" class="fine-print"></p>
+                      </div>
+                      <button class="rent-place-modal-close" type="button" data-jeonse-place-close aria-label="장소 선택 닫기">닫기</button>
+                    </div>
+                    <div id="jeonse-place-results" class="rent-place-results rent-place-results-modal jeonse-place-results" aria-live="polite"></div>
+                  </section>
+                </div>
+
+                <div class="jeonse-trade-lookup-grid is-compact">
+                  <div class="field">
+                    <label for="jeonse-apt-name">단지명 필터</label>
+                    <input id="jeonse-apt-name" type="search" autocomplete="off" placeholder="예: 은마, 리센츠, 범지기마을3단지">
+                  </div>
+                  <div class="field">
+                    <label for="jeonse-trade-months">조회 기간</label>
+                    <select id="jeonse-trade-months">
+                      <option value="3" selected>최근 3개월</option>
+                      <option value="6">최근 6개월</option>
+                      <option value="12">최근 12개월</option>
+                    </select>
+                  </div>
+                  <div class="field jeonse-trade-submit-field">
+                    <label>조회</label>
+                    <button id="jeonse-trade-search-button" class="subtle-button" type="button">최근 매매가 조회</button>
+                  </div>
+                </div>
+
+                <p id="jeonse-trade-message" class="fine-print jeonse-trade-message" role="status" aria-live="polite">지역을 선택하고 단지명을 입력하면 최근 매매 실거래가를 조회할 수 있습니다.</p>
+                <div id="jeonse-trade-modal" class="rent-place-modal jeonse-trade-modal" hidden aria-hidden="true">
+                  <div class="rent-place-modal-backdrop" data-jeonse-trade-close></div>
+                  <section class="rent-place-modal-sheet jeonse-trade-modal-sheet" role="dialog" aria-modal="true" aria-labelledby="jeonse-trade-modal-title">
+                    <div class="rent-place-modal-head">
+                      <div>
+                        <span class="report-kicker">매매 실거래가 선택</span>
+                        <h4 id="jeonse-trade-modal-title">최근 아파트 매매 실거래가</h4>
+                        <p id="jeonse-trade-modal-summary" class="fine-print"></p>
+                      </div>
+                      <button class="rent-place-modal-close" type="button" data-jeonse-trade-close aria-label="실거래가 선택 닫기">닫기</button>
+                    </div>
+                    <div id="jeonse-trade-results" class="jeonse-trade-results jeonse-trade-results-modal" aria-live="polite" hidden></div>
+                  </section>
+                </div>
+                <div id="jeonse-selected-trade" class="jeonse-selected-trade" aria-live="polite" hidden>
+                  <div>
+                    <strong>선택한 기준 매매가격</strong>
+                    <p id="jeonse-selected-trade-summary" class="fine-print">거래를 선택하면 매매가격 입력칸에 반영됩니다.</p>
+                  </div>
+                  <button id="jeonse-clear-selected-trade" class="subtle-button" type="button">직접 입력으로 변경</button>
+                </div>
+              </section>
+
+              <div class="field-row">
+                <div class="field">
+                  <label for="jeonse-market-price">매매가격 또는 기준 시세</label>
+                  <div class="input-suffix"><input id="jeonse-market-price" name="marketPrice" type="number" min="0" step="100" placeholder="50000" inputmode="numeric"><span>만원</span></div>
+                  <p class="field-help">집의 예상 매매가, 최근 실거래가 또는 보수적으로 본 기준 시세를 입력하세요.</p>
+                </div>
+                <div class="field">
+                  <label for="jeonse-deposit">전세보증금</label>
+                  <div class="input-suffix"><input id="jeonse-deposit" name="deposit" type="number" min="0" step="100" placeholder="40000" inputmode="numeric"><span>만원</span></div>
+                  <p class="field-help">계약하려는 전세보증금 또는 이미 계약한 보증금을 입력합니다.</p>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field">
+                  <label for="jeonse-priority-debt">선순위채권</label>
+                  <div class="input-suffix"><input id="jeonse-priority-debt" name="priorityDebt" type="number" min="0" step="100" value="0" placeholder="5000" inputmode="numeric"><span>만원</span></div>
+                  <p class="field-help">근저당권, 기존 대출, 선순위 임차보증금 등 내 보증금보다 먼저 변제될 수 있는 금액입니다.</p>
+                </div>
+                <div class="field">
+                  <label for="jeonse-auction-rate">예상 낙찰가율</label>
+                  <div class="input-suffix"><input id="jeonse-auction-rate" name="auctionRate" type="number" min="1" max="120" step="1" value="75" inputmode="numeric"><span>%</span></div>
+                  <p class="field-help">보수적인 회수 가능성을 가정하기 위한 값입니다. 기본값은 75%입니다.</p>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field">
+                  <label for="jeonse-home-type">주택 유형</label>
+                  <select id="jeonse-home-type" name="homeType">
+                    <option value="apartment">아파트</option>
+                    <option value="officetel">오피스텔</option>
+                    <option value="multi">연립·다세대</option>
+                    <option value="single">단독·다가구</option>
+                    <option value="unknown">모름</option>
+                  </select>
+                  <p class="field-help">단독·다가구는 선순위 임차보증금 확인이 특히 중요합니다.</p>
+                </div>
+                <div class="field">
+                  <label for="jeonse-guarantee-status">보증보험 확인 상태</label>
+                  <select id="jeonse-guarantee-status" name="guaranteeStatus">
+                    <option value="unknown">아직 확인 전</option>
+                    <option value="possible">가능하다고 안내받음</option>
+                    <option value="difficult">어려울 수 있다고 안내받음</option>
+                    <option value="none">가입하지 않을 예정</option>
+                  </select>
+                  <p class="field-help">실제 가입 가능 여부는 보증기관 기준과 주택가격 산정 방식에 따라 달라질 수 있습니다.</p>
+                </div>
+              </div>
+
+              <div class="jeonse-action-row" aria-label="계산기 버튼">
+                <button id="jeonse-calculate-button" class="primary-button" type="submit">전세 위험도 계산하기</button>
+                <button id="jeonse-example-button" class="subtle-button" type="button">예시 입력</button>
+                <button id="jeonse-reset-button" class="subtle-button" type="reset">초기화</button>
+              </div>
+              <p id="jeonse-form-message" class="fine-print" role="status" aria-live="polite">계산 결과는 사용자가 입력한 금액과 비율을 바탕으로 한 참고용 지표입니다. 실제 계약 전에는 공식 자료와 전문가 확인이 필요합니다.</p>
+            </form>
+
+            <aside id="jeonse-risk-result-panel" class="result-panel jeonse-risk-result-panel" aria-live="polite" tabindex="-1">
+              <div class="report-summary">
+                <span class="report-kicker">참고 위험도</span>
+                <strong id="jeonse-risk-level" class="result-number">-</strong>
+                <span id="jeonse-risk-detail">조건을 입력하면 전세가율과 보증금 위험도를 계산합니다.</span>
+              </div>
+              <div class="metric-grid jeonse-risk-metrics">
+                <div><span>전세가율</span><strong id="jeonse-ratio">-</strong></div>
+                <div><span>총 부담 비율</span><strong id="jeonse-total-ratio">-</strong></div>
+                <div><span>보증 기준 참고 한도</span><strong id="jeonse-guarantee-limit">-</strong></div>
+                <div><span>예상 회수 가능 금액</span><strong id="jeonse-recovery-amount">-</strong></div>
+                <div><span>부족 가능 금액</span><strong id="jeonse-shortfall">-</strong></div>
+                <div><span>선순위채권 반영</span><strong id="jeonse-priority-summary">-</strong></div>
+              </div>
+              <div class="decision-box">
+                <span id="jeonse-decision-badge" class="decision-badge neutral">참고용 계산</span>
+                <p id="jeonse-decision-copy">이 결과는 사용자가 입력한 값을 단순 계산한 참고 지표입니다. 실제 계약 안전성, 보증보험 가입 가능 여부, 법적 권리관계를 확정하지 않습니다.</p>
+              </div>
+            </aside>
+          </section>
+
+          <section class="seller-copy jeonse-checklist-panel">
+            <div class="section-heading-row">
+              <h3>계약 전 확인 체크리스트</h3>
+              <span>숫자 계산과 별도로 반드시 확인해야 할 항목입니다.</span>
+            </div>
+            <div class="jeonse-checklist-grid">
+              <label><input type="checkbox"> 등기부등본 갑구의 소유권, 압류, 가압류, 경매개시결정 여부 확인</label>
+              <label><input type="checkbox"> 등기부등본 을구의 근저당권, 채권최고액, 기존 대출 확인</label>
+              <label><input type="checkbox"> 단독·다가구주택의 다른 세입자 선순위 임차보증금 확인</label>
+              <label><input type="checkbox"> 전입신고와 확정일자 가능 여부 확인</label>
+              <label><input type="checkbox"> HUG, HF, SGI 등 보증기관의 보증보험 가능 여부 확인</label>
+              <label><input type="checkbox"> 주변 실거래가, 시세 변동, 공인중개사 등록 상태 확인</label>
+            </div>
+          </section>
+
+          <section class="seller-copy jeonse-checklist-panel" aria-label="공식 확인 경로">
+            <div class="section-heading-row">
+              <h3>공식 확인 경로</h3>
+              <span>계산 결과와 별도로 아래 자료를 직접 확인하세요.</span>
+            </div>
+            <div class="guide-grid">
+              <article><h4>등기부등본</h4><p>소유자, 압류·가압류, 근저당권, 채권최고액 등 권리관계를 확인합니다. 계산기의 선순위채권 입력값은 이 자료를 바탕으로 보수적으로 입력하는 것이 좋습니다.</p></article>
+              <article><h4>전입세대와 임대차 현황</h4><p>단독·다가구주택은 다른 임차인의 보증금이 선순위로 작용할 수 있습니다. 집주인, 중개사, 관련 서류를 통해 임대차 현황을 확인해야 합니다.</p></article>
+              <article><h4>보증기관 안내</h4><p>전세보증금반환보증 가입 가능 여부는 HUG, HF, SGI 등 보증기관의 실제 심사와 주택가격 산정 방식에 따라 달라집니다.</p></article>
+              <article><h4>시세와 실거래가</h4><p>최근 실거래가, 주변 매물가, 감정가, 지역 시세 흐름을 함께 확인해야 합니다. 매매가격을 과하게 높게 입력하면 위험도가 낮게 보일 수 있습니다.</p></article>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="content-band muted">
+        <div class="container two-column">
+          <section class="info-block">
+            <p class="eyebrow">사용 방법</p>
+            <h2>먼저 매매가격과 보증금을 입력하세요.</h2>
+            <ol class="step-list">
+              <li><strong>매매가격 입력</strong><span>최근 실거래가, 주변 시세, 감정가 등 기준이 되는 금액을 입력합니다.</span></li>
+              <li><strong>전세보증금 입력</strong><span>계약하려는 보증금 또는 이미 계약한 보증금을 입력합니다.</span></li>
+              <li><strong>선순위채권 확인</strong><span>등기부등본과 임대차 현황을 확인해 내 보증금보다 먼저 변제될 금액을 반영합니다.</span></li>
+              <li><strong>결과 해석</strong><span>전세가율, 총 부담 비율, 부족 가능 금액을 함께 보고 참고 위험도를 확인합니다.</span></li>
+            </ol>
+          </section>
+          <section class="info-block">
+            <p class="eyebrow">주의할 점</p>
+            <h2>보증보험 가입 가능 여부를 확정하지 않습니다.</h2>
+            <ul class="plain-list">
+              <li>전세가율이 낮아도 권리관계가 복잡하면 위험할 수 있습니다.</li>
+              <li>선순위채권을 0원으로 두면 실제 위험이 낮게 계산될 수 있습니다.</li>
+              <li>보증기관의 실제 심사 기준, 주택가격 산정 방식, 임대인 상황은 별도로 확인해야 합니다.</li>
+            </ul>
+          </section>
+        </div>
+      </section>
+
+      <section class="content-band calculation-guide" data-quality-section="calculator">
+        <div class="container">
+          <div class="section-intro narrow">
+            <p class="eyebrow">계산 기준</p>
+            <h2>전세가율·보증금 위험도 계산 기준</h2>
+            <p>이 계산기는 사용자가 입력한 금액을 바탕으로 전세가율, 선순위채권을 포함한 총 부담 비율, 보증 기준 참고 한도, 예상 회수 가능 금액을 함께 계산합니다. 결과는 계약 안전성이나 보증 가입 가능 여부를 확정하지 않는 참고 지표입니다.</p>
+          </div>
+          <div class="guide-grid">
+            <article><h3>전세가율</h3><p>전세가율 = 전세보증금 ÷ 매매가격 × 100으로 계산합니다. 매매가격 대비 보증금이 어느 정도인지 보는 기초 지표입니다.</p></article>
+            <article><h3>총 부담 비율</h3><p>총 부담 비율 = (전세보증금 + 선순위채권) ÷ 매매가격 × 100으로 계산합니다. 내 보증금보다 먼저 변제될 수 있는 금액을 함께 반영합니다.</p></article>
+            <article><h3>보증 기준 참고 한도</h3><p>보증 기준 참고 한도 = 매매가격 × 90% - 선순위채권으로 계산합니다. 실제 보증 가입 가능 여부를 확정하는 값은 아니며, 보증기관의 실제 기준과 주택가격 산정 방식에 따라 달라질 수 있습니다.</p></article>
+            <article><h3>예상 회수 가능 금액</h3><p>예상 회수 가능 금액 = 매매가격 × 예상 낙찰가율 - 선순위채권으로 계산합니다. 경매 등 강제 매각 상황을 단순 가정한 참고값입니다.</p></article>
+            <article><h3>부족 가능 금액</h3><p>부족 가능 금액 = 전세보증금 - 예상 회수 가능 금액으로 계산하되, 음수일 때는 0원으로 표시합니다. 실제 손실을 뜻하지는 않습니다.</p></article>
+            <article><h3>주의사항</h3><p>실제 계약 안전성은 등기부등본, 전입세대열람, 확정일자, 보증보험 가능 여부, 주변 시세와 법적 권리관계에 따라 달라질 수 있습니다.</p></article>
+          </div>
+
+          <div class="info-block">
+            <h3>위험도 표시 기준</h3>
+            <p>위험도는 전세가율 하나만 보지 않고 총 부담 비율, 보증 기준 참고 한도 초과 여부, 부족 가능 금액 발생 여부를 함께 반영합니다. 같은 전세가율이라도 선순위채권이 크면 더 높은 위험도로 표시될 수 있습니다.</p>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>표시 단계</th><th>주요 판단 기준</th><th>해석 방법</th></tr></thead>
+                <tbody>
+                  <tr><td>낮은 위험</td><td>전세가율과 총 부담 비율이 낮은 구간</td><td>입력값 기준 부담 비율이 낮은 편이지만 권리관계 확인은 필요합니다.</td></tr>
+                  <tr><td>보통</td><td>전세가율 또는 총 부담 비율이 중간 구간</td><td>보증금 규모가 커지는 단계이므로 시세와 선순위권리를 함께 확인합니다.</td></tr>
+                  <tr><td>주의 필요</td><td>전세가율 또는 총 부담 비율이 높은 구간</td><td>계약 전 보증보험 가능 여부와 주변 실거래가를 더 보수적으로 확인합니다.</td></tr>
+                  <tr><td>높은 위험</td><td>총 부담 비율이 높거나 보증 기준 참고 한도에 근접</td><td>선순위채권, 낙찰가율 가정, 시세 하락 가능성을 함께 검토해야 합니다.</td></tr>
+                  <tr><td>매우 높은 위험</td><td>보증 기준 참고 한도 초과, 부족 가능 금액 발생, 전세보증금이 매매가격보다 큰 경우</td><td>계산 결과만으로 판단하지 말고 보증기관, 공인중개사, 법률 전문가 등 추가 확인이 필요합니다.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="info-block">
+            <h3>예시 계산</h3>
+            <p>매매가격 5억 원, 전세보증금 4억 원, 선순위채권 5,000만 원, 예상 낙찰가율 75%를 입력하면 전세가율은 80.0%, 총 부담 비율은 90.0%입니다. 예상 회수 가능 금액은 3억 2,500만 원이고, 보수적 가정에서는 약 7,500만 원의 부족 가능 금액이 계산됩니다.</p>
+            <p class="fine-print">이 예시는 계산 방식 이해를 위한 가상 사례입니다. 실제 회수 가능 금액, 보증보험 가입 가능 여부, 계약 안전성을 보장하지 않습니다.</p>
+          </div>
+
+          <div class="info-block">
+            <h3>계산 결과를 해석할 때 조심할 점</h3>
+            <ul class="plain-list">
+              <li>매매가격을 높게 입력하면 전세가율과 위험도가 낮게 표시될 수 있습니다.</li>
+              <li>선순위채권을 0원으로 두면 실제보다 안전하게 보일 수 있습니다.</li>
+              <li>단독·다가구주택은 다른 세입자의 선순위 보증금을 확인하지 않으면 위험도가 왜곡될 수 있습니다.</li>
+              <li>전입신고, 확정일자, 대항력, 우선변제권 등 법적 요건은 이 계산기로 판단할 수 없습니다.</li>
+              <li>보증보험 가입 가능 여부는 보증기관의 실제 심사 결과를 기준으로 확인해야 합니다.</li>
+            </ul>
+          </div>
+          <p class="guide-updated">최종 업데이트 날짜: 2026-06-19</p>
+        </div>
+      </section>
+
+      <section class="content-band">
+        <div class="container faq-wrap">
+          <p class="eyebrow">자주 묻는 질문</p>
+          <h2>전세가율·보증금 위험도 계산기 자주 묻는 질문</h2>
+          <div class="faq-grid">
+            <details open><summary>전세가율은 무엇인가요?</summary><p>전세가율은 매매가격 대비 전세보증금의 비율입니다. 전세가율이 높을수록 주택가격 하락이나 경매 상황에서 보증금 회수 여지가 줄어들 수 있습니다.</p></details>
+            <details><summary>전세가율이 몇 퍼센트면 위험한가요?</summary><p>전세가율만으로 위험 여부를 확정할 수는 없습니다. 이 계산기는 전세가율, 선순위채권을 포함한 총 부담 비율, 예상 부족 가능 금액을 함께 보고 참고 위험도를 표시합니다.</p></details>
+            <details><summary>선순위채권은 어디서 확인하나요?</summary><p>등기부등본 을구의 근저당권, 채권최고액, 기존 대출 등을 확인해야 합니다. 단독·다가구주택은 다른 세입자의 선순위 임차보증금도 함께 확인해야 할 수 있습니다.</p></details>
+            <details><summary>보증보험 가입 가능 여부를 이 계산기로 알 수 있나요?</summary><p>아니요. 이 계산기는 보증 기준 참고 한도를 단순 계산하는 도구이며, 실제 가입 가능 여부는 HUG, HF, SGI 등 보증기관과 공식 자료를 통해 확인해야 합니다.</p></details>
+            <details><summary>예상 낙찰가율은 어떤 값을 넣어야 하나요?</summary><p>기본값은 75%입니다. 더 보수적으로 보고 싶다면 60~70%, 비교적 낙관적으로 보고 싶다면 80% 이상을 입력할 수 있습니다. 입력한 값은 단순 가정값입니다.</p></details>
+            <details><summary>부족 가능 금액은 실제 손실인가요?</summary><p>아닙니다. 부족 가능 금액은 사용자가 입력한 낙찰가율과 선순위채권을 바탕으로 계산한 참고값입니다. 실제 회수 금액이나 손실을 보장하거나 예측하지 않습니다.</p></details>
+            <details><summary>단독·다가구주택은 왜 더 조심해야 하나요?</summary><p>단독·다가구주택은 같은 건물 안의 다른 임차인 보증금이 선순위로 작용할 수 있습니다. 따라서 내 보증금보다 먼저 변제될 수 있는 금액을 확인하는 과정이 특히 중요합니다.</p></details>
+            <details><summary>전세가율이 낮으면 무조건 안전한가요?</summary><p>아니요. 전세가율이 낮아도 권리관계, 시세 변동, 선순위채권, 전입신고와 확정일자 여부에 따라 실제 위험은 달라질 수 있습니다.</p></details>
+          </div>
+        </div>
+      </section>
+
+            <section class="content-band muted">
+        <div class="container related-calculators">
+          <div class="section-intro narrow">
+            <p class="eyebrow">관련 계산기</p>
+            <h2>주거비와 금융 부담도 함께 확인하세요.</h2>
+          </div>
+          <div class="calculator-cards compact-cards">
+            <a class="calculator-card" href="rent-vs-jeonse.html"><span class="tool-badge">부동산</span><h3>전세 월세 비교 계산기</h3><p>전세, 월세, 반전세의 월 실부담액을 비교합니다.</p></a>
+            <a class="calculator-card" href="loan-interest.html"><span class="tool-badge">대출</span><h3>대출 이자 계산기</h3><p>상환 방식별 월 납입액과 총 이자를 계산합니다.</p></a>
+            <a class="calculator-card" href="net-salary.html"><span class="tool-badge">급여</span><h3>월 실수령액 계산기</h3><p>월급에서 세금과 4대보험을 뺀 예상 실수령액을 확인합니다.</p></a>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer"><div class="container footer-grid"><div><strong>한눈계산</strong><p>© 한눈계산. 모든 계산 결과는 참고용이며, 실제 판단은 공식 기관 기준을 확인해야 합니다.</p></div><nav aria-label="정책 메뉴"><a href="../about.html">사이트 소개</a><a href="../privacy.html">개인정보 처리방침</a><a href="../disclaimer.html">면책 고지</a><a href="../licenses.html">오픈소스 라이선스</a><a href="../contact.html">문의하기</a></nav></div></footer>
+    <script type="module" src="../assets/js/app.js?v=20260619-jeonse-risk-phase5"></script>
+    <script type="module" src="../assets/js/jeonse-risk.js?v=20260620-final-ux-4"></script>
+  </body>
+</html>

@@ -111,7 +111,7 @@ export async function resolveParkingLotDataset({ env = {}, destination = null, r
   if (!selectedLots.length && !nationalLots.length && sampleNearby.length) {
     selectedLots = sampleNearby;
     mode = 'sample-fallback';
-    fallbackReason = fallbackReason || '전국 주차장 캐시와 제한적인 공공데이터 fallback을 사용할 수 없어 로컬 샘플 후보를 사용했습니다.';
+    fallbackReason = fallbackReason || '전국 주차장 캐시와 제한적인 공공데이터 fallback을 사용할 수 없어 로컬 보조 후보를 사용했습니다.';
   } else if (!selectedLots.length) {
     fallbackReason = fallbackReason || '전국 주차장 캐시 기준 현재 반경 내 후보가 없습니다.';
   } else if (!cacheNearby.length && expandedCacheNearby.length) {
@@ -186,7 +186,7 @@ export async function resolveRealtimeStatuses({ env = {}, lots = [] } = {}) {
       mode: 'sample-fallback',
       sources,
       errors,
-      note: '서울 실시간 주차대수 API 키가 없거나 호출이 실패해 샘플 실시간 데이터를 사용합니다.'
+      note: '서울 실시간 주차대수 API 키가 없거나 호출이 실패해 보조 실시간 데이터를 사용합니다.'
     }
   };
 }
@@ -752,7 +752,7 @@ async function fetchSeoulRealtimeParking(env) {
 }
 
 async function fetchPublicParkingLots(env, { query = '', maxPages = PUBLIC_DATA_RUNTIME_FALLBACK_PAGES } = {}) {
-  const key = (env.PUBLIC_DATA_API_KEY || env.DATA_GO_KR_SERVICE_KEY) || '';
+  const key = env.PUBLIC_DATA_API_KEY || '';
   if (!key) return { ok: true, lots: [], source: null };
 
   const cache = await getPublicParkingDataCache(key, { maxPages });

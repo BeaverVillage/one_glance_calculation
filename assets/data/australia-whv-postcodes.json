@@ -1,0 +1,1038 @@
+{
+  "version": "2026-06-16-home-affairs-reference-v3",
+  "lastReviewed": "2026-06-16",
+  "sourceName": "Australian Department of Home Affairs",
+  "sourceUrls": [
+    "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/work-holiday-417/specified-work",
+    "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/work-holiday-462/specified-462-work",
+    "https://immi.homeaffairs.gov.au/what-we-do/whm-program/latest-news",
+    "https://immi.homeaffairs.gov.au/visas/working-in-australia/regional-migration/eligible-regional-areas",
+    "https://immi.homeaffairs.gov.au/visas/working-in-australia/skill-occupation-list/regional-postcodes"
+  ],
+  "disclaimer": "This postcode checker is for reference only. Always verify eligibility on the official Home Affairs website and in ImmiAccount.",
+  "notes": [
+    "Rules include postcode ranges that could be checked against Australian Department of Home Affairs specified work pages/search result text on 2026-06-16.",
+    "The WHM program uses its own specified work postcode lists. The generic designated regional areas list is not used as a substitute for WHM specified work.",
+    "Bushfire, flood, natural disaster recovery and other time-sensitive declared areas can change and are left for official check unless exact ranges are added in a later data review.",
+    "The checker only provides a likely postcode-area match. Industry, evidence, visa subclass, application date and Home Affairs instructions still need separate confirmation.",
+    "v3 UI uses Korean reference labels only. Postcode ranges remain a reference aid and must be checked against Home Affairs specified work pages and latest news before application."
+  ],
+  "rules": [
+    {
+      "id": "417-regional-core-nsw",
+      "subclasses": [
+        "417"
+      ],
+      "industries": [
+        "Plant and animal cultivation",
+        "Fishing and pearling",
+        "Tree farming and felling",
+        "Mining",
+        "Construction"
+      ],
+      "states": [
+        "NSW"
+      ],
+      "areaType": "Regional Australia",
+      "ranges": [
+        {
+          "start": 2311,
+          "end": 2312
+        },
+        {
+          "start": 2328,
+          "end": 2411
+        },
+        {
+          "start": 2420,
+          "end": 2490
+        },
+        {
+          "start": 2536,
+          "end": 2551
+        },
+        {
+          "start": 2575,
+          "end": 2594
+        },
+        {
+          "start": 2618,
+          "end": 2739
+        },
+        {
+          "start": 2787,
+          "end": 2898
+        }
+      ],
+      "note": "Regional Australia: subclass 417 core specified work industries in New South Wales.",
+      "sourceUrl": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/work-holiday-417/specified-work"
+    },
+    {
+      "id": "417-regional-core-vic",
+      "subclasses": [
+        "417"
+      ],
+      "industries": [
+        "Plant and animal cultivation",
+        "Fishing and pearling",
+        "Tree farming and felling",
+        "Mining",
+        "Construction"
+      ],
+      "states": [
+        "VIC"
+      ],
+      "areaType": "Regional Australia",
+      "ranges": [
+        {
+          "start": 3139,
+          "end": 3139
+        },
+        {
+          "start": 3211,
+          "end": 3334
+        },
+        {
+          "start": 3340,
+          "end": 3424
+        },
+        {
+          "start": 3430,
+          "end": 3649
+        },
+        {
+          "start": 3658,
+          "end": 3749
+        },
+        {
+          "start": 3753,
+          "end": 3753
+        },
+        {
+          "start": 3756,
+          "end": 3756
+        },
+        {
+          "start": 3758,
+          "end": 3758
+        },
+        {
+          "start": 3762,
+          "end": 3762
+        },
+        {
+          "start": 3764,
+          "end": 3764
+        },
+        {
+          "start": 3778,
+          "end": 3781
+        },
+        {
+          "start": 3783,
+          "end": 3783
+        },
+        {
+          "start": 3797,
+          "end": 3797
+        },
+        {
+          "start": 3799,
+          "end": 3799
+        },
+        {
+          "start": 3810,
+          "end": 3909
+        },
+        {
+          "start": 3921,
+          "end": 3925
+        },
+        {
+          "start": 3945,
+          "end": 3974
+        },
+        {
+          "start": 3979,
+          "end": 3979
+        },
+        {
+          "start": 3981,
+          "end": 3996
+        }
+      ],
+      "note": "Regional Australia: subclass 417 core specified work industries in Victoria.",
+      "sourceUrl": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/work-holiday-417/specified-work"
+    },
+    {
+      "id": "417-regional-core-qld",
+      "subclasses": [
+        "417"
+      ],
+      "industries": [
+        "Plant and animal cultivation",
+        "Fishing and pearling",
+        "Tree farming and felling",
+        "Mining",
+        "Construction"
+      ],
+      "states": [
+        "QLD"
+      ],
+      "areaType": "Regional Australia",
+      "ranges": [
+        {
+          "start": 4124,
+          "end": 4125
+        },
+        {
+          "start": 4133,
+          "end": 4133
+        },
+        {
+          "start": 4211,
+          "end": 4211
+        },
+        {
+          "start": 4270,
+          "end": 4272
+        },
+        {
+          "start": 4275,
+          "end": 4275
+        },
+        {
+          "start": 4280,
+          "end": 4280
+        },
+        {
+          "start": 4285,
+          "end": 4285
+        },
+        {
+          "start": 4287,
+          "end": 4287
+        },
+        {
+          "start": 4307,
+          "end": 4499
+        },
+        {
+          "start": 4510,
+          "end": 4510
+        },
+        {
+          "start": 4512,
+          "end": 4512
+        },
+        {
+          "start": 4515,
+          "end": 4519
+        },
+        {
+          "start": 4522,
+          "end": 4899
+        }
+      ],
+      "note": "Regional Australia: subclass 417 core specified work industries in Queensland.",
+      "sourceUrl": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/work-holiday-417/specified-work"
+    },
+    {
+      "id": "417-regional-core-wa",
+      "subclasses": [
+        "417"
+      ],
+      "industries": [
+        "Plant and animal cultivation",
+        "Fishing and pearling",
+        "Tree farming and felling",
+        "Mining",
+        "Construction"
+      ],
+      "states": [
+        "WA"
+      ],
+      "areaType": "Regional Australia",
+      "ranges": [
+        {
+          "start": 6041,
+          "end": 6044
+        },
+        {
+          "start": 6055,
+          "end": 6056
+        },
+        {
+          "start": 6069,
+          "end": 6069
+        },
+        {
+          "start": 6076,
+          "end": 6076
+        },
+        {
+          "start": 6083,
+          "end": 6084
+        },
+        {
+          "start": 6111,
+          "end": 6111
+        },
+        {
+          "start": 6121,
+          "end": 6126
+        },
+        {
+          "start": 6200,
+          "end": 6799
+        }
+      ],
+      "note": "Regional Australia: subclass 417 core specified work industries in Western Australia.",
+      "sourceUrl": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/work-holiday-417/specified-work"
+    },
+    {
+      "id": "417-regional-core-sa",
+      "subclasses": [
+        "417"
+      ],
+      "industries": [
+        "Plant and animal cultivation",
+        "Fishing and pearling",
+        "Tree farming and felling",
+        "Mining",
+        "Construction"
+      ],
+      "states": [
+        "SA"
+      ],
+      "areaType": "Regional Australia",
+      "ranges": [
+        {
+          "start": 5000,
+          "end": 5799
+        }
+      ],
+      "note": "Regional Australia: subclass 417 core specified work industries in South Australia.",
+      "sourceUrl": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/work-holiday-417/specified-work"
+    },
+    {
+      "id": "417-regional-core-tas",
+      "subclasses": [
+        "417"
+      ],
+      "industries": [
+        "Plant and animal cultivation",
+        "Fishing and pearling",
+        "Tree farming and felling",
+        "Mining",
+        "Construction"
+      ],
+      "states": [
+        "TAS"
+      ],
+      "areaType": "Regional Australia",
+      "ranges": [
+        {
+          "start": 7000,
+          "end": 7799
+        }
+      ],
+      "note": "Regional Australia: subclass 417 core specified work industries in Tasmania.",
+      "sourceUrl": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/work-holiday-417/specified-work"
+    },
+    {
+      "id": "417-regional-core-nt",
+      "subclasses": [
+        "417"
+      ],
+      "industries": [
+        "Plant and animal cultivation",
+        "Fishing and pearling",
+        "Tree farming and felling",
+        "Mining",
+        "Construction"
+      ],
+      "states": [
+        "NT"
+      ],
+      "areaType": "Regional Australia",
+      "ranges": [
+        {
+          "start": 800,
+          "end": 999
+        }
+      ],
+      "note": "Regional Australia: subclass 417 core specified work industries in the Northern Territory.",
+      "sourceUrl": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/work-holiday-417/specified-work"
+    },
+    {
+      "id": "462-regional-plant-construction-nsw",
+      "subclasses": [
+        "462"
+      ],
+      "industries": [
+        "Plant and animal cultivation",
+        "Construction"
+      ],
+      "states": [
+        "NSW"
+      ],
+      "areaType": "Regional Australia",
+      "ranges": [
+        {
+          "start": 2311,
+          "end": 2312
+        },
+        {
+          "start": 2328,
+          "end": 2411
+        },
+        {
+          "start": 2420,
+          "end": 2490
+        },
+        {
+          "start": 2536,
+          "end": 2551
+        },
+        {
+          "start": 2575,
+          "end": 2594
+        },
+        {
+          "start": 2618,
+          "end": 2739
+        },
+        {
+          "start": 2787,
+          "end": 2898
+        }
+      ],
+      "note": "Regional Australia: subclass 462 plant/animal cultivation or construction in New South Wales.",
+      "sourceUrl": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/work-holiday-462/specified-462-work"
+    },
+    {
+      "id": "462-regional-plant-construction-vic",
+      "subclasses": [
+        "462"
+      ],
+      "industries": [
+        "Plant and animal cultivation",
+        "Construction"
+      ],
+      "states": [
+        "VIC"
+      ],
+      "areaType": "Regional Australia",
+      "ranges": [
+        {
+          "start": 3139,
+          "end": 3139
+        },
+        {
+          "start": 3211,
+          "end": 3334
+        },
+        {
+          "start": 3340,
+          "end": 3424
+        },
+        {
+          "start": 3430,
+          "end": 3649
+        },
+        {
+          "start": 3658,
+          "end": 3749
+        },
+        {
+          "start": 3753,
+          "end": 3753
+        },
+        {
+          "start": 3756,
+          "end": 3756
+        },
+        {
+          "start": 3758,
+          "end": 3758
+        },
+        {
+          "start": 3762,
+          "end": 3762
+        },
+        {
+          "start": 3764,
+          "end": 3764
+        },
+        {
+          "start": 3778,
+          "end": 3781
+        },
+        {
+          "start": 3783,
+          "end": 3783
+        },
+        {
+          "start": 3797,
+          "end": 3797
+        },
+        {
+          "start": 3799,
+          "end": 3799
+        },
+        {
+          "start": 3810,
+          "end": 3909
+        },
+        {
+          "start": 3921,
+          "end": 3925
+        },
+        {
+          "start": 3945,
+          "end": 3974
+        },
+        {
+          "start": 3979,
+          "end": 3979
+        },
+        {
+          "start": 3981,
+          "end": 3996
+        }
+      ],
+      "note": "Regional Australia: subclass 462 plant/animal cultivation or construction in Victoria.",
+      "sourceUrl": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/work-holiday-462/specified-462-work"
+    },
+    {
+      "id": "462-regional-plant-construction-qld",
+      "subclasses": [
+        "462"
+      ],
+      "industries": [
+        "Plant and animal cultivation",
+        "Construction"
+      ],
+      "states": [
+        "QLD"
+      ],
+      "areaType": "Regional Australia",
+      "ranges": [
+        {
+          "start": 4124,
+          "end": 4125
+        },
+        {
+          "start": 4133,
+          "end": 4133
+        },
+        {
+          "start": 4211,
+          "end": 4211
+        },
+        {
+          "start": 4270,
+          "end": 4272
+        },
+        {
+          "start": 4275,
+          "end": 4275
+        },
+        {
+          "start": 4280,
+          "end": 4280
+        },
+        {
+          "start": 4285,
+          "end": 4285
+        },
+        {
+          "start": 4287,
+          "end": 4287
+        },
+        {
+          "start": 4307,
+          "end": 4499
+        },
+        {
+          "start": 4510,
+          "end": 4510
+        },
+        {
+          "start": 4512,
+          "end": 4512
+        },
+        {
+          "start": 4515,
+          "end": 4519
+        },
+        {
+          "start": 4522,
+          "end": 4899
+        }
+      ],
+      "note": "Regional Australia: subclass 462 plant/animal cultivation or construction in Queensland.",
+      "sourceUrl": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/work-holiday-462/specified-462-work"
+    },
+    {
+      "id": "462-regional-plant-construction-wa",
+      "subclasses": [
+        "462"
+      ],
+      "industries": [
+        "Plant and animal cultivation",
+        "Construction"
+      ],
+      "states": [
+        "WA"
+      ],
+      "areaType": "Regional Australia",
+      "ranges": [
+        {
+          "start": 6041,
+          "end": 6044
+        },
+        {
+          "start": 6055,
+          "end": 6056
+        },
+        {
+          "start": 6069,
+          "end": 6069
+        },
+        {
+          "start": 6076,
+          "end": 6076
+        },
+        {
+          "start": 6083,
+          "end": 6084
+        },
+        {
+          "start": 6111,
+          "end": 6111
+        },
+        {
+          "start": 6121,
+          "end": 6126
+        },
+        {
+          "start": 6200,
+          "end": 6799
+        }
+      ],
+      "note": "Regional Australia: subclass 462 plant/animal cultivation or construction in Western Australia.",
+      "sourceUrl": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/work-holiday-462/specified-462-work"
+    },
+    {
+      "id": "462-regional-plant-construction-sa",
+      "subclasses": [
+        "462"
+      ],
+      "industries": [
+        "Plant and animal cultivation",
+        "Construction"
+      ],
+      "states": [
+        "SA"
+      ],
+      "areaType": "Regional Australia",
+      "ranges": [
+        {
+          "start": 5000,
+          "end": 5799
+        }
+      ],
+      "note": "Regional Australia: subclass 462 plant/animal cultivation or construction in South Australia.",
+      "sourceUrl": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/work-holiday-462/specified-462-work"
+    },
+    {
+      "id": "462-regional-plant-construction-tas",
+      "subclasses": [
+        "462"
+      ],
+      "industries": [
+        "Plant and animal cultivation",
+        "Construction"
+      ],
+      "states": [
+        "TAS"
+      ],
+      "areaType": "Regional Australia",
+      "ranges": [
+        {
+          "start": 7000,
+          "end": 7799
+        }
+      ],
+      "note": "Regional Australia: subclass 462 plant/animal cultivation or construction in Tasmania.",
+      "sourceUrl": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/work-holiday-462/specified-462-work"
+    },
+    {
+      "id": "462-regional-plant-construction-nt",
+      "subclasses": [
+        "462"
+      ],
+      "industries": [
+        "Plant and animal cultivation",
+        "Construction"
+      ],
+      "states": [
+        "NT"
+      ],
+      "areaType": "Regional Australia",
+      "ranges": [
+        {
+          "start": 800,
+          "end": 999
+        }
+      ],
+      "note": "Regional Australia: subclass 462 plant/animal cultivation or construction in the Northern Territory.",
+      "sourceUrl": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/work-holiday-462/specified-462-work"
+    },
+    {
+      "id": "417-462-northern-qld",
+      "subclasses": [
+        "417",
+        "462"
+      ],
+      "industries": [
+        "Tourism and hospitality",
+        "Plant and animal cultivation",
+        "Fishing and pearling",
+        "Tree farming and felling",
+        "Construction"
+      ],
+      "states": [
+        "QLD"
+      ],
+      "areaType": "Northern Australia",
+      "ranges": [
+        {
+          "start": 4472,
+          "end": 4472
+        },
+        {
+          "start": 4478,
+          "end": 4478
+        },
+        {
+          "start": 4481,
+          "end": 4481
+        },
+        {
+          "start": 4482,
+          "end": 4482
+        },
+        {
+          "start": 4680,
+          "end": 4680
+        },
+        {
+          "start": 4694,
+          "end": 4694
+        },
+        {
+          "start": 4695,
+          "end": 4695
+        },
+        {
+          "start": 4697,
+          "end": 4697
+        },
+        {
+          "start": 4699,
+          "end": 4707
+        },
+        {
+          "start": 4709,
+          "end": 4714
+        },
+        {
+          "start": 4717,
+          "end": 4717
+        },
+        {
+          "start": 4720,
+          "end": 4728
+        },
+        {
+          "start": 4730,
+          "end": 4733
+        },
+        {
+          "start": 4735,
+          "end": 4746
+        },
+        {
+          "start": 4750,
+          "end": 4750
+        },
+        {
+          "start": 4751,
+          "end": 4751
+        },
+        {
+          "start": 4753,
+          "end": 4753
+        },
+        {
+          "start": 4754,
+          "end": 4754
+        },
+        {
+          "start": 4756,
+          "end": 4756
+        },
+        {
+          "start": 4757,
+          "end": 4757
+        },
+        {
+          "start": 4798,
+          "end": 4812
+        },
+        {
+          "start": 4814,
+          "end": 4825
+        },
+        {
+          "start": 4828,
+          "end": 4830
+        },
+        {
+          "start": 4849,
+          "end": 4849
+        },
+        {
+          "start": 4850,
+          "end": 4850
+        },
+        {
+          "start": 4852,
+          "end": 4852
+        },
+        {
+          "start": 4854,
+          "end": 4856
+        },
+        {
+          "start": 4858,
+          "end": 4861
+        },
+        {
+          "start": 4865,
+          "end": 4865
+        },
+        {
+          "start": 4868,
+          "end": 4888
+        },
+        {
+          "start": 4890,
+          "end": 4892
+        },
+        {
+          "start": 4895,
+          "end": 4895
+        }
+      ],
+      "note": "Northern Australia: tourism/hospitality and selected specified work industries in Queensland.",
+      "sourceUrl": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/work-holiday-462/specified-462-work",
+      "effectiveFrom": "2021-06-22"
+    },
+    {
+      "id": "417-462-northern-wa",
+      "subclasses": [
+        "417",
+        "462"
+      ],
+      "industries": [
+        "Tourism and hospitality",
+        "Plant and animal cultivation",
+        "Fishing and pearling",
+        "Tree farming and felling",
+        "Construction"
+      ],
+      "states": [
+        "WA"
+      ],
+      "areaType": "Northern Australia",
+      "ranges": [
+        {
+          "start": 872,
+          "end": 872
+        },
+        {
+          "start": 6537,
+          "end": 6537
+        },
+        {
+          "start": 6642,
+          "end": 6642
+        },
+        {
+          "start": 6646,
+          "end": 6646
+        },
+        {
+          "start": 6701,
+          "end": 6701
+        },
+        {
+          "start": 6705,
+          "end": 6705
+        },
+        {
+          "start": 6707,
+          "end": 6707
+        },
+        {
+          "start": 6710,
+          "end": 6714
+        },
+        {
+          "start": 6716,
+          "end": 6716
+        },
+        {
+          "start": 6718,
+          "end": 6718
+        },
+        {
+          "start": 6720,
+          "end": 6722
+        },
+        {
+          "start": 6725,
+          "end": 6726
+        },
+        {
+          "start": 6728,
+          "end": 6728
+        },
+        {
+          "start": 6740,
+          "end": 6740
+        },
+        {
+          "start": 6743,
+          "end": 6743
+        },
+        {
+          "start": 6751,
+          "end": 6751
+        },
+        {
+          "start": 6753,
+          "end": 6754
+        },
+        {
+          "start": 6758,
+          "end": 6758
+        },
+        {
+          "start": 6760,
+          "end": 6760
+        },
+        {
+          "start": 6762,
+          "end": 6762
+        },
+        {
+          "start": 6765,
+          "end": 6765
+        },
+        {
+          "start": 6770,
+          "end": 6770
+        }
+      ],
+      "note": "Northern Australia: tourism/hospitality and selected specified work industries in Western Australia.",
+      "sourceUrl": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/work-holiday-417/specified-work",
+      "effectiveFrom": "2021-06-22"
+    },
+    {
+      "id": "417-462-northern-nt",
+      "subclasses": [
+        "417",
+        "462"
+      ],
+      "industries": [
+        "Tourism and hospitality",
+        "Plant and animal cultivation",
+        "Fishing and pearling",
+        "Tree farming and felling",
+        "Construction"
+      ],
+      "states": [
+        "NT"
+      ],
+      "areaType": "Northern Australia",
+      "ranges": [
+        {
+          "start": 800,
+          "end": 999
+        }
+      ],
+      "note": "Northern Australia: tourism/hospitality and selected specified work industries in the Northern Territory.",
+      "sourceUrl": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/work-holiday-417/specified-work",
+      "effectiveFrom": "2021-06-22"
+    },
+    {
+      "id": "417-462-tourism-special-qld",
+      "subclasses": [
+        "417",
+        "462"
+      ],
+      "industries": [
+        "Tourism and hospitality"
+      ],
+      "states": [
+        "QLD"
+      ],
+      "areaType": "Remote and very remote Australia",
+      "ranges": [
+        {
+          "start": 4406,
+          "end": 4406
+        },
+        {
+          "start": 4416,
+          "end": 4416
+        },
+        {
+          "start": 4498,
+          "end": 4498
+        }
+      ],
+      "note": "Remote and very remote Australia: additional tourism and hospitality postcodes in Queensland from 22 June 2021.",
+      "sourceUrl": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/work-holiday-462/specified-462-work",
+      "effectiveFrom": "2021-06-22"
+    },
+    {
+      "id": "417-462-tourism-special-tas",
+      "subclasses": [
+        "417",
+        "462"
+      ],
+      "industries": [
+        "Tourism and hospitality"
+      ],
+      "states": [
+        "TAS"
+      ],
+      "areaType": "Remote and very remote Australia",
+      "ranges": [
+        {
+          "start": 7215,
+          "end": 7215
+        }
+      ],
+      "note": "Remote and very remote Australia: additional tourism and hospitality postcode in Tasmania from 22 June 2021.",
+      "sourceUrl": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/work-holiday-462/specified-462-work",
+      "effectiveFrom": "2021-06-22"
+    }
+  ]
+}

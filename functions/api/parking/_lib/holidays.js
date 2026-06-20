@@ -24,7 +24,7 @@ export function getDateParts(value) {
 
 export async function resolveHolidayContext({ env = {}, dateString } = {}) {
   const fallback = buildCalendarFallback(dateString);
-  const key = env.HOLIDAY_API_KEY || env.PUBLIC_DATA_API_KEY || env.DATA_GO_KR_SERVICE_KEY || '';
+  const key = env.HOLIDAY_API_KEY || env.PUBLIC_DATA_API_KEY || '';
   if (!key || !fallback.dateKey) {
     return {
       ...fallback,
@@ -68,7 +68,7 @@ export async function resolveHolidayContext({ env = {}, dateString } = {}) {
 }
 
 async function fetchKoreanPublicHolidays(env, parts) {
-  const key = env.HOLIDAY_API_KEY || env.PUBLIC_DATA_API_KEY || env.DATA_GO_KR_SERVICE_KEY || '';
+  const key = env.HOLIDAY_API_KEY || env.PUBLIC_DATA_API_KEY || '';
   const base = DEFAULT_HOLIDAY_BASE;
   const service = DEFAULT_HOLIDAY_SERVICE;
   const url = new URL(`${base}/${service}`);
