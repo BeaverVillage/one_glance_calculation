@@ -85,6 +85,9 @@ export function initJeonseRiskCalculator(root = document) {
     tradeAptName: root.querySelector("#jeonse-apt-name"),
     tradeMonths: root.querySelector("#jeonse-trade-months"),
     tradeDealYmd: root.querySelector("#jeonse-trade-deal-ymd"),
+    dealYmdPanel: root.querySelector("#jeonse-dealymd-panel"),
+    dealYmdToggleButton: root.querySelector("#jeonse-dealymd-toggle-button"),
+    dealYmdSearchButton: root.querySelector("#jeonse-dealymd-search-button"),
     tradeSearchButton: root.querySelector("#jeonse-trade-search-button"),
     tradeMessage: root.querySelector("#jeonse-trade-message"),
     tradeResults: root.querySelector("#jeonse-trade-results"),
@@ -138,13 +141,21 @@ export function initJeonseRiskCalculator(root = document) {
   }
 
   els.tradeSearchButton.addEventListener("click", () => {
-    lookupAptTrades(els);
+    lookupAptTrades(els, { mode: "recent" });
   });
 
   els.tradeAptName.addEventListener("keydown", (event) => {
     if (event.key !== "Enter") return;
     event.preventDefault();
-    lookupAptTrades(els);
+    lookupAptTrades(els, { mode: "recent" });
+  });
+
+  els.dealYmdToggleButton.addEventListener("click", () => {
+    toggleDealYmdPanel(els);
+  });
+
+  els.dealYmdSearchButton.addEventListener("click", () => {
+    lookupAptTrades(els, { mode: "dealYmd" });
   });
 
   els.tradeDealYmd.addEventListener("input", () => {
@@ -154,7 +165,7 @@ export function initJeonseRiskCalculator(root = document) {
   els.tradeDealYmd.addEventListener("keydown", (event) => {
     if (event.key !== "Enter") return;
     event.preventDefault();
-    lookupAptTrades(els);
+    lookupAptTrades(els, { mode: "dealYmd" });
   });
 
   if (els.placeModalCloseButtons?.length) {
@@ -562,7 +573,7 @@ function formatDealYmdLabel(dealYmd) {
   return `${normalized.slice(0, 4)}년 ${Number(normalized.slice(4, 6))}월`;
 }
 
-const TRADE_LOOKUP_DEFAULT_MESSAGE = "계약년월을 입력하면 해당 월 1회 조회로 더 안정적으로 확인합니다.";
+const TRADE_LOOKUP_DEFAULT_MESSAGE = "기본은 최근 기간 조회입니다. 계약년월은 필요한 경우에만 직접 입력하세요.";
 const MAX_RENDERED_TRADES = 25;
 const TRADE_LOOKUP_TIMEOUT_MS = 12000;
 let activeTradeLookupController = null;
@@ -713,11 +724,44 @@ function closeTradeModal(els) {
   if (!els.placeModal || els.placeModal.hidden) document.body.classList.remove("modal-open");
 }
 
-async function lookupAptTrades(els) {
+function showDealYmdPanel(els, { focus = false } = {}) {
+  if (!els.dealYmdPanel) return;
+  els.dealYmdPanel.hidden = false;
+  els.dealYmdToggleButton?.setAttribute("aria-expanded", "true");
+  if (els.dealYmdToggleButton) els.dealYmdToggleButton.textContent = "계약년월 직접 조회 닫기";
+  if (focus) {
+    window.setTimeout(() => {
+      els.tradeDealYmd?.focus({ preventScroll: false });
+      if (typeof els.tradeDealYmd?.select === "function") els.tradeDealYmd.select();
+    }, 80);
+  }
+}
+
+function hideDealYmdPanel(els) {
+  if (!els.dealYmdPanel) return;
+  els.dealYmdPanel.hidden = true;
+  els.dealYmdToggleButton?.setAttribute("aria-expanded", "false");
+  if (els.dealYmdToggleButton) els.dealYmdToggleButton.textContent = "계약년월로 직접 조회";
+}
+
+function toggleDealYmdPanel(els) {
+  if (!els.dealYmdPanel) return;
+  if (els.dealYmdPanel.hidden) {
+    showDealYmdPanel(els, { focus: true });
+    showTradeMessage(els, "계약년월을 입력하면 해당 월만 조회합니다. 예: 202505", "default");
+  } else {
+    hideDealYmdPanel(els);
+    showTradeMessage(els, TRADE_LOOKUP_DEFAULT_MESSAGE, "default");
+    els.tradeSearchButton?.focus({ preventScroll: true });
+  }
+}
+
+async function lookupAptTrades(els, { mode = "recent" } = {}) {
+  const lookupMode = mode === "dealYmd" ? "dealYmd" : "recent";
   const aptName = String(els.tradeAptName.value || "").trim();
   const months = clampNumber(els.tradeMonths.value, 1, 12, 3);
-  const rawDealYmd = String(els.tradeDealYmd?.value || "").trim();
-  const dealYmd = normalizeDealYmdInput(rawDealYmd);
+  const rawDealYmd = lookupMode === "dealYmd" ? String(els.tradeDealYmd?.value || "").trim() : "";
+  const dealYmd = lookupMode === "dealYmd" ? normalizeDealYmdInput(rawDealYmd) : "";
   const lawdCd = getSelectedLawdCd(els);
   const selectedLabel = els.selectedRegion?.dataset.regionLabel || "선택 지역";
 
@@ -728,9 +772,9 @@ async function lookupAptTrades(els) {
     return;
   }
 
-  if (rawDealYmd && !dealYmd) {
+  if (lookupMode === "dealYmd" && !dealYmd) {
     showTradeMessage(els, "계약년월은 YYYYMM 형식으로 입력해 주세요. 예: 202505", "error");
-    els.tradeDealYmd.focus();
+    showDealYmdPanel(els, { focus: true });
     return;
   }
 
@@ -1103,7 +1147,7 @@ function applyTradeMonthExpansion(els, button) {
   els.tradeMonths.value = String(nextMonths);
   if (els.tradeDealYmd) els.tradeDealYmd.value = "";
   showTradeMessage(els, `최근 ${nextMonths}개월 기준으로 다시 조회합니다.`, "loading");
-  lookupAptTrades(els);
+  lookupAptTrades(els, { mode: "recent" });
 }
 
 function focusTradeInput(els, target) {
@@ -1115,6 +1159,7 @@ function focusTradeInput(els, target) {
   };
   const input = map[target] || els.tradeAptName || els.marketPrice;
   closeTradeModal(els);
+  if (target === "dealYmd") showDealYmdPanel(els, { focus: false });
   window.setTimeout(() => {
     input.focus({ preventScroll: false });
     if (typeof input.select === "function") input.select();
@@ -1326,6 +1371,11 @@ function setTradeLoading(els, isLoading) {
   els.tradeSearchButton.disabled = isLoading;
   els.tradeSearchButton.textContent = isLoading ? "조회 중..." : "매매 실거래가 조회";
   els.tradeSearchButton.setAttribute("aria-busy", isLoading ? "true" : "false");
+  if (els.dealYmdSearchButton) {
+    els.dealYmdSearchButton.disabled = isLoading;
+    els.dealYmdSearchButton.textContent = isLoading ? "조회 중..." : "해당 월 조회";
+    els.dealYmdSearchButton.setAttribute("aria-busy", isLoading ? "true" : "false");
+  }
 }
 
 function showTradeMessage(els, message, type = "default") {
@@ -1339,6 +1389,7 @@ function clearTradeLookup(els) {
   if (els.tradeAptName) els.tradeAptName.value = "";
   if (els.tradeMonths) els.tradeMonths.value = "3";
   if (els.tradeDealYmd) els.tradeDealYmd.value = "";
+  hideDealYmdPanel(els);
   if (els.lawdCd) els.lawdCd.value = "";
   if (els.selectedRegion) {
     els.selectedRegion.textContent = "선택된 지역이 없습니다. 지역/단지를 검색해 선택해 주세요.";
