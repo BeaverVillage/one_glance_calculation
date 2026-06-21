@@ -14348,3 +14348,237 @@ body.modal-open {
     font-size: 0.8rem;
   }
 }
+
+/* Engineering calculator dark UI fix: dark calculator skin, no constant description card, uniform toggle chips */
+.engineering-calculator {
+  color: #e5edf8;
+  background: linear-gradient(180deg, #111827 0%, #0b1120 100%);
+  border-color: #334155;
+  box-shadow: 0 20px 42px rgba(15, 23, 42, 0.28);
+}
+
+.engineering-calculator .calculator-top,
+.engineering-calculator .calculator-brand,
+.engineering-calculator .calculator-model {
+  color: #e5edf8;
+}
+
+.engineering-calculator .calculator-brand {
+  background: #111827;
+  border-color: #475569;
+}
+
+.engineering-calculator .calculator-model {
+  color: #93c5fd;
+}
+
+.engineering-statusbar {
+  gap: 8px;
+}
+
+.engineering-status-pill {
+  color: #bfdbfe;
+  background: #172033;
+  border-color: #334155;
+}
+
+.engineering-calculator .calculator-screen {
+  color: #e5edf8;
+  background: #050b18;
+  border-color: #334155;
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.08);
+}
+
+.engineering-calculator .screen-status,
+.engineering-calculator .screen-result span,
+.engineering-calculator #scientific-detail {
+  color: #aebbd0;
+}
+
+.engineering-calculator .pretty-expression {
+  color: #dbeafe;
+  background: #0b1220;
+  border-color: #334155;
+}
+
+.engineering-calculator .screen-input {
+  color: #f8fafc;
+  background: #0b1220;
+  border-color: #475569;
+}
+
+.engineering-calculator .screen-input:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+}
+
+.engineering-calculator .screen-result strong {
+  color: #ffffff;
+}
+
+.engineering-option-grid {
+  align-items: start;
+}
+
+.engineering-option-grid .angle-toggle {
+  padding: 0;
+  border: 0;
+}
+
+.engineering-option-grid .angle-toggle legend {
+  color: #cbd5e1;
+}
+
+.engineering-option-grid .angle-toggle label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  min-height: 36px;
+  padding: 0 10px;
+  color: #dbeafe;
+  background: #1f2937;
+  border: 1px solid #475569;
+  border-radius: 999px;
+  box-shadow: none;
+  font-size: 0.82rem;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.engineering-option-grid .angle-toggle label input[type="radio"] {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.engineering-option-grid .angle-toggle label:has(input[type="radio"]:checked) {
+  color: #ffffff;
+  background: #2563eb;
+  border-color: #60a5fa;
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.25);
+}
+
+.engineering-mode-tabs button,
+.engineering-key-tabs button {
+  color: #dbeafe;
+  background: #1f2937;
+  border-color: #475569;
+  box-shadow: none;
+}
+
+.engineering-mode-tabs button.is-active,
+.engineering-key-tabs button.is-active {
+  color: #ffffff;
+  background: #2563eb;
+  border-color: #60a5fa;
+}
+
+.engineering-keypad .key {
+  color: #f8fafc;
+  background: #374151;
+  border-color: #111827;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 3px 0 rgba(0, 0, 0, 0.34);
+}
+
+.engineering-keypad .key.number {
+  color: #f8fafc;
+  background: #374151;
+  border-color: #111827;
+}
+
+.engineering-keypad .key.operator {
+  color: #ffffff;
+  background: #0f766e;
+  border-color: #064e45;
+}
+
+.engineering-keypad .key.execute {
+  color: #ffffff;
+  background: #2563eb;
+  border-color: #1d4ed8;
+}
+
+.engineering-keypad .key.function {
+  color: #e0e7ff;
+  background: #1e3a8a;
+  border-color: #172554;
+}
+
+.engineering-keypad .key.soft {
+  color: #e5edf8;
+  background: #273449;
+  border-color: #475569;
+}
+
+.engineering-keypad .key.danger {
+  color: #fee2e2;
+  background: #7f1d1d;
+  border-color: #450a0a;
+}
+
+.engineering-keypad .key.is-active {
+  color: #ffffff;
+  background: #2563eb;
+  border-color: #60a5fa;
+}
+
+.engineering-constant-group-title {
+  color: #93c5fd;
+}
+
+.engineering-constant-card {
+  display: none !important;
+}
+
+.engineering-complex-card {
+  color: #e5edf8;
+  background: #111827;
+  border-color: #334155;
+  box-shadow: none;
+}
+
+.engineering-complex-card.primary {
+  background: #172033;
+  border-color: #3b4a61;
+}
+
+.engineering-complex-card span,
+.engineering-complex-card small,
+.engineering-key-hint {
+  color: #aebbd0;
+}
+
+.engineering-complex-card strong {
+  color: #ffffff;
+}
+
+@media (max-width: 640px) {
+  .engineering-option-grid {
+    gap: 10px;
+  }
+
+  .engineering-option-grid .angle-toggle {
+    gap: 6px;
+  }
+
+  .engineering-option-grid .angle-toggle label {
+    min-height: 35px;
+    padding: 0 8px;
+    font-size: 0.78rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .engineering-option-grid .angle-toggle label {
+    min-height: 34px;
+    padding: 0 6px;
+    font-size: 0.72rem;
+    letter-spacing: -0.02em;
+  }
+}

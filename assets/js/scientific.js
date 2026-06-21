@@ -407,10 +407,10 @@ export function initScientificCalculator(root = document) {
     const key = String(id || "").toLowerCase();
     const meta = CONSTANT_META[key];
     if (!meta) return;
-    if (constantName) constantName.textContent = `${meta.symbol} · ${meta.name}`;
-    if (constantValue) constantValue.textContent = `${meta.valueText} ${meta.unit}`.trim();
-    if (constantInsert) constantInsert.innerHTML = `입력명: <code>${escapeHtml(meta.input)}</code> · ${escapeHtml(meta.note)}`;
-    if (keyHint) keyHint.textContent = `${meta.symbol} 상수를 입력했습니다. ${meta.name} · ${meta.unit}`;
+    if (constantName) constantName.textContent = `${meta.symbol}`;
+    if (constantValue) constantValue.textContent = "";
+    if (constantInsert) constantInsert.textContent = "";
+    if (keyHint) keyHint.textContent = `${meta.input} 입력`;
   }
 
   function setEngineeringMode(mode) {
@@ -429,7 +429,7 @@ export function initScientificCalculator(root = document) {
 
   function setKeyPanel(name) {
     const panelName = name || "basic";
-    if (panelName === "constants") updateConstantCard("mu0");
+    if (panelName === "constants" && keyHint) keyHint.textContent = "상수 버튼을 누르면 입력식에 바로 삽입됩니다.";
     keyTabButtons.forEach((button) => {
       const active = button.dataset.keyTab === panelName;
       button.classList.toggle("is-active", active);
