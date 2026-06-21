@@ -58,9 +58,9 @@
   justify-content: center;
   min-height: 36px;
   padding: 7px 12px;
-  color: var(--green);
+  color: var(--blue);
   background: #fff;
-  border: 1px solid rgba(20, 108, 95, 0.22);
+  border: 1px solid var(--line);
   border-radius: 999px;
   box-shadow: 0 1px 0 rgba(17, 24, 39, 0.04);
   font-weight: 850;

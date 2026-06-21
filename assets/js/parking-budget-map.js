@@ -605,34 +605,6 @@ function setupMobileBottomSheet(els) {
   setMobileSheetState(els, "closed");
 }
 
-function isParkingMobileViewport() {
-  if (typeof window === "undefined") return false;
-  return window.matchMedia ? window.matchMedia("(max-width: 860px)").matches : window.innerWidth <= 860;
-}
-
-function refreshParkingMapLayout() {
-  if (!state.map || !window.kakao?.maps) return;
-  window.setTimeout(() => {
-    try {
-      state.map.relayout?.();
-      if (state.pinnedParkingId) focusMapOnParking(state.pinnedParkingId);
-      else if (state.destination?.lat && state.destination?.lng) {
-        state.map.setCenter(new window.kakao.maps.LatLng(state.destination.lat, state.destination.lng));
-      }
-    } catch (_) {}
-  }, 120);
-  window.setTimeout(() => {
-    try { state.map.relayout?.(); } catch (_) {}
-  }, 320);
-}
-
-function scrollParkingMapIntoView(els, block = "start") {
-  const target = document.querySelector(".parking-map-card") || document.querySelector(".parking-dashboard__map") || els?.map;
-  if (!target) return;
-  target.scrollIntoView({ behavior: "smooth", block });
-  refreshParkingMapLayout();
-}
-
 function setMobileSheetState(els, mode = "closed") {
   const sheet = els?.mobileBottomSheet;
   if (!sheet) return;
@@ -751,30 +723,31 @@ function bindEvents(els) {
   });
   els.form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    await handleParkingSearch(els, { autoSelectFirst: true });
+    await handleParkingSearch(els);
   });
   els.mapToolbarSearch?.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (els.mapToolbarDestination && els.destination) els.destination.value = els.mapToolbarDestination.value.trim();
     closeMapToolbarPopovers(els);
-    await handleParkingSearch(els, { autoSelectFirst: true });
+    await handleParkingSearch(els);
   });
   els.mapToolbarDestination?.addEventListener("input", () => {
     if (els.destination) els.destination.value = els.mapToolbarDestination.value;
   });
-  els.recommend.addEventListener("click", () => handleParkingSearch(els, { autoSelectFirst: true }));
+  els.recommend.addEventListener("click", () => handleParkingSearch(els));
   els.mobileMapJump?.addEventListener("click", () => {
-    setMobileSheetState(els, "closed");
-    scrollParkingMapIntoView(els, "start");
+    const target = document.querySelector(".parking-dashboard__map") || els.map;
+    if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
   });
   els.mapRefresh?.addEventListener("click", () => researchCurrentMapArea(els));
   els.mobileSheetMapButton?.addEventListener("click", () => {
     setMobileSheetState(els, "closed");
-    scrollParkingMapIntoView(els, "start");
+    document.querySelector(".parking-map-card")?.scrollIntoView({ behavior: "smooth", block: "start" });
   });
   els.mobileListToggle?.addEventListener("click", () => {
     const isOpen = els.mobileBottomSheet?.classList.contains("is-open");
     setMobileSheetState(els, isOpen ? "closed" : "half");
+    if (!isOpen) els.mobileBottomSheet?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   });
   els.mobileTimeButton?.addEventListener("click", () => {
     openMobileActionSheet(els, "time");
@@ -880,7 +853,7 @@ async function loadMockData() {
   state.realtime = realtimeRes.status === "fulfilled" ? realtimeRes.value.statuses || [] : [];
 }
 
-async function handleParkingSearch(els, options = {}) {
+async function handleParkingSearch(els) {
   const query = els.destination.value.trim();
   if (!query) {
     els.searchStatus.textContent = "목적지를 입력해 주세요.";
@@ -894,7 +867,7 @@ async function handleParkingSearch(els, options = {}) {
     els.recommend.textContent = "주차장 찾는 중...";
   }
   try {
-    await searchDestination(els, options);
+    await searchDestination(els);
   } finally {
     if (els.recommend) {
       els.recommend.disabled = false;
@@ -908,7 +881,7 @@ function findSamplePlaces(query) {
   return SAMPLE_PLACES.filter((place) => `${place.name} ${place.address}`.toLowerCase().replace(/\s+/g, "").includes(lower));
 }
 
-async function searchDestination(els, options = {}) {
+async function searchDestination(els) {
   const query = els.destination.value.trim();
   if (!query) return;
   els.searchStatus.textContent = "목적지를 검색하고 있습니다.";
@@ -932,10 +905,6 @@ async function searchDestination(els, options = {}) {
     els.searchStatus.textContent = "검색 결과를 찾지 못했습니다. 다른 장소명을 입력해 주세요.";
     els.status.textContent = "추천 결과입니다.";
     renderPlaces(els, { openPopup: true, emptyMessage: "검색 결과를 찾지 못했습니다." });
-    return;
-  }
-  if (options.autoSelectFirst) {
-    await selectPlaceFromPopup(0, els);
     return;
   }
   els.searchStatus.textContent = `${state.places.length}개 후보를 찾았습니다. 목적지를 선택해 주세요.`;
@@ -1008,7 +977,7 @@ async function selectPlaceFromPopup(index, els) {
   syncDesktopMapToolbar(els);
   closePlacePopup(els);
   els.searchStatus.textContent = state.lastPlaceSearchUsedSampleFallback
-    ? `목적지 검색 API를 사용할 수 없어 ${place.name} 기본 위치 기준으로 계산합니다.`
+    ? `목적지 검색 API를 사용할 수 없어 ${place.name} 샘플 위치 기준으로 계산합니다.`
     : `${place.name} 기준으로 주변 주차장을 계산했습니다.`;
   await calculateAndRender(els);
 }
@@ -1109,9 +1078,9 @@ async function calculateAndRender(els) {
     state.lastDataMode = "sample-fallback";
     state.lastDataSources = [];
     state.lastRealtimeMode = "sample-fallback";
-    state.lastRealtimeNote = "보조 실시간 데이터를 사용합니다.";
+    state.lastRealtimeNote = "샘플 실시간 데이터를 사용합니다.";
     state.lastHolidayContext = buildClientHolidayContext(input.arrivalAt);
-    state.lastFallbackReason = "API 호출이 실패해 로컬 보조 주차장 데이터로 계산합니다.";
+    state.lastFallbackReason = "API 호출이 실패해 로컬 샘플 주차장 데이터로 계산합니다.";
     state.lastStats = null;
   }
   state.results = rows;
@@ -1122,10 +1091,6 @@ async function calculateAndRender(els) {
   renderResults(els, input);
   syncDesktopMapToolbar(els);
   renderMap(els);
-  if (isParkingMobileViewport()) {
-    setMobileSheetState(els, rows.length ? "half" : "closed");
-  }
-  refreshParkingMapLayout();
 }
 
 function fallbackRecommend(input) {
@@ -1323,7 +1288,6 @@ function sortRows(rows, sort = "recommended") {
 }
 
 function renderResults(els, input) {
-  if (!els?.resultList) return;
   const durationText = formatDuration(input.duration);
   const vehicleText = vehicleLabel(input.vehicleType);
   els.summaryTitle.textContent = `${state.destination.name} · ${durationText} · ${vehicleText}`;
@@ -1530,8 +1494,6 @@ async function researchCurrentMapArea(els) {
   if (els.mapRefresh) els.mapRefresh.hidden = true;
   renderPlaces(els);
   await calculateAndRender(els);
-  if (isParkingMobileViewport()) setMobileSheetState(els, state.results.length ? "half" : "closed");
-  refreshParkingMapLayout();
   if (els.searchStatus) els.searchStatus.textContent = state.results.length ? "현재 지도 기준 추천 결과입니다." : "현재 지도 주변에서 조건에 맞는 주차장을 찾지 못했습니다.";
 }
 
@@ -1554,7 +1516,7 @@ async function loadKakaoMap(els) {
     state.mapMode = "fallback";
     els.map.classList.add("is-fallback");
     if (error?.message) console.info(`[parking-map] Kakao map fallback: ${error.message}`);
-    updateMapFallbackNotice(els, "기본 지도 표시 모드", "카카오맵을 불러오지 못해 기본 지도에서 예상 주차비를 표시합니다.");
+    updateMapFallbackNotice(els, "샘플 지도 계산 모드", "카카오맵을 불러오지 못해 샘플 지도에서 예상 주차비를 표시합니다.");
     renderMap(els);
   }
 }
@@ -1599,7 +1561,6 @@ function renderMap(els) {
     state.kakaoMarkers = [];
     if (state.kakaoDestinationMarker) state.kakaoDestinationMarker.setMap(null);
     const center = new window.kakao.maps.LatLng(state.destination.lat, state.destination.lng);
-    try { state.map.relayout?.(); } catch (_) {}
     state.map.setCenter(center);
     state.kakaoDestinationMarker = new window.kakao.maps.CustomOverlay({
       position: center,
@@ -1669,15 +1630,8 @@ function focusMapOnParking(id) {
   if (!row || !Number.isFinite(Number(row.lat)) || !Number.isFinite(Number(row.lng))) return;
   if (state.map && window.kakao?.maps) {
     const position = new window.kakao.maps.LatLng(Number(row.lat), Number(row.lng));
-    try { state.map.relayout?.(); } catch (_) {}
     if (typeof state.map.panTo === "function") state.map.panTo(position);
     else state.map.setCenter(position);
-    window.setTimeout(() => {
-      try {
-        state.map.relayout?.();
-        state.map.setCenter(position);
-      } catch (_) {}
-    }, 180);
   }
 }
 
@@ -1687,10 +1641,7 @@ function pinParkingCard(id, els, { scroll = false, popup = false, scrollToMap = 
   applyPinnedParkingState(els);
   const safeId = typeof CSS !== "undefined" && CSS.escape ? CSS.escape(state.pinnedParkingId) : String(state.pinnedParkingId).replace(/"/g, '\\"');
   const target = document.querySelector(`[data-parking-card-id="${safeId}"]`);
-  if (scrollToMap) {
-    setMobileSheetState(els, "closed");
-    scrollParkingMapIntoView(els, "start");
-  }
+  if (scrollToMap) document.querySelector(".parking-dashboard__map")?.scrollIntoView({ behavior: "smooth", block: "start" });
   if (scroll) target?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   target?.classList.add("is-highlighted");
   setTimeout(() => target?.classList.remove("is-highlighted"), 1200);

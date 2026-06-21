@@ -33,7 +33,7 @@ export async function onRequestGet({ request, env }) {
     mode: external.statuses.length ? external.meta.mode : 'sample-fallback',
     note: external.statuses.length
       ? '서울 실시간 주차대수 어댑터에서 가져온 값입니다. 실제 데이터는 5분 이상 차이가 날 수 있습니다.'
-      : '실시간 API 키가 없거나 호출이 실패해 보조 실시간 데이터를 사용합니다.',
+      : '실시간 API 키가 없거나 호출이 실패해 샘플 실시간 데이터를 사용합니다.',
     sources: external.meta.sources || []
   });
 }

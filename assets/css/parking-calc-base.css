@@ -7,9 +7,9 @@
   --line: #d8e0ea;
   --line-strong: #aab7c7;
   --green: #146c5f;
-  --green-soft: #e5f3ef;
-  --blue: #154f78;
-  --blue-soft: #e8f4f1;
+  --green-soft: #d1fae5;
+  --blue: #146c5f;
+  --blue-soft: #e8f1fb;
   --amber: #b26a00;
   --amber-soft: #fff3d8;
   --danger: #b42318;
@@ -126,5 +126,5 @@ code {
   border: 0;
 }
 
-/* 주차 지도 전용 레이아웃 */
-:root{--green:#146c5f;--green-dark:#0d5b4f;--green-soft:#e5f3ef;--blue:#154f78;--blue-soft:#e8f4f1;}
+/* 한눈체크 주차비 확인 지도: 원본 레이아웃 유지, 브랜드 컬러만 블루 계열 적용 */
+:root{--green:#146c5f;--green-dark:#0f766e;--green-soft:#d1fae5;--blue:#146c5f;--blue-soft:#d1fae5;}

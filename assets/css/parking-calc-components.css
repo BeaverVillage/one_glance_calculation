@@ -107,7 +107,7 @@
   height: 36px;
   color: var(--green);
   background: var(--green-soft);
-  border: 1px solid #bfdbfe;
+  border: 1px solid #a7f3d0;
   border-radius: 6px;
   font-size: 1.2rem;
   line-height: 1;
@@ -145,8 +145,8 @@
   padding: 8px 12px;
   color: var(--green);
   background: var(--green-soft);
-  border-top: 1px solid #bfdbfe;
-  border-bottom: 1px solid #bfdbfe;
+  border-top: 1px solid #a7f3d0;
+  border-bottom: 1px solid #a7f3d0;
   font-size: 0.86rem;
 }
 
@@ -356,7 +356,7 @@ body.drawer-open .tool-drawer {
   padding: 4px 9px;
   color: var(--green);
   background: var(--green-soft);
-  border: 1px solid #bfdbfe;
+  border: 1px solid #a7f3d0;
   border-radius: 999px;
   font-size: 0.76rem;
   font-weight: 900;
@@ -409,7 +409,7 @@ body.drawer-open .tool-drawer {
 
 .calculator-screen {
   padding: 12px;
-  background: #dbeafe;
+  background: #d1fae5;
   border: 8px solid #24304e;
   border-radius: 10px;
   box-shadow: inset 0 0 0 2px #59647c;
@@ -752,7 +752,7 @@ textarea {
 }
 
 .primary-button:hover {
-  background: #1d4ed8;
+  background: #0f766e;
 }
 
 .button-row {
@@ -768,7 +768,7 @@ textarea {
   padding: 8px 11px;
   color: var(--green);
   background: var(--green-soft);
-  border: 1px solid #bfdbfe;
+  border: 1px solid #a7f3d0;
 }
 
 .keypad {
@@ -1200,7 +1200,7 @@ textarea {
   height: 14px;
   overflow: hidden;
   background: var(--green-soft);
-  border: 1px solid #bfdbfe;
+  border: 1px solid #a7f3d0;
   border-radius: 999px;
 }
 
@@ -1208,7 +1208,7 @@ textarea {
   display: block;
   width: 1%;
   height: 100%;
-  background: linear-gradient(90deg, var(--green), #60a5fa);
+  background: linear-gradient(90deg, var(--green), #34d399);
   border-radius: inherit;
   transition: width 180ms ease;
 }
@@ -1359,7 +1359,7 @@ textarea {
 }
 
 .bmi-track .normal {
-  background: #3b82f6;
+  background: #10b981;
 }
 
 .bmi-track .watch {
@@ -5190,7 +5190,7 @@ body {
   padding: 4px 9px;
   color: var(--green);
   background: var(--green-soft);
-  border: 1px solid #bfdbfe;
+  border: 1px solid #a7f3d0;
   border-radius: 999px;
   font-family: inherit;
   font-size: 0.76rem;
@@ -6002,10 +6002,10 @@ body {
   display: inline-flex;
   margin-top: 0.5rem;
   padding: 0.65rem 0.85rem;
-  border: 1px solid rgba(37, 99, 235, 0.22);
+  border: 1px solid rgba(20, 108, 95, 0.22);
   border-radius: 12px;
-  background: rgba(37, 99, 235, 0.08);
-  color: #1e3a5f;
+  background: rgba(20, 108, 95, 0.08);
+  color: #146c5f;
   font-weight: 700;
 }
 .parking-app-shell {
@@ -6030,7 +6030,7 @@ body {
 }
 .step-label {
   margin: 0.35rem 0 0.75rem;
-  color: #2563eb;
+  color: #146c5f;
   font-size: 0.9rem;
   font-weight: 800;
 }
@@ -6068,9 +6068,9 @@ body {
 }
 .quick-duration-row button.active,
 .parking-place-chip.active {
-  border-color: #2563eb;
-  background: #eff6ff;
-  color: #1e3a5f;
+  border-color: #146c5f;
+  background: #ecfdf5;
+  color: #146c5f;
 }
 .parking-filter-row label {
   display: inline-flex;
@@ -6119,7 +6119,7 @@ body {
   position: absolute;
   inset: 0;
   min-height: 420px;
-  background: linear-gradient(135deg, #eff6ff 0%, #eef4ff 55%, #f7fafc 100%);
+  background: linear-gradient(135deg, #ecfdf5 0%, #eef4ff 55%, #f7fafc 100%);
 }
 .parking-map::before,
 .parking-map::after {
@@ -6143,7 +6143,7 @@ body {
   width: min(84%, 360px);
   gap: 0.35rem;
   padding: 1rem;
-  border: 1px solid rgba(37, 99, 235, 0.2);
+  border: 1px solid rgba(20, 108, 95, 0.2);
   border-radius: 14px;
   background: rgba(255,255,255,0.88);
   text-align: center;
@@ -6161,11 +6161,11 @@ body {
   min-width: 64px;
   min-height: 34px;
   padding: 0.35rem 0.55rem;
-  border: 1px solid #2563eb;
+  border: 1px solid #146c5f;
   border-radius: 999px;
   background: #fff;
   box-shadow: 0 8px 18px rgba(15, 35, 55, 0.18);
-  color: #1e3a5f;
+  color: #146c5f;
   font-size: 0.82rem;
   font-weight: 900;
   text-align: center;
@@ -6174,7 +6174,7 @@ body {
   white-space: nowrap;
 }
 .parking-map-label.is-best {
-  background: #2563eb;
+  background: #146c5f;
   color: #fff;
 }
 .parking-destination-marker {
@@ -6212,8 +6212,8 @@ body {
   width: fit-content;
   padding: 0.25rem 0.55rem;
   border-radius: 999px;
-  background: #eff6ff;
-  color: #1e3a5f;
+  background: #ecfdf5;
+  color: #146c5f;
   font-size: 0.8rem;
   font-weight: 800;
 }
@@ -6224,7 +6224,7 @@ body {
   align-items: baseline;
 }
 .parking-price-row strong {
-  color: #2563eb;
+  color: #146c5f;
   font-size: 1.65rem;
   line-height: 1.1;
 }
@@ -6267,7 +6267,7 @@ body {
   min-width: 0;
 }
 .warning-card {
-  border-left: 4px solid #2563eb;
+  border-left: 4px solid #146c5f;
 }
 @media (max-width: 860px) {
   .parking-workspace {
@@ -6408,9 +6408,9 @@ body {
 
 .parking-map.is-fallback {
   background:
-    radial-gradient(circle at 18% 22%, rgba(37, 99, 235, 0.12), transparent 26%),
+    radial-gradient(circle at 18% 22%, rgba(20, 108, 95, 0.12), transparent 26%),
     radial-gradient(circle at 78% 70%, rgba(49, 130, 206, 0.12), transparent 28%),
-    linear-gradient(135deg, #eff6ff 0%, #eef4ff 48%, #f8fafc 100%);
+    linear-gradient(135deg, #ecfdf5 0%, #eef4ff 48%, #f8fafc 100%);
 }
 
 .parking-map.is-fallback::before {
@@ -6466,7 +6466,7 @@ body {
 }
 
 .parking-result-card.risk-low {
-  border-color: rgba(37, 99, 235, 0.24);
+  border-color: rgba(20, 108, 95, 0.24);
 }
 
 .parking-guide .guide-grid {
@@ -6723,8 +6723,8 @@ body {
 }
 
 .parking-result-card.is-highlighted {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.13), 0 14px 32px rgba(15, 35, 55, 0.13);
+  border-color: #146c5f;
+  box-shadow: 0 0 0 3px rgba(20, 108, 95, 0.13), 0 14px 32px rgba(15, 35, 55, 0.13);
 }
 
 .parking-input-panel .step-label {
@@ -6733,7 +6733,7 @@ body {
   max-width: 100%;
   padding: 0.28rem 0.55rem;
   border-radius: 999px;
-  background: rgba(37, 99, 235, 0.08);
+  background: rgba(20, 108, 95, 0.08);
   line-height: 1.3;
 }
 
@@ -6750,7 +6750,7 @@ body {
 .parking-map-label:focus-visible,
 .parking-place-chip:focus-visible,
 .quick-duration-row button:focus-visible {
-  outline: 3px solid rgba(37, 99, 235, 0.28);
+  outline: 3px solid rgba(20, 108, 95, 0.28);
   outline-offset: 3px;
 }
 
@@ -6792,10 +6792,10 @@ body {
 }
 .parking-result-card .parking-card-metrics span:nth-child(2) {
   font-weight: 700;
-  color: #2563eb;
+  color: #146c5f;
 }
 .parking-result-card:not(.risk-high) .parking-card-metrics span:nth-child(2) {
-  background: rgba(37, 99, 235, 0.08);
+  background: rgba(20, 108, 95, 0.08);
   border-radius: 999px;
   padding: 4px 8px;
 }
@@ -6819,7 +6819,7 @@ body {
   display: grid;
   gap: 0.75rem;
   padding: 0.85rem;
-  border: 1px solid rgba(37, 99, 235, 0.16);
+  border: 1px solid rgba(20, 108, 95, 0.16);
   border-radius: 16px;
   background: #f8fbff;
 }
@@ -6870,9 +6870,9 @@ body {
   word-break: keep-all;
 }
 .parking-preference-card.active {
-  border-color: #2563eb;
-  background: #eff6ff;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  border-color: #146c5f;
+  background: #ecfdf5;
+  box-shadow: 0 0 0 3px rgba(20, 108, 95, 0.1);
 }
 .parking-preference-card.active strong::before {
   content: "✓";
@@ -6881,7 +6881,7 @@ body {
   width: 18px;
   height: 18px;
   border-radius: 999px;
-  background: #2563eb;
+  background: #146c5f;
   color: #fff;
   font-size: 0.72rem;
   font-weight: 900;
@@ -6930,23 +6930,23 @@ body {
 
 /* Parking MVP marker selection and recommendation card UX */
 .parking-map-label.is-selected {
-  border-color: #1d4ed8;
-  background: #1d4ed8;
+  border-color: #0f766e;
+  background: #0f766e;
   color: #fff;
-  box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.18), 0 14px 26px rgba(15, 35, 55, 0.2);
+  box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.18), 0 14px 26px rgba(15, 35, 55, 0.2);
   transform: translate(-50%, -50%) scale(1.04);
 }
 .parking-result-card.is-pinned {
-  border-color: #1d4ed8;
-  background: linear-gradient(180deg, #eff6ff 0%, #ffffff 60%);
-  box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.14), 0 18px 34px rgba(15, 35, 55, 0.12);
+  border-color: #0f766e;
+  background: linear-gradient(180deg, #ecfdf5 0%, #ffffff 60%);
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.14), 0 18px 34px rgba(15, 35, 55, 0.12);
 }
 .parking-pin-badge {
   display: none;
   width: fit-content;
   padding: 0.22rem 0.5rem;
   border-radius: 999px;
-  background: #1d4ed8;
+  background: #0f766e;
   color: #fff;
   font-size: 0.75rem;
   font-weight: 900;
@@ -7019,8 +7019,8 @@ body {
   max-width: 100%;
   padding: 0.28rem 0.58rem;
   border-radius: 999px;
-  background: rgba(37, 99, 235, 0.08);
-  color: #2563eb;
+  background: rgba(20, 108, 95, 0.08);
+  color: #146c5f;
   font-size: 0.86rem;
   font-weight: 900;
   line-height: 1.3;
@@ -7081,7 +7081,7 @@ body {
   width: fit-content;
   padding: 0.22rem 0.5rem;
   border-radius: 999px;
-  background: #1d4ed8;
+  background: #0f766e;
   color: #fff;
   font-size: 0.75rem;
   font-weight: 900;
@@ -7089,8 +7089,8 @@ body {
 }
 
 .parking-result-card.is-pinned {
-  border-color: #1d4ed8;
-  background: linear-gradient(180deg, #eff6ff 0%, #ffffff 60%);
+  border-color: #0f766e;
+  background: linear-gradient(180deg, #ecfdf5 0%, #ffffff 60%);
 }
 
 @media (max-width: 1024px) {
@@ -7338,10 +7338,10 @@ body {
 .parking-result-sort-tabs button {
   min-height: 38px;
   padding: 0.48rem 0.72rem;
-  border: 1px solid rgba(37, 99, 235, 0.24);
+  border: 1px solid rgba(20, 108, 95, 0.24);
   border-radius: 999px;
   background: #fff;
-  color: #2563eb;
+  color: #146c5f;
   font-size: 0.82rem;
   font-weight: 900;
   cursor: pointer;
@@ -7349,8 +7349,8 @@ body {
 
 .parking-result-sort-tabs button.active,
 .parking-result-sort-tabs button[aria-pressed="true"] {
-  border-color: #2563eb;
-  background: #2563eb;
+  border-color: #146c5f;
+  background: #146c5f;
   color: #fff;
 }
 
@@ -7515,7 +7515,7 @@ body {
   padding: 0.62rem 0.75rem;
   border-radius: 12px;
   background: #f8fbff;
-  color: #2563eb;
+  color: #146c5f;
   font-weight: 850;
 }
 
@@ -7531,7 +7531,7 @@ body {
   align-items: center;
   min-height: 28px;
   padding: 0.28rem 0.55rem;
-  border: 1px solid rgba(37, 99, 235, 0.18);
+  border: 1px solid rgba(20, 108, 95, 0.18);
   border-radius: 999px;
   background: #f8fbff;
   color: #64748b;
@@ -7551,17 +7551,17 @@ body {
   transform: translateX(-50%);
   min-height: 42px;
   padding: 0.58rem 0.95rem;
-  border: 1px solid rgba(37, 99, 235, 0.26);
+  border: 1px solid rgba(20, 108, 95, 0.26);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.96);
-  color: #2563eb;
+  color: #146c5f;
   box-shadow: 0 12px 28px rgba(15, 23, 42, 0.16);
   font-weight: 900;
   cursor: pointer;
 }
 
 .parking-map-research-button:hover {
-  background: #2563eb;
+  background: #146c5f;
   color: #fff;
 }
 
@@ -7621,7 +7621,7 @@ body {
 
 .parking-pinned-badge {
   margin: 0;
-  color: #2563eb;
+  color: #146c5f;
   font-size: 0.82rem;
   font-weight: 900;
 }
@@ -7758,8 +7758,8 @@ body {
 }
 
 .parking-result-card.is-best {
-  border-color: rgba(37, 99, 235, 0.42) !important;
-  box-shadow: 0 14px 34px rgba(37, 99, 235, 0.12);
+  border-color: rgba(20, 108, 95, 0.42) !important;
+  box-shadow: 0 14px 34px rgba(20, 108, 95, 0.12);
 }
 
 .parking-card-head strong {
@@ -7810,15 +7810,15 @@ body {
 }
 
 .metric-availability {
-  background: #eff6ff !important;
-  border-color: #bfdbfe !important;
-  color: #1e3a5f !important;
+  background: #ecfdf5 !important;
+  border-color: #a7f3d0 !important;
+  color: #146c5f !important;
 }
 
 .metric-risk-low {
-  background: #eff6ff !important;
-  border-color: #bfdbfe !important;
-  color: #1e3a5f !important;
+  background: #ecfdf5 !important;
+  border-color: #a7f3d0 !important;
+  color: #146c5f !important;
 }
 
 .metric-risk-medium {
@@ -7834,9 +7834,9 @@ body {
 }
 
 .metric-confidence-high {
-  background: #eff6ff !important;
-  border-color: #bfdbfe !important;
-  color: #2563eb !important;
+  background: #ecfdf5 !important;
+  border-color: #a7f3d0 !important;
+  color: #146c5f !important;
 }
 
 .metric-confidence-medium {
@@ -7855,10 +7855,10 @@ body {
   justify-self: start;
   min-height: 36px;
   padding: 0.48rem 0.76rem;
-  border: 1px solid rgba(37, 99, 235, 0.26);
+  border: 1px solid rgba(20, 108, 95, 0.26);
   border-radius: 999px;
   background: #fff;
-  color: #2563eb;
+  color: #146c5f;
   cursor: pointer;
   font-weight: 900;
   font-size: 0.84rem;
@@ -7866,7 +7866,7 @@ body {
 
 .parking-detail-toggle:hover,
 .parking-detail-toggle[aria-expanded="true"] {
-  background: #2563eb;
+  background: #146c5f;
   color: #fff;
 }
 
@@ -8086,7 +8086,7 @@ body {
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  background: #1d4ed8;
+  background: #0f766e;
   color: #fff;
   font-size: 0.72rem;
   font-weight: 900;
@@ -8096,7 +8096,7 @@ body {
 .parking-map-label.is-best .parking-marker-rank,
 .parking-map-label.is-selected .parking-marker-rank {
   background: rgba(255,255,255,0.96);
-  color: #1d4ed8;
+  color: #0f766e;
 }
 .parking-result-card {
   cursor: pointer;
@@ -8114,7 +8114,7 @@ body {
   z-index: 12;
   width: min(330px, calc(100% - 32px));
   padding: 0.95rem;
-  border: 1px solid rgba(37, 99, 235, 0.28);
+  border: 1px solid rgba(20, 108, 95, 0.28);
   border-radius: 18px;
   background: rgba(255,255,255,0.97);
   box-shadow: 0 18px 42px rgba(15, 35, 55, 0.22);
@@ -8148,8 +8148,8 @@ body {
   min-width: 40px;
   min-height: 28px;
   border-radius: 999px;
-  background: #eff6ff;
-  color: #1d4ed8;
+  background: #ecfdf5;
+  color: #0f766e;
   font-weight: 900;
 }
 .parking-map-popup__head strong {
@@ -8167,7 +8167,7 @@ body {
 }
 .parking-map-popup__price {
   margin: 0.7rem 0 0.45rem;
-  color: #1d4ed8;
+  color: #0f766e;
   font-size: 1.65rem;
   font-weight: 900;
 }
@@ -8228,7 +8228,7 @@ body {
     cursor: pointer;
   }
   .parking-options-toggle strong {
-    color: #1d4ed8;
+    color: #0f766e;
     font-size: 0.86rem;
   }
   .parking-control-card--options.is-collapsed .parking-options-body {
@@ -8426,8 +8426,8 @@ body {
 
 .parking-place-popup__item:hover,
 .parking-place-popup__item:focus-visible {
-  border-color: #2563eb;
-  background: #eff6ff;
+  border-color: #146c5f;
+  background: #ecfdf5;
   outline: none;
 }
 
@@ -8462,15 +8462,15 @@ body {
 }
 
 .parking-map-label.is-best:not(.is-selected) {
-  border-color: #2563eb !important;
+  border-color: #146c5f !important;
   background: #fff !important;
-  color: #1e3a5f !important;
+  color: #146c5f !important;
   box-shadow: 0 8px 18px rgba(15, 35, 55, 0.18) !important;
   transform: translate(-50%, -50%) !important;
 }
 
 .parking-map-label.is-best:not(.is-selected) .parking-marker-rank {
-  background: #1d4ed8 !important;
+  background: #0f766e !important;
   color: #fff !important;
 }
 
@@ -8514,10 +8514,10 @@ body {
   align-items: center;
   gap: 0.35rem;
   padding: 0.32rem 0.62rem;
-  border: 1px solid #2563eb;
+  border: 1px solid #146c5f;
   border-radius: 999px;
-  background: #eff6ff;
-  color: #1e3a5f !important;
+  background: #ecfdf5;
+  color: #146c5f !important;
   font-weight: 900;
   line-height: 1.25;
 }
@@ -8854,9 +8854,9 @@ body {
 .rent-selected-region {
   margin: 4px 0 10px;
   padding: 10px 12px;
-  border: 1px solid rgba(37, 99, 235, 0.2);
+  border: 1px solid rgba(20, 108, 95, 0.2);
   border-radius: 999px;
-  background: rgba(37, 99, 235, 0.06);
+  background: rgba(20, 108, 95, 0.06);
   color: var(--muted);
   font-size: 0.9rem;
   font-weight: 800;
@@ -8882,8 +8882,8 @@ body {
 }
 
 .rent-place-result:hover {
-  border-color: rgba(37, 99, 235, 0.45);
-  background: rgba(37, 99, 235, 0.05);
+  border-color: rgba(20, 108, 95, 0.45);
+  background: rgba(20, 108, 95, 0.05);
 }
 
 .rent-place-result strong {
@@ -9031,10 +9031,10 @@ body {
   .parking-map-toolbar__search button,
   .parking-map-toolbar__button {
     min-height: 42px;
-    border: 1px solid rgba(37, 99, 235, 0.26);
+    border: 1px solid rgba(20, 108, 95, 0.26);
     border-radius: 13px;
     background: #fff;
-    color: #2563eb;
+    color: #146c5f;
     font: inherit;
     font-weight: 900;
     cursor: pointer;
@@ -9043,7 +9043,7 @@ body {
 
   .parking-map-toolbar__search button {
     padding: 0.58rem 0.86rem;
-    background: #2563eb;
+    background: #146c5f;
     color: #fff;
   }
 
@@ -9066,8 +9066,8 @@ body {
   }
 
   .parking-map-toolbar__button[aria-expanded="true"] {
-    border-color: #2563eb;
-    background: #2563eb;
+    border-color: #146c5f;
+    background: #146c5f;
     color: #fff;
   }
 
@@ -9102,10 +9102,10 @@ body {
   .parking-map-sort-panel button {
     min-height: 38px;
     padding: 0.48rem 0.62rem;
-    border: 1px solid rgba(37, 99, 235, 0.22);
+    border: 1px solid rgba(20, 108, 95, 0.22);
     border-radius: 999px;
     background: #fff;
-    color: #2563eb;
+    color: #146c5f;
     font: inherit;
     font-size: 0.84rem;
     font-weight: 900;
@@ -9114,8 +9114,8 @@ body {
 
   .parking-map-duration-panel button.active,
   .parking-map-sort-panel button.active {
-    border-color: #2563eb;
-    background: #2563eb;
+    border-color: #146c5f;
+    background: #146c5f;
     color: #fff;
   }
 
@@ -9193,7 +9193,7 @@ body {
 }
 
 .parking-map-popup__price-row strong {
-  color: #1d4ed8;
+  color: #0f766e;
   font-size: 1.72rem;
   font-weight: 950;
   line-height: 1.1;
@@ -9262,8 +9262,8 @@ body {
   }
 
   .parking-dashboard__results .parking-result-card.is-pinned {
-    border-color: #1d4ed8 !important;
-    background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%) !important;
+    border-color: #0f766e !important;
+    background: linear-gradient(180deg, #ecfdf5 0%, #ffffff 100%) !important;
   }
 
   .parking-dashboard__results .parking-card-head {
@@ -9311,7 +9311,7 @@ body {
   }
 
   .parking-dashboard__results .parking-list-summary strong {
-    color: #1d4ed8;
+    color: #0f766e;
     font-size: 0.98rem;
     font-weight: 950;
     line-height: 1.18;
@@ -9500,9 +9500,9 @@ body {
   }
 
   .parking-mobile-sheet-sort button.active {
-    border-color: #2563eb;
-    background: #eff6ff;
-    color: #1e3a5f;
+    border-color: #146c5f;
+    background: #ecfdf5;
+    color: #146c5f;
   }
 
   .parking-mobile-results {
@@ -9713,9 +9713,9 @@ body {
     min-width: 58px !important;
     min-height: 46px !important;
     padding: 0 0.86rem !important;
-    border: 1px solid rgba(37, 99, 235, 0.32) !important;
+    border: 1px solid rgba(20, 108, 95, 0.32) !important;
     border-radius: 999px !important;
-    background: #2563eb !important;
+    background: #146c5f !important;
     box-shadow: 0 12px 26px rgba(15, 35, 55, 0.18) !important;
     color: #fff !important;
     font: inherit !important;
@@ -9751,8 +9751,8 @@ body {
   }
 
   .parking-map-toolbar__button[aria-expanded="true"] {
-    border-color: #2563eb !important;
-    background: #2563eb !important;
+    border-color: #146c5f !important;
+    background: #146c5f !important;
     color: #fff !important;
   }
 
@@ -9799,8 +9799,8 @@ body {
     min-width: 44px !important;
     min-height: 44px !important;
     border-radius: 999px !important;
-    background: #eff6ff !important;
-    color: #1d4ed8 !important;
+    background: #ecfdf5 !important;
+    color: #0f766e !important;
     font-size: 1rem !important;
   }
 
@@ -9849,11 +9849,11 @@ body {
     min-height: 42px !important;
     max-width: calc(100% - 30px) !important;
     padding: 0.58rem 0.94rem !important;
-    border: 1px solid rgba(37, 99, 235, 0.28) !important;
+    border: 1px solid rgba(20, 108, 95, 0.28) !important;
     border-radius: 999px !important;
     background: rgba(255, 255, 255, 0.96) !important;
     box-shadow: 0 14px 28px rgba(15, 35, 55, 0.18) !important;
-    color: #2563eb !important;
+    color: #146c5f !important;
     font: inherit !important;
     font-weight: 950 !important;
     white-space: nowrap !important;
@@ -10026,8 +10026,8 @@ body {
   }
 
   .parking-map-toolbar__button[aria-expanded="true"] {
-    border-color: #2563eb !important;
-    background: #2563eb !important;
+    border-color: #146c5f !important;
+    background: #146c5f !important;
     color: #fff !important;
   }
 
@@ -10950,9 +10950,9 @@ body {
 
   .parking-mobile-action-sheet__quick-grid button.active,
   .parking-mobile-action-sheet__sort-list button.active {
-    border-color: #2563eb;
-    background: #eff6ff;
-    color: #1e3a5f;
+    border-color: #146c5f;
+    background: #ecfdf5;
+    color: #146c5f;
   }
 
   .parking-mobile-action-sheet__details {
@@ -10965,7 +10965,7 @@ body {
 
   .parking-mobile-action-sheet__details summary {
     cursor: pointer;
-    color: #1e3a5f;
+    color: #146c5f;
     font-weight: 900;
   }
 
@@ -11067,7 +11067,7 @@ body {
 /* EV charger map: reuse parking map UI exactly, only status colors and labels are adapted. */
 .ev-map-label.is-status-good,
 .parking-map-label.ev-map-label.is-best {
-  border-color: #1d4ed8;
+  border-color: #0f766e;
 }
 .ev-map-label.is-status-busy {
   border-color: #f97316;
@@ -11083,7 +11083,7 @@ body {
 }
 .parking-result-card.good .parking-price-row strong,
 .parking-result-card.good .parking-list-summary strong {
-  color: #1d4ed8;
+  color: #0f766e;
 }
 .parking-result-card.busy .parking-price-row strong,
 .parking-result-card.busy .parking-list-summary strong {
@@ -11110,8 +11110,8 @@ body {
 }
 
 [data-ev-charger-map] .parking-result-card.is-pinned {
-  border-color: rgba(37, 99, 235, 0.95) !important;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12), 0 14px 28px rgba(15, 35, 55, 0.10) !important;
+  border-color: rgba(20, 108, 95, 0.95) !important;
+  box-shadow: 0 0 0 2px rgba(20, 108, 95, 0.12), 0 14px 28px rgba(15, 35, 55, 0.10) !important;
 }
 
 [data-ev-charger-map] .parking-card-actions {
@@ -11120,7 +11120,7 @@ body {
 
 .ev-map-popup .parking-map-popup__price-row strong,
 .ev-map-popup .parking-map-popup__price {
-  color: #1d4ed8;
+  color: #0f766e;
 }
 
 .ev-map-label .parking-marker-rank {
@@ -11403,7 +11403,7 @@ body {
   }
 }
 
-/* 지도형 도구 공통 헤더 정리 */
+/* 한눈체크 지도형 도구 공통 헤더 정리 v43 */
 .parking-hero {
   background:
     linear-gradient(180deg, #ffffff 0%, rgba(255, 255, 255, 0) 62%),
@@ -11418,7 +11418,7 @@ body {
   font-size: 0.92rem;
 }
 .parking-hero .container > .breadcrumb a {
-  color: #2563eb;
+  color: #146c5f;
   font-weight: 850;
 }
 .parking-hero .section-intro {
@@ -11426,7 +11426,7 @@ body {
   margin-bottom: 0;
 }
 .parking-hero .section-intro .eyebrow {
-  color: #1e3a5f;
+  color: #146c5f;
   letter-spacing: 0.02em;
 }
 .parking-hero .section-intro h1 {
@@ -11593,7 +11593,7 @@ body {
 }
 
 
-/* 지도형 도구 상단 영역 정리 */
+/* v47: 지도형 도구 상단 영역을 한눈체크 공통 기능 페이지 톤으로 통일 */
 .map-tool-hero {
   padding: 42px 0 26px;
   background: var(--check-bg, #f3f7fb);
@@ -11631,9 +11631,9 @@ body {
   max-width: 100%;
   margin-top: 8px;
   padding: 10px 14px;
-  color: #1e3a5f;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
+  color: #146c5f;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
   border-radius: 12px;
   font-weight: 850;
 }
@@ -11650,14 +11650,14 @@ body {
   }
 }
 
-/* 지도형 페이지 UI 토큰·상단바 톤 정리 */
+/* v50: 지도형 페이지도 한눈체크 공통 UI 토큰·상단바 톤으로 통일 */
 :root {
-  --hc-navy: #1e3a5f;
+  --hc-navy: #146c5f;
   --hc-navy-dark: #172e4a;
-  --hc-blue: #2563eb;
-  --hc-blue-dark: #1d4ed8;
-  --hc-blue-soft: #eff6ff;
-  --hc-blue-border: #bfdbfe;
+  --hc-blue: #146c5f;
+  --hc-blue-dark: #0f766e;
+  --hc-blue-soft: #ecfdf5;
+  --hc-blue-border: #a7f3d0;
   --hc-surface: #ffffff;
   --hc-bg: #f3f7fb;
   --hc-text: #0f172a;
@@ -11803,7 +11803,7 @@ body {
 }
 
 
-/* 지도형 페이지 헤더 라벨·제목 체계 정리 */
+/* v52: 지도형 페이지 헤더를 한눈체크 일반 기능 페이지와 동일한 라벨·제목 체계로 통일 */
 .map-tool-hero {
   padding: 42px 0 28px;
   background: var(--check-bg, #f3f7fb);
@@ -11817,7 +11817,7 @@ body {
   font-size: 0.94rem;
 }
 .map-tool-hero .container > .breadcrumb a {
-  color: var(--hc-blue, #2563eb);
+  color: var(--hc-blue, #146c5f);
   font-weight: 850;
 }
 .map-tool-hero .map-tool-hero__intro {
@@ -11829,7 +11829,7 @@ body {
   align-items: center;
   gap: 8px;
   margin: 0 0 14px;
-  color: var(--hc-blue, #2563eb);
+  color: var(--hc-blue, #146c5f);
   font-size: 0.82rem;
   font-weight: 900;
   letter-spacing: 0.09em;
@@ -11841,12 +11841,12 @@ body {
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: var(--hc-blue, #2563eb);
-  box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.12);
+  background: var(--hc-blue, #146c5f);
+  box-shadow: 0 0 0 6px rgba(20, 108, 95, 0.12);
 }
 .map-tool-category {
   margin: 0 0 8px;
-  color: var(--hc-navy, #1e3a5f);
+  color: var(--hc-navy, #146c5f);
   font-size: 0.92rem;
   font-weight: 850;
   letter-spacing: -0.01em;
@@ -11874,9 +11874,9 @@ body {
   max-width: 100%;
   margin-top: 18px;
   padding: 10px 14px;
-  color: var(--hc-navy, #1e3a5f);
-  background: var(--hc-blue-soft, #eff6ff);
-  border: 1px solid var(--hc-blue-border, #bfdbfe);
+  color: var(--hc-navy, #146c5f);
+  background: var(--hc-blue-soft, #ecfdf5);
+  border: 1px solid var(--hc-blue-border, #a7f3d0);
   border-radius: 12px;
   font-weight: 850;
   line-height: 1.55;
@@ -11908,12 +11908,12 @@ body {
 
 /* v53: 지도형 페이지도 일반 기능 페이지의 1번 상단바 + 3번 breadcrumb 스타일로 최종 고정 */
 :root {
-  --hc-navy: #1e3a5f;
+  --hc-navy: #146c5f;
   --hc-navy-dark: #172e4a;
-  --hc-blue: #2563eb;
-  --hc-blue-dark: #1d4ed8;
-  --hc-blue-soft: #eff6ff;
-  --hc-blue-border: #bfdbfe;
+  --hc-blue: #146c5f;
+  --hc-blue-dark: #0f766e;
+  --hc-blue-soft: #ecfdf5;
+  --hc-blue-border: #a7f3d0;
   --hc-surface: #ffffff;
   --hc-bg: #f3f7fb;
   --hc-text: #0f172a;
@@ -12111,11 +12111,11 @@ body {
 
 /* v54: 지도형 페이지 상단바·breadcrumb를 일반 기능 페이지와 완전히 동일하게 고정 */
 :root {
-  --hc-navy: #1e3a5f;
-  --hc-blue: #2563eb;
-  --hc-blue-dark: #1d4ed8;
-  --hc-blue-soft: #eff6ff;
-  --hc-blue-border: #bfdbfe;
+  --hc-navy: #146c5f;
+  --hc-blue: #146c5f;
+  --hc-blue-dark: #0f766e;
+  --hc-blue-soft: #ecfdf5;
+  --hc-blue-border: #a7f3d0;
   --hc-border: #d8e2ee;
   --hc-surface: #ffffff;
   --hc-bg: #f3f7fb;
