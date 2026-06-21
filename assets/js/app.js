@@ -1,7 +1,7 @@
 import { calculateReport } from "./calculator.js?v=20260614-cache-fix";
 import { initBmiCalculator } from "./bmi-calculator.js?v=20260614-cache-fix";
 import { initCaffeineSleepCalculator } from "./caffeine-sleep.js?v=20260620-caffeine-phase5-final";
-import { initCigaretteCostCalculator } from "./cigarette-cost.js?v=20260614-cache-fix";
+import { initCigaretteCostCalculator } from "./cigarette-cost.js?v=20260621-adsense-phase5";
 import { initApplianceElectricityCalculator } from "./appliance-electricity.js?v=20260614-cache-fix";
 import { initAustraliaPayCalculator } from "./australia-pay.js?v=20260616-mobile-exchange-whv-final";
 import { initAustraliaWhv88DaysCalculator } from "./australia-whv-88-days.js?v=20260616-mobile-exchange-whv-final";
@@ -38,8 +38,7 @@ const TOOL_GROUPS = [
       ["전세가율·보증금 위험도 계산기", "calculators/jeonse-risk.html"],
       ["실시간 환율 계산기", "calculators/exchange-rate.html"],
       ["주휴수당 계산기", "calculators/weekly-holiday-pay.html"],
-      ["군적금 계산기", "calculators/military-savings.html"],
-      ["담배 연간 비용 계산기", "calculators/cigarette-cost.html"]
+      ["군적금 계산기", "calculators/military-savings.html"]
     ]
   },
   {
@@ -62,7 +61,8 @@ const TOOL_GROUPS = [
     label: "건강·습관",
     tools: [
       ["BMI 계산기", "calculators/bmi.html"],
-      ["카페인 수면 영향 계산기", "calculators/caffeine-sleep.html"]
+      ["카페인 수면 영향 계산기", "calculators/caffeine-sleep.html"],
+      ["금연 비용 절감 계산기", "calculators/cigarette-cost.html"]
     ]
   },
   {

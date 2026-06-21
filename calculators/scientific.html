@@ -24,14 +24,14 @@
      crossorigin="anonymous"></script>
     <meta name="msvalidate.01" content="71220435128A45EF179793784E9AFC3E">
     <meta name="naver-site-verification" content="0f429adf1d8d3475017f3824ee96355074bcfd23">
-    <meta name="description" content="사칙연산, 로그, 삼각함수, 하이퍼볼릭 함수, 순열·조합, 공학 상수, 복소수 j 계산, Abs·Arg·Conj·Re·Im, 직교형·극형 표시를 지원하는 공학용 계산기입니다.">
+    <meta name="description" content="일반 수식 계산, 삼각함수·로그, 공학 상수, 복소수 j 계산, 페이저 입력, 직교형·극형 표시를 지원하는 한눈계산 공학용 계산기입니다.">
     <title>공학용 계산기 - 한눈계산</title>
     <link rel="canonical" href="https://hannuncalc.com/calculators/scientific.html">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="ko_KR">
     <meta property="og:site_name" content="한눈계산">
     <meta property="og:title" content="공학용 계산기 - 한눈계산">
-    <meta property="og:description" content="사칙연산, 로그, 삼각함수, 하이퍼볼릭 함수, 순열·조합, 공학 상수, 복소수 j 계산, Abs·Arg·Conj·Re·Im, 직교형·극형 표시를 지원하는 공학용 계산기입니다.">
+    <meta property="og:description" content="일반 수식 계산, 삼각함수·로그, 공학 상수, 복소수 j 계산, 페이저 입력, 직교형·극형 표시를 지원하는 한눈계산 공학용 계산기입니다.">
     <meta property="og:url" content="https://hannuncalc.com/calculators/scientific.html">
     <script type="application/ld+json" data-schema="webapplication">{
   "@context": "https://schema.org",
@@ -41,7 +41,7 @@
   "applicationCategory": "UtilitiesApplication",
   "operatingSystem": "Any",
   "inLanguage": "ko-KR",
-  "description": "사칙연산, 로그, 삼각함수, 하이퍼볼릭 함수, 순열·조합, 공학 상수, 복소수 j 계산, Abs·Arg·Conj·Re·Im, 직교형·극형 표시를 지원하는 공학용 계산기입니다.",
+  "description": "일반 수식 계산, 삼각함수·로그, 공학 상수, 복소수 j 계산, 페이저 입력, 직교형·극형 표시를 지원하는 한눈계산 공학용 계산기입니다.",
   "offers": {
     "@type": "Offer",
     "price": "0",
@@ -65,7 +65,23 @@
       "name": "어떤 계산까지 할 수 있나요?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "현재는 sin, cos, tan, asin, acos, atan, sinh, cosh, tanh, asinh, acosh, atanh, log, ln, sqrt, abs, exp, x!, nPr, nCr, mod, floor, ceil, round, 공학 상수, 복소수 j 계산, Abs·Arg·Conj·Re·Im, Pol·Rec, 페이저 입력을 사용할 수 있습니다."
+        "text": "삼각함수, 역삼각함수, 로그, 하이퍼볼릭 함수, 팩토리얼, 순열·조합, mod, 공학 상수, 복소수 j 계산, Abs·Arg·Conj·Re·Im, Pol·Rec, 페이저 입력을 사용할 수 있습니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "복소수와 페이저는 어떻게 입력하나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "복소수는 3+4j처럼 입력하고, 페이저는 5∠30처럼 입력합니다. Rec(5,30)은 극형을 직교형으로 바꾸고, Pol(3,4)는 3+4j의 극형 값을 확인할 때 사용할 수 있습니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "mu0와 eps0 같은 상수는 어떻게 쓰나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "상수 탭에서 μ0, ε0, c, R 등을 누르면 입력식에 상수명이 들어갑니다. 예를 들어 1/sqrt(mu0*eps0)처럼 조합해 계산할 수 있습니다."
       }
     },
     {
@@ -88,7 +104,7 @@
 }</script>
     <link rel="stylesheet" href="../assets/css/base.css">
     <link rel="stylesheet" href="../assets/css/layout.css">
-    <link rel="stylesheet" href="../assets/css/components.css?v=20260620-engineering-dark-ui-fix">
+    <link rel="stylesheet" href="../assets/css/components.css?v=20260621-adsense-phase2-scientific-copy">
   </head>
   <body>
     <header class="site-header">
@@ -117,8 +133,8 @@
             <p class="eyebrow">수식 계산</p>
             <h1>공학용 계산기</h1>
             <p class="lead">
-              과제나 실험값을 정리하다가 계산이 필요할 때 바로 사용하세요.
-              사칙연산, 제곱근, 로그, 삼각함수까지 한 번에 계산할 수 있습니다.
+              과제, 실험값, 전기·전자 계산을 정리할 때 사용할 수 있는 공학용 계산기입니다.
+              일반 수식 계산, 삼각함수, 로그, 공학 상수, 복소수, 페이저 입력을 한 화면에서 확인할 수 있습니다.
             </p>
           </div>
         </div>
@@ -327,7 +343,7 @@
                 <button type="button" class="key soft" data-action="show-polar" aria-pressed="false">Polar</button>
               </div>
 
-              <p id="scientific-key-hint" class="engineering-key-hint">모바일에서도 버튼이 겹치지 않도록 4열 키패드로 구성했습니다.</p>
+              <p id="scientific-key-hint" class="engineering-key-hint">기본·함수·상수·복소수 탭을 나눠 필요한 버튼만 선택해 사용할 수 있습니다.</p>
             </form>
 
             <aside class="result-panel scientific-side">
@@ -336,8 +352,8 @@
                 <p>예: <code>2^10</code>, <code>sqrt(2)</code>, <code>log(100)</code>, <code>sin(30)</code>, <code>5!</code>, <code>nCr(10,3)</code>, <code>1/sqrt(mu0*eps0)</code>, <code>3+4j</code>, <code>Abs(3+4j)</code>, <code>5∠30</code>, <code>Rec(5,30)</code>, <code>Pol(3,4)</code></p>
               </div>
               <div class="formula-help">
-                <h3>버튼 구성</h3>
-                <p>일반 계산과 복소수 계산 모드를 분리하고, 기본·함수·상수·복소수 탭으로 버튼을 나눴습니다. 함수 탭에는 하이퍼볼릭 함수, 순열·조합, mod, 표시 모드 버튼을 넣었고, 복소수 탭에는 j, ∠, Abs, Arg, Conj, Re, Im, Pol, Rec 버튼을 넣었습니다. 모바일에서도 4열 고정 키패드를 사용합니다.</p>
+                <h3>기능 선택</h3>
+                <p>일반 계산에서는 삼각함수, 로그, 하이퍼볼릭 함수, 순열·조합, 공학 상수를 사용할 수 있습니다. 복소수 계산에서는 <code>j</code>, <code>∠</code>, <code>Abs</code>, <code>Arg</code>, <code>Conj</code>, <code>Re</code>, <code>Im</code>, <code>Pol</code>, <code>Rec</code>으로 직교형과 극형 결과를 함께 확인할 수 있습니다.</p>
               </div>
               <div class="history-box">
                 <h3>최근 계산</h3>
@@ -354,10 +370,10 @@
             <p class="eyebrow">사용 방법</p>
             <h2>계산하고 싶은 식을 입력하세요.</h2>
             <ol class="step-list">
-              <li><strong>식 입력</strong><span>키보드로 입력하거나 계산기 버튼을 눌러 식을 만듭니다.</span></li>
-              <li><strong>각도 선택</strong><span>삼각함수를 쓸 때 문제에서 DEG, RAD, GRAD 중 어떤 단위를 쓰는지 확인합니다.</span></li>
-              <li><strong>결과 확인</strong><span>계산 결과와 최근에 계산한 식을 함께 확인합니다.</span></li>
-              <li><strong>다시 계산</strong><span>괄호나 숫자를 바꿔 다른 경우도 바로 비교해 봅니다.</span></li>
+              <li><strong>모드 선택</strong><span>일반 계산과 복소수 계산 중 필요한 모드를 먼저 선택합니다.</span></li>
+              <li><strong>식 입력</strong><span>키보드로 입력하거나 기본·함수·상수·복소수 탭의 버튼을 눌러 식을 만듭니다.</span></li>
+              <li><strong>각도 확인</strong><span>삼각함수나 페이저를 쓸 때 DEG, RAD, GRAD 중 어떤 기준인지 확인합니다.</span></li>
+              <li><strong>결과 확인</strong><span>일반 결과, 공학 표기, 복소수의 직교형·극형 결과를 함께 확인합니다.</span></li>
             </ol>
           </section>
 
@@ -366,9 +382,11 @@
             <h2>기호를 이렇게 이해합니다.</h2>
             <ul class="plain-list">
               <li><code>^</code>는 제곱이나 거듭제곱을 뜻합니다.</li>
-              <li><code>log()</code>는 상용로그, <code>ln()</code>은 자연로그입니다.</li><li><code>nPr(n,r)</code>, <code>nCr(n,r)</code>, <code>mod(a,b)</code>처럼 쉼표로 값을 나누는 함수도 사용할 수 있습니다.</li>
+              <li><code>log()</code>는 상용로그, <code>ln()</code>은 자연로그입니다.</li>
+              <li><code>nPr(n,r)</code>, <code>nCr(n,r)</code>, <code>mod(a,b)</code>처럼 쉼표로 값을 나누는 함수도 사용할 수 있습니다.</li>
               <li><code>mu0</code>, <code>eps0</code>, <code>c</code>, <code>R</code> 같은 상수는 상수 탭에서 입력할 수 있습니다.</li>
               <li>복소수 모드에서는 <code>3+4j</code>, <code>Abs(3+4j)</code>, <code>Arg(3+4j)</code>, <code>Conj(3+4j)</code>, <code>5∠30</code> 같은 입력을 사용할 수 있습니다.</li>
+              <li><code>Rec(5,30)</code>은 크기 5, 위상각 30도의 페이저를 직교형 복소수로 바꾸고, <code>Pol(3,4)</code>는 3+4j를 극형으로 확인할 때 사용합니다.</li>
               <li><code>sqrt()</code>는 제곱근입니다. 예를 들어 <code>sqrt(16)</code>은 4입니다.</li>
               <li>삼각함수는 선택한 각도 모드에 맞춰 계산됩니다.</li>
             </ul>
@@ -383,7 +401,8 @@
             <h2>실수를 줄이는 입력 팁</h2>
             <ul class="tip-list">
               <li><strong>괄호를 먼저 확인</strong><span><code>2+3*4</code>와 <code>(2+3)*4</code>는 결과가 다릅니다.</span></li>
-              <li><strong>각도 단위 확인</strong><span>문제에서 도인지 라디안인지 먼저 확인한 뒤 계산하세요.</span></li>
+              <li><strong>각도 단위 확인</strong><span>삼각함수와 페이저 위상각은 DEG/RAD/GRAD 설정에 따라 결과가 달라집니다.</span></li>
+              <li><strong>복소수 형식 확인</strong><span>전기·전자 계산은 <code>3+4j</code>와 <code>5∠30</code>처럼 직교형과 극형을 구분해 입력하세요.</span></li>
               <li><strong>너무 긴 식은 나누기</strong><span>중간값을 먼저 계산하면 입력 오류를 찾기 쉽습니다.</span></li>
             </ul>
           </section>
@@ -392,15 +411,25 @@
             <p class="eyebrow">관련 계산기</p>
             <h2>다른 계산도 이어서 확인하세요.</h2>
             <div class="mini-command-list">
-              <a href="military-savings.html">
-                <span>02</span>
-                <strong>군적금 계산기</strong>
-                <em>만기 예상액 계산</em>
+              <a href="space-travel.html">
+                <span>01</span>
+                <strong>우주 이동 시간 계산기</strong>
+                <em>거리·속도·빛의 지연 시간 계산</em>
               </a>
-              <a href="used-device-price.html">
+              <a href="appliance-electricity.html">
+                <span>02</span>
+                <strong>가전제품 전기요금 계산기</strong>
+                <em>소비전력과 사용시간 계산</em>
+              </a>
+              <a href="percentile.html">
                 <span>03</span>
-                <strong>중고 전자제품 가격 계산기</strong>
-                <em>상태별 판매가 점검</em>
+                <strong>시험 상위 백분율 계산기</strong>
+                <em>등수와 백분위 확인</em>
+              </a>
+              <a href="text-counter.html">
+                <span>04</span>
+                <strong>글자수·바이트 계산기</strong>
+                <em>과제·보고서 분량 확인</em>
               </a>
             </div>
           </section>
@@ -416,16 +445,16 @@
             <p>아래 내용은 계산 결과를 해석할 때 필요한 기준과 주의사항입니다.</p>
           </div>
           <div class="guide-grid">
-            <article><h3>이 계산기는 무엇을 계산하나요?</h3><p>사칙연산, 괄호, 거듭제곱, 제곱근, 로그, 삼각함수, 하이퍼볼릭 함수, 순열·조합, 나머지 계산, 물리·전자기 공학 상수를 입력한 순서와 연산 우선순위에 맞춰 계산합니다.</p></article>
-            <article><h3>이런 상황에서 사용하면 좋습니다</h3><p>과제, 실험값 정리, 단위 변환 전 계산처럼 괄호와 함수가 섞인 계산을 빠르게 확인하고, DEG/RAD/GRAD 모드와 Norm/Sci/Eng 표시 차이를 점검할 때 사용하면 좋습니다.</p></article>
-            <article><h3>입력값 설명</h3><ul><li>계산식: 숫자, 연산자, 괄호, 함수명을 입력합니다.</li><li>각도 모드: 삼각함수를 도(DEG), 라디안(RAD), 그라디안(GRAD) 기준으로 계산합니다.</li><li>표시 모드: 결과를 일반 표기, 과학 표기, 공학 표기 중 선택해 확인합니다.</li></ul></article>
+            <article><h3>이 계산기는 무엇을 계산하나요?</h3><p>사칙연산, 괄호, 거듭제곱, 제곱근, 로그, 삼각함수, 하이퍼볼릭 함수, 순열·조합, 나머지 계산, 공학 상수, 복소수, 페이저 입력을 계산합니다. 복소수 결과는 직교형과 극형을 함께 확인할 수 있습니다.</p></article>
+            <article><h3>이런 상황에서 사용하면 좋습니다</h3><p>과제, 실험값 정리, 전기·전자 회로 계산, 물리 상수 계산처럼 함수와 단위가 섞인 계산을 빠르게 확인할 때 적합합니다. DEG/RAD/GRAD와 Norm/Sci/Eng 표시 차이를 비교할 때도 사용할 수 있습니다.</p></article>
+            <article><h3>입력값 설명</h3><ul><li>계산식: 숫자, 연산자, 괄호, 함수명, 상수명을 입력합니다.</li><li>계산 모드: 일반 계산은 실수 중심 수식, 복소수 계산은 <code>j</code>와 <code>∠</code> 입력을 함께 처리합니다.</li><li>각도 모드: 삼각함수와 페이저 위상각을 도(DEG), 라디안(RAD), 그라디안(GRAD) 기준으로 계산합니다.</li><li>표시 모드: 결과를 일반 표기, 과학 표기, 공학 표기 중 선택해 확인합니다.</li></ul></article>
             <article><h3>계산식</h3><p>입력식을 토큰으로 나눈 뒤 괄호, 함수, 팩토리얼, 거듭제곱, 곱셈·나눗셈, 덧셈·뺄셈 순서로 계산합니다. <code>nCr(10,3)</code>, <code>mod(17,5)</code>처럼 2개 인수를 쓰는 함수는 쉼표로 구분합니다.</p></article>
-            <article><h3>예시 계산</h3><p>DEG 모드에서 sin(30)+sqrt(16)을 입력하면 0.5+4로 계산해 4.5를 표시합니다. <code>nCr(10,3)</code>은 120, <code>mod(17,5)</code>는 2로 계산합니다.</p></article>
-            <article><h3>결과 해석</h3><p>결과가 예상과 다르면 괄호 위치와 DEG/RAD 모드를 먼저 확인하세요.</p></article>
-            <article><h3>주의사항</h3><p>보고서, 시험, 실무에 사용할 때는 유효숫자, 반올림, 단위 기준을 별도로 확인해야 합니다.</p></article>
+            <article><h3>예시 계산</h3><p>DEG 모드에서 <code>sin(30)+sqrt(16)</code>은 4.5로 계산됩니다. <code>1/sqrt(mu0*eps0)</code>은 빛의 속도에 가까운 값을 확인할 때, <code>3+4j</code>와 <code>Rec(5,30)</code>은 복소수와 페이저 계산을 확인할 때 사용할 수 있습니다.</p></article>
+            <article><h3>결과 해석</h3><p>결과가 예상과 다르면 괄호 위치, DEG/RAD/GRAD 모드, 복소수 표시 형식을 먼저 확인하세요. 복소수 결과는 직교형 <code>a+bj</code>와 극형 <code>r∠θ</code>를 함께 비교하면 위상각 확인이 쉽습니다.</p></article>
+            <article><h3>주의사항</h3><p>보고서, 시험, 실무에 사용할 때는 유효숫자, 반올림, 단위 기준을 별도로 확인해야 합니다. 공학 상수는 참고 계산용 값이므로 과제나 문서에는 요구된 기준값과 단위를 함께 확인하세요.</p></article>
             <article><h3>참고한 공식 자료 또는 안내 문구</h3><p>수학 표기와 브라우저 JavaScript Math 함수 기준을 사용합니다. 공학 상수는 CODATA 계열의 널리 쓰이는 고정값 또는 표준값을 참고 계산용으로 사용합니다.</p></article>
           </div>
-          <p class="guide-updated">최종 업데이트 날짜: 2026-06-16</p>
+          <p class="guide-updated">최종 업데이트 날짜: 2026-06-21</p>
         </div>
       </section>
 
@@ -440,7 +469,15 @@
             </details>
             <details>
               <summary>어떤 계산까지 할 수 있나요?</summary>
-              <p>현재는 sin, cos, tan, asin, acos, atan, sinh, cosh, tanh, asinh, acosh, atanh, log, ln, sqrt, abs, exp, x!, nPr, nCr, mod, floor, ceil, round, 공학 상수, 복소수 j 계산, Abs·Arg·Conj·Re·Im, Pol·Rec, 페이저 입력을 사용할 수 있습니다.</p>
+              <p>삼각함수, 역삼각함수, 로그, 하이퍼볼릭 함수, 팩토리얼, 순열·조합, mod, 공학 상수, 복소수 j 계산, Abs·Arg·Conj·Re·Im, Pol·Rec, 페이저 입력을 사용할 수 있습니다.</p>
+            </details>
+            <details>
+              <summary>복소수와 페이저는 어떻게 입력하나요?</summary>
+              <p>복소수는 <code>3+4j</code>처럼 입력하고, 페이저는 <code>5∠30</code>처럼 입력합니다. <code>Rec(5,30)</code>은 극형을 직교형으로 바꾸고, <code>Pol(3,4)</code>는 3+4j의 극형 값을 확인할 때 사용할 수 있습니다.</p>
+            </details>
+            <details>
+              <summary>mu0와 eps0 같은 상수는 어떻게 쓰나요?</summary>
+              <p>상수 탭에서 <code>μ0</code>, <code>ε0</code>, <code>c</code>, <code>R</code> 등을 누르면 입력식에 상수명이 들어갑니다. 예를 들어 <code>1/sqrt(mu0*eps0)</code>처럼 조합해 계산할 수 있습니다.</p>
             </details>
             <details>
               <summary>계산 기록은 저장되나요?</summary>
@@ -468,6 +505,6 @@
       </div>
     </footer>
 
-    <script type="module" src="../assets/js/app.js?v=20260620-engineering-dark-ui-fix"></script>
+    <script type="module" src="../assets/js/app.js?v=20260621-adsense-phase2-scientific-copy"></script>
   </body>
 </html>

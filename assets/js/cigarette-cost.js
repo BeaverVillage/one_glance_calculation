@@ -162,7 +162,7 @@ function renderCigaretteCost(els, result) {
   if (els.lifeThirtyYear) els.lifeThirtyYear.textContent = formatLifeLoss(result.thirtyYearLifeLossMinutes);
   if (els.lifeFiftyYear) els.lifeFiftyYear.textContent = formatLifeLoss(result.fiftyYearLifeLossMinutes);
 
-  els.detail.textContent = `하루 ${result.cigarettesPerDay.toLocaleString("ko-KR")}개비 기준입니다. 병원비나 보험료 같은 간접 비용은 포함하지 않았습니다.`;
+  els.detail.textContent = `현재 하루 ${result.cigarettesPerDay.toLocaleString("ko-KR")}개비 기준의 절감 가능액입니다. 금연 보조 비용이나 의료비 변화 같은 간접 비용은 포함하지 않았습니다.`;
 }
 
 function getValueComparison(annualCost) {
