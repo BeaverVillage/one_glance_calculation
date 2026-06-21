@@ -1,4 +1,4 @@
-import { initParkingBudgetMap } from './parking-budget-map.js?v=20260622-parking-selected-kakao-query-fix';
+import { initParkingBudgetMap } from './parking-budget-map.js?v=20260622-parking-nonads-perf-safe';
 
 document.addEventListener('DOMContentLoaded', () => {
   initParkingBudgetMap();
