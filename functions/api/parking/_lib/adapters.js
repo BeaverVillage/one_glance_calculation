@@ -321,7 +321,7 @@ async function loadLocalKakaoPlaceCache(env = {}, assetBaseUrl = '') {
 
 function attachKakaoPlaceLinkFields(lot = {}, entries = new Map()) {
   if (!lot || typeof lot !== 'object') return lot;
-  const searchUrl = lot.kakaoSearchUrl || buildKakaoSearchUrlForParking(lot);
+  const searchUrl = buildKakaoSearchUrlForParking(lot) || lot.kakaoSearchUrl || '';
   const isKakaoCandidate = Boolean(lot.isKakaoLocalCandidate);
   const existingPlaceUrl = normalizeKakaoMapUrl(lot.kakaoPlaceUrl || (isKakaoCandidate ? lot.sourceUrl : '') || lot.place_url || lot.placeUrl || '');
   if (existingPlaceUrl) {
@@ -371,8 +371,7 @@ function buildKakaoSearchQueryForParking(lot = {}) {
   const name = String(lot.name || '').trim();
   const address = String(lot.roadAddress || lot.jibunAddress || lot.address || '').trim();
   const label = name && /주차/.test(name) ? name : [name, '주차장'].filter(Boolean).join(' ').trim();
-  const query = [label, address].filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
-  return query || label || address;
+  return (label || address).replace(/\s+/g, ' ').trim();
 }
 
 function normalizeKakaoMapUrl(url = '') {

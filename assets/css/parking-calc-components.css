@@ -12321,3 +12321,14 @@ body .parking-hero .container > .breadcrumb span {
     flex: 0 0 auto !important;
   }
 }
+
+
+/* parking improvement: keep selected parking badge readable inside map popups */
+.parking-map-popup__selected-row .parking-pinned-badge,
+.parking-hero .parking-map-popup__selected-row .parking-pinned-badge,
+.parking-app-shell .parking-map-popup__selected-row .parking-pinned-badge {
+  background: #ecfdf5 !important;
+  color: #0d5b4f !important;
+  border: 1px solid rgba(20, 108, 95, 0.35) !important;
+  box-shadow: 0 6px 16px rgba(20, 108, 95, 0.12) !important;
+}

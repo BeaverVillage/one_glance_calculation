@@ -1354,7 +1354,7 @@ function kakaoMapLinkInfo(row) {
   if (placeUrl) {
     return { url: placeUrl, label: "카카오맵 바로가기", type: "place" };
   }
-  const searchUrl = normalizeKakaoUrl(row?.kakaoSearchUrl || buildKakaoSearchUrl(row));
+  const searchUrl = normalizeKakaoUrl(buildKakaoSearchUrl(row) || row?.kakaoSearchUrl);
   if (searchUrl) {
     return { url: searchUrl, label: "카카오맵 검색", type: "search" };
   }
@@ -1375,8 +1375,8 @@ function buildKakaoSearchUrl(row) {
 function buildKakaoSearchQuery(row) {
   const name = String(row?.name || "").trim();
   const address = String(row?.roadAddress || row?.jibunAddress || row?.address || "").trim();
-  const label = name && /주차/.test(name) ? name : [name, "주차장"].filter(Boolean).join(" " ).trim();
-  return [label, address].filter(Boolean).join(" " ).replace(/\s+/g, " " ).trim() || label || address;
+  const label = name && /주차/.test(name) ? name : [name, "주차장"].filter(Boolean).join(" ").trim();
+  return (label || address).replace(/\s+/g, " ").trim();
 }
 
 function renderKakaoMapLink(row, className = "parking-kakao-map-link") {
