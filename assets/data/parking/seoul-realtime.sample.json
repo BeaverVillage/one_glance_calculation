@@ -1,70 +1,70 @@
 {
   "version": "2026-06-17",
-  "sourceName": "서울시 시영주차장 실시간 주차대수 정보 보조 데이터",
-  "disclaimer": "실시간 API 키가 없거나 매칭되지 않을 때 표시하는 보조 데이터입니다.",
+  "sourceName": "서울시 시영주차장 실시간 주차대수 정보 샘플",
+  "disclaimer": "실시간 API 키가 없거나 매칭되지 않을 때 표시하는 샘플 데이터입니다.",
   "statuses": [
     {
       "parkingLotId": "PARK_COEX_001",
       "availableSpaces": 23,
       "totalSpaces": 996,
       "observedAt": "2026-06-17T09:30:00+09:00",
-      "source": "서울시 시영주차장 실시간 보조 데이터"
+      "source": "서울시 시영주차장 실시간 샘플"
     },
     {
       "parkingLotId": "PARK_COEX_003",
       "availableSpaces": 5,
       "totalSpaces": 82,
       "observedAt": "2026-06-17T09:32:00+09:00",
-      "source": "서울시 시영주차장 실시간 보조 데이터"
+      "source": "서울시 시영주차장 실시간 샘플"
     },
     {
       "parkingLotId": "PARK_GANGNAM_001",
       "availableSpaces": 8,
       "totalSpaces": 96,
       "observedAt": "2026-06-17T09:35:00+09:00",
-      "source": "서울시 시영주차장 실시간 보조 데이터"
+      "source": "서울시 시영주차장 실시간 샘플"
     },
     {
       "parkingLotId": "PARK_SEOUL_STATION_001",
       "availableSpaces": 31,
       "totalSpaces": 210,
       "observedAt": "2026-06-17T09:40:00+09:00",
-      "source": "서울시 시영주차장 실시간 보조 데이터"
+      "source": "서울시 시영주차장 실시간 샘플"
     },
     {
       "parkingLotId": "PARK_HONGDAE_001",
       "availableSpaces": 12,
       "totalSpaces": 142,
       "observedAt": "2026-06-17T09:42:00+09:00",
-      "source": "서울시 시영주차장 실시간 보조 데이터"
+      "source": "서울시 시영주차장 실시간 샘플"
     },
     {
       "parkingLotId": "PARK_ICN_AIRPORT_001",
       "availableSpaces": 180,
       "totalSpaces": 3500,
       "observedAt": "2026-06-17T09:45:00+09:00",
-      "source": "공항 주차 실시간 보조 데이터"
+      "source": "공항 주차 실시간 샘플"
     },
     {
       "parkingLotId": "PARK_ICN_AIRPORT_002",
       "availableSpaces": 560,
       "totalSpaces": 6000,
       "observedAt": "2026-06-17T09:45:00+09:00",
-      "source": "공항 주차 실시간 보조 데이터"
+      "source": "공항 주차 실시간 샘플"
     },
     {
       "parkingLotId": "PARK_KONKUK_003",
       "availableSpaces": 23,
       "totalSpaces": 84,
       "observedAt": "2026-06-17T13:20:00+09:00",
-      "source": "보조 실시간"
+      "source": "샘플 실시간"
     },
     {
       "parkingLotId": "PARK_KONKUK_004",
       "availableSpaces": 9,
       "totalSpaces": 65,
       "observedAt": "2026-06-17T13:20:00+09:00",
-      "source": "보조 실시간"
+      "source": "샘플 실시간"
     }
   ]
 }

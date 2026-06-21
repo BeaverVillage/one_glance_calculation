@@ -605,6 +605,34 @@ function setupMobileBottomSheet(els) {
   setMobileSheetState(els, "closed");
 }
 
+function isParkingMobileViewport() {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia ? window.matchMedia("(max-width: 860px)").matches : window.innerWidth <= 860;
+}
+
+function refreshParkingMapLayout() {
+  if (!state.map || !window.kakao?.maps) return;
+  window.setTimeout(() => {
+    try {
+      state.map.relayout?.();
+      if (state.pinnedParkingId) focusMapOnParking(state.pinnedParkingId);
+      else if (state.destination?.lat && state.destination?.lng) {
+        state.map.setCenter(new window.kakao.maps.LatLng(state.destination.lat, state.destination.lng));
+      }
+    } catch (_) {}
+  }, 120);
+  window.setTimeout(() => {
+    try { state.map.relayout?.(); } catch (_) {}
+  }, 320);
+}
+
+function scrollParkingMapIntoView(els, block = "start") {
+  const target = document.querySelector(".parking-map-card") || document.querySelector(".parking-dashboard__map") || els?.map;
+  if (!target) return;
+  target.scrollIntoView({ behavior: "smooth", block });
+  refreshParkingMapLayout();
+}
+
 function setMobileSheetState(els, mode = "closed") {
   const sheet = els?.mobileBottomSheet;
   if (!sheet) return;
@@ -736,18 +764,17 @@ function bindEvents(els) {
   });
   els.recommend.addEventListener("click", () => handleParkingSearch(els));
   els.mobileMapJump?.addEventListener("click", () => {
-    const target = document.querySelector(".parking-dashboard__map") || els.map;
-    if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+    setMobileSheetState(els, "closed");
+    scrollParkingMapIntoView(els, "start");
   });
   els.mapRefresh?.addEventListener("click", () => researchCurrentMapArea(els));
   els.mobileSheetMapButton?.addEventListener("click", () => {
     setMobileSheetState(els, "closed");
-    document.querySelector(".parking-map-card")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    scrollParkingMapIntoView(els, "start");
   });
   els.mobileListToggle?.addEventListener("click", () => {
     const isOpen = els.mobileBottomSheet?.classList.contains("is-open");
     setMobileSheetState(els, isOpen ? "closed" : "half");
-    if (!isOpen) els.mobileBottomSheet?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   });
   els.mobileTimeButton?.addEventListener("click", () => {
     openMobileActionSheet(els, "time");
@@ -1091,6 +1118,10 @@ async function calculateAndRender(els) {
   renderResults(els, input);
   syncDesktopMapToolbar(els);
   renderMap(els);
+  if (isParkingMobileViewport()) {
+    setMobileSheetState(els, rows.length ? "half" : "closed");
+  }
+  refreshParkingMapLayout();
 }
 
 function fallbackRecommend(input) {
@@ -1345,14 +1376,43 @@ function bindResultCardEvents(container, els) {
 }
 
 function kakaoMapUrl(row) {
-  const url = row?.kakaoPlaceUrl || (row?.isKakaoLocalCandidate ? row?.sourceUrl : "");
-  if (!url) return "";
-  return /^https?:\/\/place\.map\.kakao\.com\//.test(url) || /^https?:\/\/map\.kakao\.com\//.test(url) ? url : "";
+  const link = kakaoMapLinkInfo(row);
+  return link.url;
+}
+
+function kakaoMapLinkInfo(row) {
+  const placeUrl = normalizeKakaoUrl(row?.kakaoPlaceUrl || (row?.isKakaoLocalCandidate ? row?.sourceUrl : "") || row?.place_url || row?.placeUrl || "");
+  if (placeUrl) {
+    return { url: placeUrl, label: "카카오맵 바로가기", type: "place" };
+  }
+  const searchUrl = normalizeKakaoUrl(row?.kakaoSearchUrl || buildKakaoSearchUrl(row));
+  if (searchUrl) {
+    return { url: searchUrl, label: "카카오맵 검색", type: "search" };
+  }
+  return { url: "", label: "", type: "" };
+}
+
+function normalizeKakaoUrl(url) {
+  const value = String(url || "").trim();
+  if (!value) return "";
+  return /^https?:\/\/place\.map\.kakao\.com\//.test(value) || /^https?:\/\/map\.kakao\.com\//.test(value) ? value : "";
+}
+
+function buildKakaoSearchUrl(row) {
+  const query = buildKakaoSearchQuery(row);
+  return query ? `https://map.kakao.com/link/search/${encodeURIComponent(query)}` : "";
+}
+
+function buildKakaoSearchQuery(row) {
+  const name = String(row?.name || "").trim();
+  const address = String(row?.roadAddress || row?.jibunAddress || row?.address || "").trim();
+  const label = name && /주차/.test(name) ? name : [name, "주차장"].filter(Boolean).join(" " ).trim();
+  return [label, address].filter(Boolean).join(" " ).replace(/\s+/g, " " ).trim() || label || address;
 }
 
 function renderKakaoMapLink(row, className = "parking-kakao-map-link") {
-  const url = kakaoMapUrl(row);
-  return url ? `<a class="${className}" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">카카오맵 보기</a>` : "";
+  const link = kakaoMapLinkInfo(row);
+  return link.url ? `<a class="${className}" href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer" data-kakao-map-link-type="${escapeHtml(link.type)}">${escapeHtml(link.label)}</a>` : "";
 }
 
 function renderResultCard(row) {
@@ -1465,6 +1525,8 @@ async function researchCurrentMapArea(els) {
   if (els.mapRefresh) els.mapRefresh.hidden = true;
   renderPlaces(els);
   await calculateAndRender(els);
+  if (isParkingMobileViewport()) setMobileSheetState(els, state.results.length ? "half" : "closed");
+  refreshParkingMapLayout();
   if (els.searchStatus) els.searchStatus.textContent = state.results.length ? "현재 지도 기준 추천 결과입니다." : "현재 지도 주변에서 조건에 맞는 주차장을 찾지 못했습니다.";
 }
 
@@ -1532,6 +1594,7 @@ function renderMap(els) {
     state.kakaoMarkers = [];
     if (state.kakaoDestinationMarker) state.kakaoDestinationMarker.setMap(null);
     const center = new window.kakao.maps.LatLng(state.destination.lat, state.destination.lng);
+    try { state.map.relayout?.(); } catch (_) {}
     state.map.setCenter(center);
     state.kakaoDestinationMarker = new window.kakao.maps.CustomOverlay({
       position: center,
@@ -1601,8 +1664,15 @@ function focusMapOnParking(id) {
   if (!row || !Number.isFinite(Number(row.lat)) || !Number.isFinite(Number(row.lng))) return;
   if (state.map && window.kakao?.maps) {
     const position = new window.kakao.maps.LatLng(Number(row.lat), Number(row.lng));
+    try { state.map.relayout?.(); } catch (_) {}
     if (typeof state.map.panTo === "function") state.map.panTo(position);
     else state.map.setCenter(position);
+    window.setTimeout(() => {
+      try {
+        state.map.relayout?.();
+        state.map.setCenter(position);
+      } catch (_) {}
+    }, 180);
   }
 }
 
@@ -1612,7 +1682,10 @@ function pinParkingCard(id, els, { scroll = false, popup = false, scrollToMap = 
   applyPinnedParkingState(els);
   const safeId = typeof CSS !== "undefined" && CSS.escape ? CSS.escape(state.pinnedParkingId) : String(state.pinnedParkingId).replace(/"/g, '\\"');
   const target = document.querySelector(`[data-parking-card-id="${safeId}"]`);
-  if (scrollToMap) document.querySelector(".parking-dashboard__map")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  if (scrollToMap) {
+    setMobileSheetState(els, "closed");
+    scrollParkingMapIntoView(els, "start");
+  }
   if (scroll) target?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   target?.classList.add("is-highlighted");
   setTimeout(() => target?.classList.remove("is-highlighted"), 1200);
