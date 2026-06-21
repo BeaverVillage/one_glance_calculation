@@ -751,18 +751,18 @@ function bindEvents(els) {
   });
   els.form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    await handleParkingSearch(els);
+    await handleParkingSearch(els, { autoSelectFirst: true });
   });
   els.mapToolbarSearch?.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (els.mapToolbarDestination && els.destination) els.destination.value = els.mapToolbarDestination.value.trim();
     closeMapToolbarPopovers(els);
-    await handleParkingSearch(els);
+    await handleParkingSearch(els, { autoSelectFirst: true });
   });
   els.mapToolbarDestination?.addEventListener("input", () => {
     if (els.destination) els.destination.value = els.mapToolbarDestination.value;
   });
-  els.recommend.addEventListener("click", () => handleParkingSearch(els));
+  els.recommend.addEventListener("click", () => handleParkingSearch(els, { autoSelectFirst: true }));
   els.mobileMapJump?.addEventListener("click", () => {
     setMobileSheetState(els, "closed");
     scrollParkingMapIntoView(els, "start");
@@ -880,7 +880,7 @@ async function loadMockData() {
   state.realtime = realtimeRes.status === "fulfilled" ? realtimeRes.value.statuses || [] : [];
 }
 
-async function handleParkingSearch(els) {
+async function handleParkingSearch(els, options = {}) {
   const query = els.destination.value.trim();
   if (!query) {
     els.searchStatus.textContent = "목적지를 입력해 주세요.";
@@ -894,7 +894,7 @@ async function handleParkingSearch(els) {
     els.recommend.textContent = "주차장 찾는 중...";
   }
   try {
-    await searchDestination(els);
+    await searchDestination(els, options);
   } finally {
     if (els.recommend) {
       els.recommend.disabled = false;
@@ -908,7 +908,7 @@ function findSamplePlaces(query) {
   return SAMPLE_PLACES.filter((place) => `${place.name} ${place.address}`.toLowerCase().replace(/\s+/g, "").includes(lower));
 }
 
-async function searchDestination(els) {
+async function searchDestination(els, options = {}) {
   const query = els.destination.value.trim();
   if (!query) return;
   els.searchStatus.textContent = "목적지를 검색하고 있습니다.";
@@ -932,6 +932,10 @@ async function searchDestination(els) {
     els.searchStatus.textContent = "검색 결과를 찾지 못했습니다. 다른 장소명을 입력해 주세요.";
     els.status.textContent = "추천 결과입니다.";
     renderPlaces(els, { openPopup: true, emptyMessage: "검색 결과를 찾지 못했습니다." });
+    return;
+  }
+  if (options.autoSelectFirst) {
+    await selectPlaceFromPopup(0, els);
     return;
   }
   els.searchStatus.textContent = `${state.places.length}개 후보를 찾았습니다. 목적지를 선택해 주세요.`;
@@ -1319,6 +1323,7 @@ function sortRows(rows, sort = "recommended") {
 }
 
 function renderResults(els, input) {
+  if (!els?.resultList) return;
   const durationText = formatDuration(input.duration);
   const vehicleText = vehicleLabel(input.vehicleType);
   els.summaryTitle.textContent = `${state.destination.name} · ${durationText} · ${vehicleText}`;

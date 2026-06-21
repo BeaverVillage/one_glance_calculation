@@ -14944,3 +14944,47 @@ body.modal-open {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* Parking migration nav/selector fix 2026-06-22: green header tone and non-empty result panel */
+.site-nav a,
+.site-nav button {
+  color: #146c5f !important;
+  border-color: rgba(20, 108, 95, 0.22) !important;
+}
+.site-nav a:hover,
+.site-nav button:hover,
+.site-nav a:focus-visible,
+.site-nav button:focus-visible {
+  color: #0d5b4f !important;
+  background: #e5f3ef !important;
+  border-color: rgba(20, 108, 95, 0.38) !important;
+}
+.parking-result-card--empty {
+  display: grid !important;
+  gap: 0.45rem !important;
+  border: 1px dashed rgba(20, 108, 95, 0.28) !important;
+  background: linear-gradient(180deg, #f4fbf8 0%, #ffffff 100%) !important;
+  color: #334155 !important;
+}
+.parking-result-card--empty strong {
+  color: #146c5f !important;
+  font-size: 0.98rem !important;
+  line-height: 1.35 !important;
+}
+.parking-result-card--empty p {
+  margin: 0 !important;
+  color: #64748b !important;
+  font-size: 0.86rem !important;
+  line-height: 1.55 !important;
+}
+@media (min-width: 861px) {
+  .parking-dashboard__results .parking-result-card--empty {
+    grid-template-columns: 1fr !important;
+    min-height: 118px !important;
+    align-content: center !important;
+    padding: 1rem !important;
+  }
+  .parking-dashboard__results .parking-result-card--empty p {
+    display: block !important;
+  }
+}
