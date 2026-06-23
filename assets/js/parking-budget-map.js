@@ -1385,7 +1385,7 @@ function renderKakaoMapLink(row, className = "parking-kakao-map-link") {
 }
 
 function renderResultCard(row) {
-  const price = row.discountedFee == null ? "정보 부족" : row.discountedFee === 0 ? "무료" : `${won.format(row.discountedFee)}원`;
+  const price = row.discountedFee == null ? "지도 확인" : row.discountedFee === 0 ? "무료" : `${won.format(row.discountedFee)}원`;
   const original = row.parkingFee != null && row.parkingFee !== row.discountedFee ? `<span>할인 전 ${won.format(row.parkingFee)}원</span>` : "";
   const dayPass = row.dayPassBetterAfterMinutes ? `${formatDuration(row.dayPassBetterAfterMinutes)} 이상이면 1일권이 유리할 수 있습니다.` : "1일권 전환점 정보 없음";
   const realtime = realtimeAvailabilityText(row);
@@ -1620,7 +1620,7 @@ function markerContent(row, label) {
   return `${rankHtml}<span>${escapeHtml(label)}</span>`;
 }
 function markerLabel(row) {
-  if (row.discountedFee == null) return "정보없음";
+  if (row.discountedFee == null) return "지도 확인";
   if (row.discountedFee === 0) return "무료";
   return `${won.format(row.discountedFee)}원`;
 }
