@@ -191,11 +191,52 @@ export function initScientificCalculator(root = document) {
   const keyTabButtons = Array.from(root.querySelectorAll("[data-key-tab]"));
   const keyPanels = Array.from(root.querySelectorAll("[data-key-panel]"));
 
-  const rememberCursor = () => {
-    cursorRange = {
+  let isProgrammaticCursorUpdate = false;
+
+  const clampCursorPosition = (position) => {
+    const numericPosition = Number.isFinite(position) ? position : input.value.length;
+    return Math.max(0, Math.min(input.value.length, numericPosition));
+  };
+
+  const normalizeCursorRange = (range = {}) => {
+    const start = clampCursorPosition(range.start ?? input.selectionStart ?? input.value.length);
+    const end = clampCursorPosition(range.end ?? input.selectionEnd ?? start);
+    return {
+      start: Math.min(start, end),
+      end: Math.max(start, end)
+    };
+  };
+
+  const syncStoredCursor = (start, end = start, options = {}) => {
+    const nextRange = normalizeCursorRange({ start, end });
+    cursorRange = nextRange;
+
+    if (options.syncSelection === false) {
+      return nextRange;
+    }
+
+    isProgrammaticCursorUpdate = true;
+    try {
+      input.setSelectionRange(nextRange.start, nextRange.end);
+    } catch {
+      // 일부 모바일 브라우저는 blur 상태의 input selection 동기화를 막을 수 있습니다.
+    } finally {
+      window.setTimeout(() => {
+        isProgrammaticCursorUpdate = false;
+      }, 0);
+    }
+
+    return nextRange;
+  };
+
+  const rememberCursor = (event) => {
+    if (isProgrammaticCursorUpdate) return;
+    if (event?.type === "select" && document.activeElement !== input) return;
+
+    cursorRange = normalizeCursorRange({
       start: input.selectionStart ?? input.value.length,
       end: input.selectionEnd ?? input.value.length
-    };
+    });
   };
 
   const avoidMobileKeyboard = () => window.matchMedia("(max-width: 720px)").matches;
@@ -211,6 +252,9 @@ export function initScientificCalculator(root = document) {
   input.addEventListener("click", rememberCursor);
   input.addEventListener("keyup", rememberCursor);
   input.addEventListener("select", rememberCursor);
+  input.addEventListener("blur", () => {
+    syncStoredCursor(cursorRange.start, cursorRange.end, { syncSelection: false });
+  });
 
   form.querySelectorAll('input[name="angleMode"]').forEach((radio) => {
     radio.addEventListener("change", () => {
@@ -278,10 +322,14 @@ export function initScientificCalculator(root = document) {
   });
 
   root.querySelectorAll("[data-insert], [data-action]").forEach((button) => {
+    button.addEventListener("pointerdown", () => {
+      if (document.activeElement === input) rememberCursor();
+    });
+
     button.addEventListener("click", () => {
       if (button.dataset.action === "clear") {
         input.value = "";
-        cursorRange = { start: 0, end: 0 };
+        syncStoredCursor(0, 0);
         result.textContent = "-";
         detail.textContent = "새 계산식을 입력해 주세요.";
         lastComplexValue = null;
@@ -292,14 +340,18 @@ export function initScientificCalculator(root = document) {
       }
 
       if (button.dataset.action === "backspace") {
-        const start = cursorRange.start ?? input.value.length;
-        const end = cursorRange.end ?? input.value.length;
+        const { start, end } = normalizeCursorRange(cursorRange);
         if (start !== end) {
+          isProgrammaticCursorUpdate = true;
           input.setRangeText("", start, end, "end");
-          cursorRange = { start, end: start };
+          syncStoredCursor(start, start);
         } else if (start > 0) {
-          input.setRangeText("", start - 1, start, "end");
-          cursorRange = { start: start - 1, end: start - 1 };
+          const next = start - 1;
+          isProgrammaticCursorUpdate = true;
+          input.setRangeText("", next, start, "end");
+          syncStoredCursor(next, next);
+        } else {
+          syncStoredCursor(0, 0);
         }
         updatePrettyExpression(input, prettyExpression);
         blurAfterButton();
@@ -1068,12 +1120,23 @@ function tokenize(expression) {
   return tokens;
 }
 
-function insertAtCursor(input, text, cursorRange, options = {}) {
-  const start = cursorRange.start ?? input.selectionStart ?? input.value.length;
-  const end = cursorRange.end ?? input.selectionEnd ?? input.value.length;
-  input.setRangeText(text, start, end, "end");
-  const next = start + text.length;
-  input.setSelectionRange(next, next);
+function insertAtCursor(input, text, cursorRange = {}, options = {}) {
+  const clamp = (position) => {
+    const numericPosition = Number.isFinite(position) ? position : input.value.length;
+    return Math.max(0, Math.min(input.value.length, numericPosition));
+  };
+  const start = clamp(cursorRange.start ?? input.selectionStart ?? input.value.length);
+  const end = clamp(cursorRange.end ?? input.selectionEnd ?? start);
+  const selectionStart = Math.min(start, end);
+  const selectionEnd = Math.max(start, end);
+
+  input.setRangeText(text, selectionStart, selectionEnd, "end");
+  const next = selectionStart + text.length;
+  try {
+    input.setSelectionRange(next, next);
+  } catch {
+    // 모바일 브라우저의 blur 상태 selection 예외 방어
+  }
   if (options.focus) input.focus();
   return { start: next, end: next };
 }
