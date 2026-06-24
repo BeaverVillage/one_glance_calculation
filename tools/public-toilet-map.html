@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="1cf7b1f007f077b86659a324cb20becb08bf5eb7" name="naver-site-verification"/>
+<meta content="#1e3a5f" name="theme-color"/>
+<link href="/favicon.svg" rel="icon" type="image/svg+xml"/>
+<meta content="전국 공중화장실 위치와 개방시간, 장애인 화장실, 기저귀교환대, 비상벨, CCTV 정보를 지역·시군구 단위 지도와 목록으로 확인합니다. 공공데이터 좌표 변환 로컬 캐시 기준 참고 정보입니다." name="description"/>
+<title>공중화장실 찾기 | 한눈체크</title>
+<link href="https://hannuncheck.com/tools/public-toilet-map.html" rel="canonical"/>
+<meta content="website" property="og:type"/>
+<meta content="ko_KR" property="og:locale"/>
+<meta content="한눈체크" property="og:site_name"/>
+<meta content="공중화장실 찾기 | 한눈체크" property="og:title"/>
+<meta content="지역별 공중화장실 위치, 개방시간, 장애인 화장실, 기저귀교환대, 비상벨 여부를 지도와 목록으로 확인합니다." property="og:description"/>
+<meta content="https://hannuncheck.com/tools/public-toilet-map.html" property="og:url"/>
+<script data-schema="webapplication" type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"공중화장실 찾기","url":"https://hannuncheck.com/tools/public-toilet-map.html","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","inLanguage":"ko-KR","description":"지역별 공중화장실 위치, 개방시간, 장애인 화장실, 기저귀교환대, 비상벨 여부를 지도와 목록으로 확인합니다.","offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"}}</script>
+<script data-schema="breadcrumb" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"한눈체크","item":"https://hannuncheck.com/"},{"@type":"ListItem","position":2,"name":"공중화장실 찾기","item":"https://hannuncheck.com/tools/public-toilet-map.html"}]}</script>
+<script data-schema="faqpage" type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"공중화장실 정보는 실시간인가요?","acceptedAnswer":{"@type":"Answer","text":"아닙니다. 공공데이터 기반 로컬 캐시 참고 정보입니다. 실제 개방 여부, 청결 상태, 시설 사용 가능 여부, 관리 상태는 현장 상황에 따라 달라질 수 있습니다."}},{"@type":"Question","name":"상시개방은 지금 열림과 같은 뜻인가요?","acceptedAnswer":{"@type":"Answer","text":"상시개방은 원본 데이터의 개방시간 구분 또는 상세 문구를 기준으로 한 참고 분류입니다. 실제 이용 가능 여부는 현장 상황에 따라 달라질 수 있습니다."}},{"@type":"Question","name":"장애인 화장실, 기저귀교환대 정보는 정확한가요?","acceptedAnswer":{"@type":"Answer","text":"공공데이터의 시설 수와 설치 여부를 정리한 참고 정보입니다. 현장 관리 상태, 고장, 일시 폐쇄, 출입 제한은 반영되지 않을 수 있습니다."}},{"@type":"Question","name":"비상벨과 CCTV가 표시되면 안전한 곳인가요?","acceptedAnswer":{"@type":"Answer","text":"비상벨과 CCTV 표시는 설치 정보 기준 참고값입니다. 실제 작동 여부, 관리 상태, 주변 환경까지 보장하는 것은 아닙니다."}},{"@type":"Question","name":"현재 위치 기준으로 가까운 공중화장실을 볼 수 있나요?","acceptedAnswer":{"@type":"Answer","text":"브라우저 위치 권한을 허용하면 현재 위치 기준으로 거리와 가까운 순 정렬을 참고할 수 있습니다."}},{"@type":"Question","name":"지도 위치가 실제 입구와 다를 수 있나요?","acceptedAnswer":{"@type":"Answer","text":"네. 주소를 좌표로 변환한 위치라 실제 건물 입구, 지하·공원 내부 위치와 차이가 있을 수 있습니다. 현장 표지판과 카카오맵 정보를 함께 확인하세요."}}]}</script>
+<link href="/assets/css/base.css" rel="stylesheet"/>
+<link href="/assets/css/layout.css?v=20260623-v129-location-search-ui-refine" rel="stylesheet"/>
+<link href="/assets/css/components.css?v=20260623-v129-location-search-ui-refine" rel="stylesheet"/>
+<link href="/assets/css/parking-calc-base.css?v=20260623-v129-location-search-ui-refine" rel="stylesheet"/>
+<link href="/assets/css/parking-calc-layout.css?v=20260623-v129-location-search-ui-refine" rel="stylesheet"/>
+<link href="/assets/css/parking-calc-components.css?v=20260623-v129-location-search-ui-refine" rel="stylesheet"/>
+<link href="/assets/css/tool-foundation.css?v=20260623-v129-location-search-ui-refine" rel="stylesheet"/>
+<link href="/assets/css/life-map.css?v=20260623-v129-location-search-ui-refine" rel="stylesheet"/>
+<script src="/assets/config/public-config.js?v=20260623-v129-location-search-ui-refine"></script>
+    <!-- AdSense 심사 전에는 광고 스크립트를 비활성화합니다. -->
+</head>
+<body>
+<header class="site-header">
+<a aria-label="한눈체크 홈" class="brand" href="/index.html"><span class="brand-mark">한</span><span><strong>한눈체크</strong><small>생활 확인 도구</small></span></a>
+<nav aria-label="주요 메뉴" class="site-nav"><a data-tool-drawer="" href="/index.html#features">주요 기능</a><a href="/index.html#safe-position">운영 원칙</a><a href="/contact.html">문의</a></nav>
+</header>
+<main>
+<section class="tool-hero-band life-hero-band toilet-hero-band">
+<div class="container">
+<nav aria-label="현재 위치" class="breadcrumb"><a href="/index.html">홈</a><span>/</span><span>공중화장실 찾기</span></nav>
+<div class="section-intro"><p class="eyebrow">Public toilet map</p><h1>공중화장실 찾기</h1><p>지역별 공중화장실 위치, 개방시간, 장애인 화장실, 기저귀교환대, 비상벨 여부를 지도와 목록으로 확인합니다.</p><p class="fine-print strong-note">공공데이터 CSV를 좌표 변환한 로컬 캐시 기준입니다. 실제 개방 여부와 시설 사용 가능 여부는 현장 상황에 따라 달라질 수 있습니다.</p></div>
+</div>
+</section>
+<section class="content-band tool-content-band">
+<div class="container life-tool-shell" data-public-toilet-map-tool="" id="public-toilet-map-tool">
+<section aria-label="공중화장실 지도 확인" class="parking-app-shell life-map-app toilet-map-app" data-life-map>
+<div class="parking-dashboard life-map-dashboard">
+<div class="parking-dashboard__controls"><div class="parking-left-panel parking-control-column">
+<form class="tool-panel parking-input-panel life-form" id="toilet-form">
+<div class="parking-control-card"><div class="parking-control-title"><strong>검색 조건</strong><span>지역과 시군구를 선택하면 해당 구역의 공중화장실을 표시합니다.</span></div>
+<div class="field-row parking-date-grid life-filter-grid">
+<div class="field form-row"><label for="toilet-region">지역</label><select id="toilet-region"><option selected value="seoul">서울</option><option value="busan">부산</option><option value="daegu">대구</option><option value="incheon">인천</option><option value="gwangju">광주</option><option value="daejeon">대전</option><option value="ulsan">울산</option><option value="sejong">세종</option><option value="gyeonggi">경기</option><option value="gangwon">강원</option><option value="chungbuk">충북</option><option value="chungnam">충남</option><option value="jeonbuk">전북</option><option value="jeonnam">전남</option><option value="gyeongbuk">경북</option><option value="gyeongnam">경남</option><option value="jeju">제주</option></select></div>
+<div class="field form-row"><label for="toilet-district">시군구</label><select id="toilet-district"><option value="">불러오는 중</option></select></div>
+<div class="field form-row"><label for="toilet-keyword">검색어</label><input autocomplete="off" id="toilet-keyword" placeholder="화장실명, 주소, 관리기관" type="search"/></div>
+<div class="field form-row"><label for="toilet-category">구분</label><select id="toilet-category"><option value="">전체</option></select></div>
+</div></div>
+<div class="parking-control-card"><div class="parking-control-title"><strong>보기 기준</strong><span>개방시간과 편의·안전 시설 기준으로 추려볼 수 있습니다.</span></div>
+<div class="field-row parking-date-grid life-filter-grid">
+<div class="field form-row"><label for="toilet-sort">정렬</label><select id="toilet-sort"><option selected value="recommend">추천순</option><option value="distance">가까운 순</option><option value="name">이름순</option><option value="open">상시개방 우선</option><option value="disabled">장애인 화장실 우선</option><option value="baby">기저귀대 우선</option><option value="safety">안전설비 우선</option></select></div>
+<div class="field form-row"><label for="toilet-open-type">개방 구분</label><select id="toilet-open-type"><option value="">전체</option></select></div>
+</div>
+<div class="parking-filter-row" aria-label="빠른 필터">
+<label><input id="toilet-open-always" type="checkbox"/> 상시개방</label>
+<label><input id="toilet-disabled" type="checkbox"/> 장애인 화장실</label>
+<label><input id="toilet-baby" type="checkbox"/> 기저귀교환대</label>
+<label><input id="toilet-bell" type="checkbox"/> 비상벨</label>
+<label><input id="toilet-cctv" type="checkbox"/> CCTV</label>
+</div>
+<div class="life-action-row"><button class="primary-button wide-button" id="toilet-submit" type="submit">공중화장실 확인하기</button><button class="secondary-action-button wide-button" id="toilet-use-location" type="button">현재 위치 사용</button></div>
+<p aria-live="polite" class="fine-print" id="toilet-form-status">처음에는 서울 강남구 공중화장실을 자동으로 표시합니다. 실제 개방 여부는 현장에서 확인해 주세요.</p>
+</div>
+</form>
+</div></div>
+<div class="parking-dashboard__main life-dashboard-main">
+<section aria-label="공중화장실 목록" class="parking-dashboard__results parking-results-panel tool-panel life-results-panel">
+<div class="parking-panel-head"><span>목록</span><strong id="toilet-list-title">공중화장실 목록</strong></div>
+<div class="parking-summary-bar"><strong id="toilet-list-summary">로딩 중</strong><span id="toilet-list-subtitle">서울 강남구 공중화장실 데이터를 불러오는 중입니다.</span></div>
+<div aria-live="polite" class="status-message" id="toilet-status">로컬 캐시를 확인하고 있습니다.</div>
+<div aria-label="공중화장실 요약" class="parking-data-badges" id="toilet-summary-grid">
+<article class="life-summary-card" id="toilet-count-card"><span>조회 후보</span><strong>0곳</strong><small>조건 적용 전</small></article>
+<article class="life-summary-card" id="toilet-open-card"><span>상시개방</span><strong>0곳</strong><small>24시간·상시 참고</small></article>
+<article class="life-summary-card" id="toilet-disabled-card"><span>장애인 화장실</span><strong>0곳</strong><small>시설 수 기준</small></article>
+<article class="life-summary-card" id="toilet-safety-card"><span>안전설비</span><strong>0곳</strong><small>비상벨 또는 CCTV</small></article>
+</div>
+<div aria-label="공중화장실 결과 정렬" class="parking-result-sort-tabs" role="group">
+<button class="active" data-toilet-sort="recommend" type="button">추천순</button>
+<button data-toilet-sort="distance" type="button">가까운 순</button>
+<button data-toilet-sort="open" type="button">상시개방</button>
+<button data-toilet-sort="disabled" type="button">장애인</button>
+<button data-toilet-sort="baby" type="button">기저귀대</button>
+<button data-toilet-sort="safety" type="button">안전설비</button>
+</div>
+<section aria-label="공중화장실 결과" class="parking-result-list life-result-list" id="toilet-result-list"></section>
+</section>
+<div class="parking-dashboard__map parking-map-column parking-map-panel life-map-column"><div class="parking-panel-head"><span>지도</span><strong id="toilet-map-title">서울 강남구 공중화장실</strong></div>
+<section aria-label="공중화장실 지도" class="parking-map-card life-map-card">
+<div class="life-map-toolbar" aria-label="공중화장실 빠른 검색"><form id="toilet-map-toolbar-search"><label class="sr-only" for="toilet-map-keyword">지도 검색어</label><input autocomplete="off" id="toilet-map-keyword" placeholder="화장실명, 주소, 관리기관" type="search"/><button type="submit">검색</button></form><select aria-label="지도 지역" id="toilet-map-region"><option selected value="seoul">서울</option><option value="busan">부산</option><option value="daegu">대구</option><option value="incheon">인천</option><option value="gwangju">광주</option><option value="daejeon">대전</option><option value="ulsan">울산</option><option value="sejong">세종</option><option value="gyeonggi">경기</option><option value="gangwon">강원</option><option value="chungbuk">충북</option><option value="chungnam">충남</option><option value="jeonbuk">전북</option><option value="jeonnam">전남</option><option value="gyeongbuk">경북</option><option value="gyeongnam">경남</option><option value="jeju">제주</option></select><select aria-label="지도 시군구" id="toilet-map-district"><option value="">불러오는 중</option></select><button class="ghost" id="toilet-map-location" type="button">현재 위치</button><button class="ghost life-filter-toggle-button" data-life-filter-toggle type="button">필터</button></div>
+<div aria-label="공중화장실 지도" class="parking-map life-map is-fallback" id="toilet-map" role="img"><div class="parking-map-fallback life-map-notice" id="toilet-map-notice"><strong>지도 안내 모드</strong><span>카카오맵 키가 없으면 기본 지도 안내 모드로 표시됩니다.</span></div><div aria-hidden="true" class="parking-map-markers" id="toilet-map-markers"></div></div>
+<aside class="life-selected-card" hidden id="toilet-selected-card"></aside>
+<button class="parking-mobile-list-toggle" id="toilet-mobile-list-toggle" type="button" aria-expanded="false">목록 보기</button>
+<section aria-label="모바일 공중화장실 결과" class="life-mobile-bottom-sheet" id="toilet-mobile-bottom-sheet"><div class="parking-mobile-sheet-head"><div class="parking-mobile-sheet-summary"><strong id="toilet-mobile-sheet-title">공중화장실 목록</strong><span id="toilet-mobile-sheet-subtitle">서울 강남구 공중화장실을 표시합니다.</span></div><div class="parking-sheet-handle" aria-hidden="true"></div><button type="button" class="subtle-button tiny" id="toilet-mobile-sheet-map-button">지도 보기</button></div><section aria-label="모바일 공중화장실 목록" class="parking-mobile-results" id="toilet-mobile-results"></section></section>
+</section></div>
+</div></div>
+</section>
+<section class="notice-card warning life-notice-card"><h2>공중화장실 정보 이용 전 확인</h2><p>본 결과는 지방행정 인허가 데이터 기반 로컬 캐시 참고 정보입니다. 실제 개방 여부, 청결 상태, 시설 사용 가능 여부는 현장 상황과 관리기관 사정에 따라 달라질 수 있습니다.</p></section>
+<section class="content-band muted life-adsense-content-v123"><div class="container calculator-guide"><p class="eyebrow">공중화장실 정보 해석</p><h2>공중화장실은 위치뿐 아니라 개방 여부와 시설 조건을 함께 확인해야 합니다.</h2><p class="section-lead">한눈체크는 공공데이터의 화장실명, 주소, 개방시간, 장애인 화장실, 기저귀교환대, 비상벨, CCTV 정보를 좌표 변환한 로컬 캐시로 정리합니다. 실제 이용 가능 여부는 현장 사정에 따라 달라질 수 있습니다.</p><div class="guide-grid"><article><h3>개방시간</h3><p>상시개방, 정시개방, 운영시간 확인 필요로 구분해 표시합니다. 상시개방이라도 공사, 청소, 시설 폐쇄로 일시 이용이 어려울 수 있습니다.</p></article><article><h3>장애인 화장실</h3><p>장애인용 변기나 시설 수가 제공된 데이터를 기준으로 표시합니다. 실제 접근 가능 여부와 고장 여부는 현장에서 확인이 필요합니다.</p></article><article><h3>기저귀교환대</h3><p>기저귀교환대가 있다고 표시되어도 건물 내부 위치, 운영시간, 일시 사용 제한이 있을 수 있습니다.</p></article><article><h3>비상벨·CCTV</h3><p>비상벨과 CCTV는 설치 정보 기준 참고값입니다. 실제 작동 상태와 주변 안전 환경까지 보장하는 정보는 아닙니다.</p></article></div></div></section><section class="content-band life-adsense-content-v123"><div class="container calculator-guide"><p class="eyebrow">이용 전 체크리스트</p><h2>급할 때는 가까운 곳부터, 조건이 필요할 때는 필터를 활용하세요.</h2><div class="guide-grid"><article><h3>가까운 순 확인</h3><p>현재 위치 권한을 허용하면 현재 위치 기준 거리와 가까운 순 정렬을 참고할 수 있습니다.</p></article><article><h3>필수 조건 필터</h3><p>장애인 화장실, 기저귀교환대, 비상벨 등 꼭 필요한 조건이 있으면 필터로 먼저 추리세요.</p></article><article><h3>지도 위치 재확인</h3><p>주소 기반 좌표라 실제 입구와 다를 수 있습니다. 카카오맵 바로가기에서 건물 입구와 주변 경로를 확인하세요.</p></article><article><h3>함께 보면 좋은 기능</h3><p><a href="/tools/free-wifi-map.html">무료 와이파이 찾기</a>, <a href="/tools/parking-fee-check.html">주차비 확인 지도</a>, <a href="/tools/outdoor-air.html">외출 위험 종합 체크</a>도 함께 확인할 수 있습니다.</p></article></div></div></section><section class="faq-section" aria-label="공중화장실 찾기 FAQ"><h2>자주 묻는 질문</h2><details><summary>공중화장실 정보는 실시간인가요?</summary><p>아닙니다. 공공데이터 기반 로컬 캐시 참고 정보입니다. 실제 개방 여부, 청결 상태, 시설 사용 가능 여부, 관리 상태는 현장 상황에 따라 달라질 수 있습니다.</p></details><details><summary>상시개방은 지금 열림인가요?</summary><p>상시개방은 원본 데이터의 개방시간 구분 또는 상세 문구 기준 참고 분류입니다. 실제 이용 가능 여부는 현장에서 달라질 수 있습니다.</p></details><details><summary>장애인 화장실, 기저귀교환대 정보는 정확한가요?</summary><p>공공데이터의 시설 수와 설치 여부를 정리한 참고 정보입니다. 현장 관리 상태, 고장, 일시 폐쇄, 출입 제한은 반영되지 않을 수 있습니다.</p></details><details><summary>비상벨과 CCTV가 표시되면 안전한 곳인가요?</summary><p>비상벨과 CCTV 표시는 설치 정보 기준 참고값입니다. 실제 작동 여부, 관리 상태, 주변 환경까지 보장하는 것은 아닙니다.</p></details><details><summary>현재 위치 기준 거리도 볼 수 있나요?</summary><p>현재 위치 권한을 허용하면 현재 위치 기준 거리와 가까운 순 정렬을 참고할 수 있습니다.</p></details><details><summary>지도 위치가 실제 입구와 다를 수 있나요?</summary><p>네. 주소를 좌표로 변환한 위치라 실제 건물 입구, 지하·공원 내부 위치와 차이가 있을 수 있습니다.</p></details></section>
+<footer class="site-footer">
+<div class="container footer-grid">
+<div class="footer-note">
+<strong>한눈체크</strong>
+<p>생활 속에서 확인이 필요한 정보를 한눈에 정리하고, 결과의 의미와 한계를 함께 설명하는 생활 확인 도구입니다. 조회·측정 결과는 참고용이며, 실제 판단을 보장하지 않습니다.</p>
+</div>
+<nav aria-label="푸터 메뉴">
+<a href="/about.html">소개</a>
+<a href="/privacy.html">개인정보처리방침</a>
+<a href="/disclaimer.html">면책 안내</a>
+<a href="/data-sources.html">데이터 출처</a>
+<a href="/contact.html">문의·정정 요청</a>
+</nav>
+</div>
+</footer>
+<script src="/assets/js/app.js?v=20260623-v129-location-search-ui-refine"></script>
+<script defer src="/assets/js/check-toolkit.js?v=20260623-v129-location-search-ui-refine"></script>
+<script defer src="/assets/js/public-toilet-map.js?v=20260623-v129-location-search-ui-refine"></script>
+</body>
+</html>

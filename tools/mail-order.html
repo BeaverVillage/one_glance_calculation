@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="naver-site-verification" content="1cf7b1f007f077b86659a324cb20becb08bf5eb7" />
+    <meta name="theme-color" content="#1e3a5f">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <meta name="description" content="사업자등록번호 또는 신고번호로 통신판매업 신고 정보를 확인하는 한눈체크 기능입니다.">
+    <title>통신판매업 신고 조회 - 한눈체크</title>
+    <link rel="canonical" href="https://hannuncheck.com/tools/mail-order.html">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="ko_KR">
+    <meta property="og:site_name" content="한눈체크">
+    <meta property="og:title" content="통신판매업 신고 조회 - 한눈체크">
+    <meta property="og:description" content="사업자등록번호 또는 신고번호로 통신판매업 신고 정보를 확인하는 한눈체크 기능입니다.">
+    <meta property="og:url" content="https://hannuncheck.com/tools/mail-order.html">
+    <link rel="stylesheet" href="/assets/css/base.css">
+    <link rel="stylesheet" href="/assets/css/layout.css?v=20260620-v55-grocery-skeleton">
+    <link rel="stylesheet" href="/assets/css/components.css?v=20260620-v55-grocery-skeleton">
+    <!-- AdSense 심사 전에는 광고 스크립트를 비활성화합니다. -->
+</head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/index.html" aria-label="한눈체크 홈">
+        <span class="brand-mark">한</span>
+        <span>
+          <strong>한눈체크</strong>
+          <small>생활 확인 도구</small>
+        </span>
+      </a>
+      <nav class="site-nav" aria-label="주요 메뉴">
+        <a href="/index.html#features" data-tool-drawer>주요 기능</a>
+        <a href="/index.html#safe-position">운영 원칙</a>
+        <a href="/contact.html">문의</a>
+      </nav>
+    </header>
+    <main>
+      <section class="tool-hero-band">
+        <div class="container">
+          <nav class="breadcrumb" aria-label="현재 위치"><a href="/index.html">홈</a><span>/</span><span>통신판매업 신고 조회</span></nav>
+          <div class="section-intro">
+            <p class="eyebrow">Mail-order business</p>
+            <h1>통신판매업 신고 정보를 확인하세요</h1>
+            <p>온라인 쇼핑몰의 통신판매업 신고 정보가 확인되는지 조회합니다.</p>
+          </div>
+        </div>
+      </section>
+      <section class="content-band tool-content-band">
+        <div class="container tool-layout">
+          <article class="check-console tool-console">
+            <div class="console-header">
+              <span class="console-dots" aria-hidden="true"><span></span><span></span><span></span></span>
+              <strong>통신판매업 신고 조회</strong>
+            </div>
+              <form class="check-form" id="business-check-form" data-scope="mail-order" data-submit-label="통신판매업 신고 조회하기" data-loading-label="신고 정보 조회 중입니다..." novalidate>
+                <div class="form-row">
+                  <label for="business-number">사업자등록번호 <span>필수</span></label>
+                  <input id="business-number" name="businessNumber" type="text" inputmode="numeric" autocomplete="off" placeholder="123-45-67890" maxlength="12" required>
+                </div>
+                <div class="form-row">
+                  <label for="permit-number">통신판매업 신고번호</label>
+                  <input id="permit-number" name="permitNumber" type="text" placeholder="예: 2024-서울강남-0000" maxlength="60">
+                  <small>신고번호를 알고 있으면 더 구체적으로 비교할 수 있습니다.</small>
+                </div>
+                <button class="submit-button" id="check-submit" type="submit">통신판매업 신고 조회하기</button>
+                <p class="preview-note">통신판매업 정보가 확인되지 않는다고 해서 곧바로 위법 또는 사기라는 의미는 아닙니다.</p>
+              <p class="inline-privacy-note">입력한 정보는 조회 요청 처리에만 사용되며, 한눈체크 자체 DB에 별도 저장하지 않습니다.</p>
+              </form>
+              <div class="result-panel" id="result-panel" hidden aria-live="polite">
+                <div class="result-header">
+                  <div>
+                    <p class="eyebrow">Check result</p>
+                    <strong class="result-title">조회 결과</strong>
+                  </div>
+                  <span class="status-pill neutral" id="result-updated">대기 중</span>
+                </div>
+                <div class="message-box" id="result-message" hidden></div>
+                <div class="status-stack" id="status-stack">
+                  <article class="status-card skeleton-card">
+                    <span class="status-icon neutral" aria-hidden="true">i</span>
+                    <span><strong>정보를 입력하고 조회하세요</strong><small>조회 결과가 이곳에 표시됩니다.</small></span>
+                    <em class="status-pill neutral">대기</em>
+                  </article>
+                </div>
+                <div class="comparison-box" id="comparison-box" hidden>
+                  <h3>입력정보 비교</h3>
+                  <div class="result-list" id="comparison-list"></div>
+                </div>
+                <div class="checklist-box" id="dynamic-checklist" hidden>
+                  <h3>거래 전 체크리스트</h3>
+                  <ul class="checklist" id="checklist-list"></ul>
+                </div>
+                <p class="legal-note"><strong>안내:</strong> 통신판매업 신고정보는 온라인 판매자의 공개 등록정보 확인을 돕기 위한 자료입니다. 통신판매업 정보가 확인되지 않는다고 해서 곧바로 위법 또는 사기라는 의미는 아니며, 판매 형태와 신고 대상 여부에 따라 차이가 있을 수 있습니다.</p>
+              </div>
+          </article>
+          <aside class="tool-sidebar">
+            <article class="notice-card blue">
+              <p class="eyebrow">Guide</p>
+              <h2>통신판매업 신고란?</h2>
+              <p>온라인으로 상품이나 서비스를 판매하는 사업자가 관할 기관에 신고한 공개 등록정보입니다. 쇼핑몰 하단 정보와 함께 비교하는 용도로 활용하세요.</p>
+            </article>
+            <article class="page-card">
+              <h2>확인할 항목</h2>
+              <ul class="checklist"><li>온라인 판매자는 통신판매업 신고 정보가 표시되는 경우가 많습니다.</li>
+<li>신고번호가 있으면 함께 입력해 더 구체적으로 확인합니다.</li>
+<li>정보가 없다고 곧바로 사기라는 뜻은 아니므로 추가 확인이 필요합니다.</li></ul>
+            </article>
+            <article class="page-card">
+              <h2>관련 가이드</h2>
+              <p>조회 결과를 어떻게 해석해야 하는지 먼저 확인하면 오해를 줄일 수 있습니다.</p>
+              <a class="text-link" href="/guides/mail-order-business.html">가이드 읽기</a>
+            </article>
+            <article class="notice-card warning">
+              <h2>주의</h2>
+              <p>한눈체크는 등록정보 확인 도구입니다. 조회 결과가 정상이어도 거래 안전을 보장하지 않습니다.</p>
+            </article>
+          </aside>
+        </div>
+      </section>
+    
+      <section class="content-band tool-lower-band muted">
+        <div class="container info-split-grid">
+          <article class="info-split-card">
+            <p class="mini-label">사용 방법</p>
+            <h2>온라인 판매자 정보를 한 번 더 확인할 수 있게 만들었습니다.</h2>
+            <ol class="info-step-list">
+<li><strong>사업자번호 또는 신고번호 입력</strong><br>쇼핑몰 하단에 보이는 정보를 기준으로 입력합니다.</li>
+<li><strong>신고 정보 조회하기</strong><br>통신판매업 신고 여부와 공개 등록정보를 확인합니다.</li>
+<li><strong>상호명과 대표자명 확인</strong><br>공식 공개정보와 사이트 표시 정보를 나란히 비교합니다.</li>
+<li><strong>추가 점검 이어가기</strong><br>필요하면 쇼핑몰 정보 비교나 체크리스트 기능을 함께 봅니다.</li>
+</ol>
+          </article>
+          <article class="info-split-card">
+            <p class="mini-label">한눈체크의 방향</p>
+            <h2>온라인 판매자라면, 사업자 상태뿐 아니라 신고 정보까지 확인하도록 돕습니다.</h2>
+            <p>통신판매업 신고 정보는 온라인 쇼핑몰 확인에서 자주 보는 항목입니다. 한눈체크는 신고정보가 왜 필요한지, 결과를 어떻게 받아들여야 하는지까지 함께 설명합니다.</p>
+          </article>
+        </div>
+      </section>
+      <section class="content-band tool-lower-band">
+        <div class="container info-split-grid">
+          <article class="info-split-card">
+            <p class="mini-label">함께 보면 좋은 기능</p>
+            <h2>신고 정보는 다른 등록정보와 함께 볼 때 더 유용합니다.</h2>
+            <ul class="info-bullet-list"><li><strong>사업자등록 상태 조회:</strong> 기본 사업자 상태를 함께 확인합니다.</li><li><strong>사업자 진위확인:</strong> 대표자명과 개업일자 일치 여부도 체크합니다.</li><li><strong>쇼핑몰 정보 비교:</strong> 사이트 하단 정보와 공식 신고정보를 비교합니다.</li><li><strong>체크리스트:</strong> 결제수단과 환불정책까지 이어서 확인합니다.</li></ul>
+          </article>
+          <article class="info-split-card">
+            <p class="mini-label">안심하고 쓰기</p>
+            <h2>통신판매업 정보가 없다고 해서 곧바로 사기라고 판단하지 않습니다.</h2>
+            <p>판매 방식이나 신고 대상 여부에 따라 공개 정보가 달라질 수 있습니다. 한눈체크는 결과를 참고용으로 보여주며, 업체를 위험하다고 단정하는 표현은 사용하지 않습니다.</p>
+          </article>
+        </div>
+      </section>
+      <section class="content-band compact muted tool-lower-band" id="faq">
+        <div class="container">
+          <div class="section-intro">
+            <p class="eyebrow">자주 묻는 질문</p>
+            <h2>통신판매업 신고 조회 자주 묻는 질문</h2>
+          </div>
+          <div class="faq-accordion-grid">
+            <details class="faq-accordion-item"><summary>통신판매업 정보가 확인되지 않으면 문제인가요?</summary><div class="faq-answer"><p>즉시 위법 또는 사기라고 단정할 수는 없습니다. 다만 온라인 쇼핑몰이라면 추가 확인이 필요합니다.</p></div></details><details class="faq-accordion-item"><summary>사업자번호만으로도 조회가 되나요?</summary><div class="faq-answer"><p>가능한 경우가 많지만, 신고번호가 함께 있으면 더 정확하게 비교하기 좋습니다.</p></div></details><details class="faq-accordion-item"><summary>해외 판매 사이트도 조회할 수 있나요?</summary><div class="faq-answer"><p>이 기능은 국내 공개 등록정보 중심으로 설계되어 있어, 해외 판매 사이트에는 맞지 않을 수 있습니다.</p></div></details><details class="faq-accordion-item"><summary>결과는 어디 정보를 기준으로 하나요?</summary><div class="faq-answer"><p>공정거래위원회 통신판매사업자 공개 등록정보를 바탕으로 보여줍니다.</p></div></details>
+          </div>
+        </div>
+      </section>
+
+    </main>
+    <footer class="site-footer">
+<div class="container footer-grid">
+<div class="footer-note">
+<strong>한눈체크</strong>
+<p>생활 속에서 확인이 필요한 정보를 한눈에 정리하고, 결과의 의미와 한계를 함께 설명하는 생활 확인 도구입니다. 조회·측정 결과는 참고용이며, 실제 판단을 보장하지 않습니다.</p>
+</div>
+<nav aria-label="푸터 메뉴">
+<a href="/about.html">소개</a>
+<a href="/privacy.html">개인정보처리방침</a>
+<a href="/disclaimer.html">면책 안내</a>
+<a href="/data-sources.html">데이터 출처</a>
+<a href="/contact.html">문의·정정 요청</a>
+</nav>
+</div>
+</footer>
+    <script src="/assets/js/app.js?v=20260623-v129-location-search-ui-refine" defer></script>
+  </body>
+</html>

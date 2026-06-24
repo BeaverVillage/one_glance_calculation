@@ -1,107 +1,159 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://hannuncalc.com/</loc>
+    <loc>https://hannuncheck.com/</loc>
     <lastmod>2026-06-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://hannuncalc.com/about.html</loc>
-    <lastmod>2026-06-19</lastmod>
-  </url>
-  <url>
-    <loc>https://hannuncalc.com/contact.html</loc>
-    <lastmod>2026-06-19</lastmod>
-  </url>
-  <url>
-    <loc>https://hannuncalc.com/privacy.html</loc>
-    <lastmod>2026-06-19</lastmod>
-  </url>
-  <url>
-    <loc>https://hannuncalc.com/disclaimer.html</loc>
-    <lastmod>2026-06-19</lastmod>
-  </url>
-  <url>
-    <loc>https://hannuncalc.com/licenses.html</loc>
-    <lastmod>2026-06-16</lastmod>
-  </url>
-  <url>
-    <loc>https://hannuncalc.com/calculators/appliance-electricity.html</loc>
-    <lastmod>2026-06-16</lastmod>
-  </url>
-  <url>
-    <loc>https://hannuncalc.com/calculators/australia-pay.html</loc>
+    <loc>https://hannuncheck.com/about.html</loc>
     <lastmod>2026-06-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://hannuncalc.com/calculators/australia-whv-88-days.html</loc>
+    <loc>https://hannuncheck.com/privacy.html</loc>
     <lastmod>2026-06-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://hannuncalc.com/calculators/bmi.html</loc>
+    <loc>https://hannuncheck.com/disclaimer.html</loc>
     <lastmod>2026-06-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://hannuncalc.com/calculators/caffeine-sleep.html</loc>
+    <loc>https://hannuncheck.com/data-sources.html</loc>
     <lastmod>2026-06-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://hannuncalc.com/calculators/cigarette-cost.html</loc>
+    <loc>https://hannuncheck.com/contact.html</loc>
     <lastmod>2026-06-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://hannuncalc.com/calculators/ev-vs-gas.html</loc>
-    <lastmod>2026-06-16</lastmod>
-  </url>
-  <url>
-    <loc>https://hannuncalc.com/calculators/exchange-rate.html</loc>
-    <lastmod>2026-06-19</lastmod>
-  </url>
-  <url>
-    <loc>https://hannuncalc.com/calculators/loan-interest.html</loc>
+    <loc>https://hannuncheck.com/tools/ev-charger-map.html</loc>
     <lastmod>2026-06-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://hannuncalc.com/calculators/jeonse-risk.html</loc>
+    <loc>https://hannuncheck.com/tools/parking-fee-check.html</loc>
     <lastmod>2026-06-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://hannuncalc.com/calculators/military-savings.html</loc>
+    <loc>https://hannuncheck.com/tools/outdoor-air.html</loc>
     <lastmod>2026-06-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://hannuncalc.com/calculators/net-salary.html</loc>
+    <loc>https://hannuncheck.com/tools/emergency-hospital-check.html</loc>
     <lastmod>2026-06-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://hannuncalc.com/calculators/parking-budget-map.html</loc>
-    <lastmod>2026-06-22</lastmod>
-  </url>
-  <url>
-    <loc>https://hannuncalc.com/calculators/percentile.html</loc>
-    <lastmod>2026-06-16</lastmod>
-  </url>
-  <url>
-    <loc>https://hannuncalc.com/calculators/rent-vs-jeonse.html</loc>
+    <loc>https://hannuncheck.com/tools/grocery-price-check.html</loc>
     <lastmod>2026-06-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://hannuncalc.com/calculators/scientific.html</loc>
-    <lastmod>2026-06-16</lastmod>
+    <loc>https://hannuncheck.com/tools/fishing-spot-map.html</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.82</priority>
   </url>
   <url>
-    <loc>https://hannuncalc.com/calculators/space-travel.html</loc>
-    <lastmod>2026-06-16</lastmod>
+    <loc>https://hannuncheck.com/tools/free-wifi-map.html</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.82</priority>
   </url>
   <url>
-    <loc>https://hannuncalc.com/calculators/text-counter.html</loc>
-    <lastmod>2026-06-16</lastmod>
+    <loc>https://hannuncheck.com/tools/public-toilet-map.html</loc>
+    <lastmod>2026-06-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.82</priority>
   </url>
   <url>
-    <loc>https://hannuncalc.com/calculators/used-device-price.html</loc>
+    <loc>https://hannuncheck.com/tools/pc-spec.html</loc>
     <lastmod>2026-06-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://hannuncalc.com/calculators/weekly-holiday-pay.html</loc>
+    <loc>https://hannuncheck.com/tools/business-status.html</loc>
     <lastmod>2026-06-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://hannuncheck.com/tools/business-validate.html</loc>
+    <lastmod>2026-06-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://hannuncheck.com/tools/mail-order.html</loc>
+    <lastmod>2026-06-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://hannuncheck.com/tools/store-compare.html</loc>
+    <lastmod>2026-06-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://hannuncheck.com/tools/pre-payment-checklist.html</loc>
+    <lastmod>2026-06-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://hannuncheck.com/guides/business-registration-status.html</loc>
+    <lastmod>2026-06-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://hannuncheck.com/guides/active-closed-business.html</loc>
+    <lastmod>2026-06-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://hannuncheck.com/guides/mail-order-business.html</loc>
+    <lastmod>2026-06-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://hannuncheck.com/guides/store-footer-info.html</loc>
+    <lastmod>2026-06-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://hannuncheck.com/guides/before-bank-transfer.html</loc>
+    <lastmod>2026-06-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://hannuncheck.com/guides/official-info-limit.html</loc>
+    <lastmod>2026-06-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
 </urlset>

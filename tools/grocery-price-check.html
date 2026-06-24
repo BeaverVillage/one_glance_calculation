@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="naver-site-verification" content="1cf7b1f007f077b86659a324cb20becb08bf5eb7" />
+    <meta name="theme-color" content="#1e3a5f">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <meta name="description" content="배추, 대파, 사과, 계란처럼 자주 사는 품목의 최근 가격과 지역별 차이를 KAMIS 농축수산물 가격정보와 한국소비자원 참가격 생필품 가격정보 기준으로 확인하는 장보기 물가 확인 도구입니다.">
+    <title>장보기 물가 확인 - 한눈체크</title>
+    <link rel="canonical" href="https://hannuncheck.com/tools/grocery-price-check.html">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="ko_KR">
+    <meta property="og:site_name" content="한눈체크">
+    <meta property="og:title" content="장보기 물가 확인 - 한눈체크">
+    <meta property="og:description" content="자주 사는 농수축산물의 최근 가격과 지역별 차이를 확인하는 생활 물가 체크 도구입니다.">
+    <meta property="og:url" content="https://hannuncheck.com/tools/grocery-price-check.html">
+    <script data-schema="grocery-faqpage" type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"장보기 물가 확인은 무엇을 보여주나요?","acceptedAnswer":{"@type":"Answer","text":"KAMIS 농산물유통정보와 한국소비자원 참가격 생필품 가격정보를 기준으로 농수축산물과 일부 생필품의 최근 가격 흐름을 참고용으로 정리합니다."}},{"@type":"Question","name":"공개 가격정보와 실제 매장 가격은 같나요?","acceptedAnswer":{"@type":"Answer","text":"반드시 같지는 않습니다. 공개 가격정보는 조사 기준과 시점이 있으며, 실제 매장 가격, 행사 가격, 재고 상황, 판매 단위에 따라 달라질 수 있습니다."}},{"@type":"Question","name":"소매가격과 도매가격은 어떻게 다르나요?","acceptedAnswer":{"@type":"Answer","text":"소매가격은 일반 소비자 구매 기준에 가깝고, 도매가격은 유통 단계의 거래 기준에 가깝습니다. 장보기 전 확인에는 보통 소매가격을 먼저 참고하는 것이 자연스럽습니다."}},{"@type":"Question","name":"전주 대비 상승이라고 나오면 지금 비싼 건가요?","acceptedAnswer":{"@type":"Answer","text":"전주 조사 가격보다 오른 흐름을 의미할 뿐, 절대적으로 비싸다고 단정하지 않습니다. 품목, 지역, 시기, 시장 유형을 함께 참고해야 합니다."}},{"@type":"Question","name":"지역별 가격이 없는 경우는 왜 생기나요?","acceptedAnswer":{"@type":"Answer","text":"품목, 시장 유형, 조사 지역에 따라 제공되는 가격정보가 제한될 수 있습니다. 이 경우 전국 기준이나 다른 시장 유형으로 다시 확인하는 것이 좋습니다."}}]}</script>
+        <link rel="stylesheet" href="/assets/css/base.css">
+    <link rel="stylesheet" href="/assets/css/layout.css?v=20260621-v70-source-tag-fix">
+    <link rel="stylesheet" href="/assets/css/components.css?v=20260621-v70-source-tag-fix">
+    <!-- AdSense 심사 전에는 광고 스크립트를 비활성화합니다. -->
+</head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/index.html" aria-label="한눈체크 홈">
+        <span class="brand-mark">한</span>
+        <span><strong>한눈체크</strong><small>생활 확인 도구</small></span>
+      </a>
+      <nav class="site-nav" aria-label="주요 메뉴">
+        <a href="/index.html#features" data-tool-drawer>주요 기능</a>
+        <a href="/index.html#safe-position">운영 원칙</a>
+        <a href="/contact.html">문의</a>
+      </nav>
+    </header>
+    <main>
+      <section class="tool-hero-band">
+        <div class="container">
+          <nav class="breadcrumb" aria-label="현재 위치"><a href="/index.html">홈</a><span>/</span><span>장보기 물가 확인</span></nav>
+          <div class="section-intro">
+            <p class="eyebrow">Grocery price check</p>
+            <h1>장보기 물가를 확인하세요</h1>
+            <p>배추, 대파, 사과, 계란처럼 자주 사는 품목의 최근 가격과 지역별 차이를 KAMIS 농축수산물 가격정보와 참가격 생필품 가격정보 기준으로 확인합니다.</p>
+            <p class="fine-print strong-note">공개 조사 가격 기준으로 장보기 전 참고할 수 있는 가격 흐름을 정리합니다. 실제 매장 가격, 행사 가격과는 차이가 있을 수 있습니다.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="content-band tool-content-band">
+        <div class="container tool-layout grocery-tool-layout" id="grocery-price-tool">
+          <article class="check-console tool-console grocery-console">
+            <div class="console-header">
+              <span class="console-dots" aria-hidden="true"><span></span><span></span><span></span></span>
+              <strong>장보기 전 확인</strong>
+            </div>
+            <form class="grocery-form" id="grocery-price-form">
+              <div class="grocery-form-grid">
+                <div class="form-row">
+                  <label for="grocery-region">지역</label>
+                  <select id="grocery-region" name="region">
+                    <option>전국</option><option>서울</option><option>부산</option><option>대구</option><option>인천</option><option>광주</option><option>대전</option><option>울산</option><option>세종</option><option>경기</option><option>강원</option><option>충북</option><option>충남</option><option>전북</option><option>전남</option><option>경북</option><option>경남</option><option>제주</option>
+                  </select>
+                </div>
+                <div class="form-row">
+                  <label for="grocery-item">품목 검색</label>
+                  <input id="grocery-item" name="item" type="search" placeholder="예: 배추, 대파, 사과, 계란" autocomplete="off">
+                </div>
+                <div class="form-row">
+                  <label for="grocery-market">시장 유형</label>
+                  <select id="grocery-market" name="market">
+                    <option value="retail">소매가격</option>
+                    <option value="wholesale">도매가격</option>
+                    <option value="all">소매·도매</option>
+                  </select>
+                </div>
+                <div class="form-row">
+                  <label for="grocery-period">확인 기준</label>
+                  <select id="grocery-period" name="period">
+                    <option value="latest">최근 가격</option>
+                    <option value="trend">최근 추이</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <p class="inline-privacy-note">인기 품목을 선택하거나 직접 품목명을 입력하세요.</p>
+                <div class="grocery-popular-row" aria-label="인기 품목">
+                  <button class="grocery-chip" type="button" data-grocery-item="쌀">쌀</button><button class="grocery-chip" type="button" data-grocery-item="배추">배추</button><button class="grocery-chip" type="button" data-grocery-item="무">무</button><button class="grocery-chip" type="button" data-grocery-item="대파">대파</button><button class="grocery-chip" type="button" data-grocery-item="양파">양파</button><button class="grocery-chip" type="button" data-grocery-item="감자">감자</button><button class="grocery-chip" type="button" data-grocery-item="사과">사과</button><button class="grocery-chip" type="button" data-grocery-item="배">배</button><button class="grocery-chip" type="button" data-grocery-item="계란">계란</button><button class="grocery-chip" type="button" data-grocery-item="돼지고기">돼지고기</button><button class="grocery-chip" type="button" data-grocery-item="고등어">고등어</button><button class="grocery-chip" type="button" data-grocery-item="오징어">오징어</button>
+                </div>
+              </div>
+              <div class="pc-action-row">
+                <button class="submit-button" type="submit">가격 확인하기</button>
+                <button class="secondary-action-button" type="button" onclick="document.getElementById('grocery-item')?.focus()">품목 다시 선택</button>
+              </div>
+              <p class="preview-note" id="grocery-status" aria-live="polite">품목을 입력하거나 인기 품목을 선택하면 장보기 물가 확인 기준을 준비합니다.</p>
+            </form>
+            <section class="grocery-result-panel" id="grocery-result" aria-live="polite">
+              <article class="grocery-placeholder-card">
+                <h2>품목을 선택하면 가격정보를 확인합니다</h2>
+                <p>지역, 품목, 시장 유형을 선택한 뒤 가격 확인하기를 누르면 KAMIS 또는 참가격 기준 최근 가격과 비교 흐름을 보여줍니다.</p>
+              </article>
+            </section>
+          </article>
+
+          <aside class="tool-sidebar">
+            <article class="notice-card blue">
+              <p class="eyebrow">확인 기준</p>
+              <h2>장보기 품목별 가격 흐름을 봅니다</h2>
+              <p>같은 품목이라도 지역, 시장 유형, 조사 시점에 따라 가격이 다를 수 있습니다. 한눈체크는 공식 가격정보를 참고용으로 정리합니다.</p>
+            </article>
+            <article class="notice-card warning">
+              <p class="eyebrow">주의</p>
+              <h2>실제 매장 가격과 다를 수 있습니다</h2>
+              <p>공개 가격정보는 조사 기준과 시점이 있습니다. 실제 구매 가격, 행사 가격, 매장 재고와는 차이가 있을 수 있습니다.</p>
+            </article>
+            <article class="api-status-card">
+              <h3>데이터 출처</h3>
+              <p>KAMIS 농산물유통정보와 한국소비자원 참가격 생필품 가격정보 Open API를 기준으로 확인합니다.</p>
+            </article>
+          </aside>
+        </div>
+      </section>
+
+      <section class="content-band muted">
+        <div class="container calculator-guide">
+          <p class="eyebrow">사용 가이드</p>
+          <h2>장보기 물가 확인은 이렇게 활용합니다.</h2>
+          <p class="section-lead">가격표 하나만 보는 것이 아니라 지역, 시장 유형, 조사 시점, 전주·전월 흐름을 함께 확인하면 장보기 전 가격 변화를 더 쉽게 이해할 수 있습니다.</p>
+          <div class="guide-grid">
+            <article><h3>품목 선택</h3><p>쌀, 배추, 대파, 사과, 계란처럼 자주 확인하는 품목을 빠르게 선택합니다. 입력한 품목명은 KAMIS 가격 목록과 참가격 생필품 목록에 순서대로 매칭한 뒤 가격정보를 확인합니다.</p></article>
+            <article><h3>지역 비교</h3><p>전국 또는 시·도 기준으로 가격 차이를 확인합니다. 지역 자료가 부족하면 전국 기준으로 다시 확인해 볼 수 있습니다.</p></article>
+            <article><h3>시장 유형</h3><p>소매가격은 일반 장보기 기준에 가깝고, 도매가격은 유통 거래 기준에 가깝습니다. 장보기 전에는 소매가격을 먼저 보는 것이 좋습니다.</p></article>
+            <article><h3>가격 흐름</h3><p>최근 가격, 전주, 전월, 전년, 평균 가격을 함께 보여주어 상승·하락 흐름을 참고할 수 있게 정리합니다.</p></article>
+          </div>
+        </div>
+      </section>
+
+      <section class="content-band">
+        <div class="container calculator-guide grocery-source-guide">
+          <p class="eyebrow">데이터 출처와 확인 한계</p>
+          <h2>공공 가격정보를 참고용으로 정리합니다.</h2>
+          <div class="guide-grid">
+            <article><h3>공개 조사 가격 기준</h3><p>장보기 물가 확인은 KAMIS 농산물유통정보 가격정보 Open API를 우선 사용하고, KAMIS에서 강한 매칭이 없으면 한국소비자원 참가격 생필품 가격정보를 보조로 확인합니다.</p></article>
+            <article><h3>실제 매장 가격과 차이</h3><p>행사, 매장 재고, 판매 단위, 산지와 유통 상황에 따라 실제 구매 가격은 공개 가격정보와 다를 수 있습니다.</p></article>
+            <article><h3>상승·하락 표현</h3><p>전주·전월 대비 계산은 제공 데이터 기준의 참고 흐름입니다. 품목의 절대적인 비싸고 쌈을 단정하지 않습니다.</p></article>
+            <article><h3>자료 없음 처리</h3><p>품목, 지역, 시장 유형에 따라 제공 자료가 없을 수 있습니다. 이 경우 품목명을 줄이거나 전국 기준으로 다시 확인해 주세요.</p></article>
+          </div>
+        </div>
+      </section>
+
+      <section class="content-band muted" id="faq">
+        <div class="container faq-section">
+          <p class="eyebrow">자주 묻는 질문</p>
+          <h2>장보기 물가 확인 FAQ</h2>
+          <div class="faq-accordion-grid">
+            <details class="faq-accordion-item"><summary>장보기 물가 확인은 무엇을 보여주나요?</summary><div class="faq-answer"><p>KAMIS 농산물유통정보와 한국소비자원 참가격 생필품 가격정보를 기준으로 농수축산물과 일부 생필품의 최근 가격 흐름을 참고용으로 정리합니다.</p></div></details>
+            <details class="faq-accordion-item"><summary>공개 가격정보와 실제 매장 가격은 같나요?</summary><div class="faq-answer"><p>반드시 같지는 않습니다. 공개 가격정보는 조사 기준과 시점이 있으며, 실제 매장 가격, 행사 가격, 재고 상황, 판매 단위에 따라 달라질 수 있습니다.</p></div></details>
+            <details class="faq-accordion-item"><summary>소매가격과 도매가격은 어떻게 다르나요?</summary><div class="faq-answer"><p>소매가격은 일반 소비자 구매 기준에 가깝고, 도매가격은 유통 단계의 거래 기준에 가깝습니다. 장보기 전 확인에는 보통 소매가격을 먼저 참고하는 것이 자연스럽습니다.</p></div></details>
+            <details class="faq-accordion-item"><summary>전주 대비 상승이면 지금 비싼 건가요?</summary><div class="faq-answer"><p>전주 조사 가격보다 오른 흐름을 의미할 뿐, 절대적으로 비싸다고 단정하지 않습니다. 품목, 지역, 시기, 시장 유형을 함께 참고해야 합니다.</p></div></details>
+            <details class="faq-accordion-item"><summary>지역별 가격이 없는 경우는 왜 생기나요?</summary><div class="faq-answer"><p>품목, 시장 유형, 조사 지역에 따라 제공되는 가격정보가 제한될 수 있습니다. 이 경우 전국 기준이나 다른 시장 유형으로 다시 확인하는 것이 좋습니다.</p></div></details>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer">
+<div class="container footer-grid">
+<div class="footer-note">
+<strong>한눈체크</strong>
+<p>생활 속에서 확인이 필요한 정보를 한눈에 정리하고, 결과의 의미와 한계를 함께 설명하는 생활 확인 도구입니다. 조회·측정 결과는 참고용이며, 실제 판단을 보장하지 않습니다.</p>
+</div>
+<nav aria-label="푸터 메뉴">
+<a href="/about.html">소개</a>
+<a href="/privacy.html">개인정보처리방침</a>
+<a href="/disclaimer.html">면책 안내</a>
+<a href="/data-sources.html">데이터 출처</a>
+<a href="/contact.html">문의·정정 요청</a>
+</nav>
+</div>
+</footer>
+    <script src="/assets/js/app.js?v=20260623-v129-location-search-ui-refine"></script>
+    <script src="/assets/js/grocery-price-check.js?v=20260621-v70-source-tag-fix" defer></script>
+  </body>
+</html>
