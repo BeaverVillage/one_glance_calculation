@@ -1,0 +1,8 @@
+# Internal/development files should not be publicly indexed or served.
+/tools/* /404.html 404
+/docs/* /404.html 404
+/data/* /404.html 404
+/.git/* /404.html 404
+/.env /404.html 404
+/.env.example /404.html 404
+/COMPLIANCE_CHECK.md /404.html 404

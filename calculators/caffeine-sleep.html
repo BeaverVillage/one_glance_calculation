@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-D4SBV1Y07N"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-D4SBV1Y07N');
+    </script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
+    <link rel="shortcut icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <meta name="theme-color" content="#146c5f">
+<meta name="google-adsense-account" content="ca-pub-6340743169950430">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6340743169950430"
+     crossorigin="anonymous"></script>
+    <meta name="msvalidate.01" content="71220435128A45EF179793784E9AFC3E">
+    <meta name="naver-site-verification" content="0f429adf1d8d3475017f3824ee96355074bcfd23">
+    <meta name="description" content="커피, 레드불, 몬스터, 녹차 등 음료를 선택하고 마신 시간과 취침 시간을 입력해 잠들 때 남아 있을 카페인 양을 추정해 보세요.">
+    <title>카페인 수면 영향 계산기 - 한눈계산</title>
+    <link rel="canonical" href="https://hannuncalc.com/calculators/caffeine-sleep.html">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="ko_KR">
+    <meta property="og:site_name" content="한눈계산">
+    <meta property="og:title" content="카페인 수면 영향 계산기 - 한눈계산">
+    <meta property="og:description" content="커피, 레드불, 몬스터, 녹차 등 음료를 선택하고 마신 시간과 취침 시간을 입력해 잠들 때 남아 있을 카페인 양을 추정해 보세요.">
+    <meta property="og:url" content="https://hannuncalc.com/calculators/caffeine-sleep.html">
+    <script type="application/ld+json" data-schema="webapplication">{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "카페인 수면 영향 계산기",
+  "url": "https://hannuncalc.com/calculators/caffeine-sleep.html",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "Any",
+  "inLanguage": "ko-KR",
+  "description": "커피, 레드불, 몬스터, 녹차 등 음료를 선택하고 마신 시간과 취침 시간을 입력해 잠들 때 남아 있을 카페인 양을 추정해 보세요.",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "KRW"
+  }
+}</script>
+    <script type="application/ld+json" data-schema="faqpage">{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "카페인 반감기는 무엇인가요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "카페인 반감기는 몸에 남은 카페인 양이 절반으로 줄어드는 데 걸리는 시간을 뜻합니다. 이 계산기는 사용자가 입력한 반감기를 기준으로 취침 시 남은 카페인 양을 추정합니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "커피를 마신 뒤 몇 시간 뒤에 자는 게 좋나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "사람마다 다르지만 오후나 저녁에 마신 카페인은 잠들기 전까지 일부가 남을 수 있습니다. 이 계산기에서는 마신 시간, 취침 시간, 반감기를 넣어 취침 시점의 잔존량을 참고할 수 있습니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "음료별 카페인 프리셋은 정확한 값인가요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "프리셋은 대표 참고값입니다. 같은 아메리카노, 레드불, 몬스터라도 제품 용량, 샷 수, 브랜드, 국가별 라벨에 따라 카페인 양이 달라질 수 있으므로 실제 제품 표시를 우선 확인하세요."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "여러 잔을 마셨을 때는 어떻게 계산하나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "목록에 추가한 각 음료의 섭취 시간과 카페인 양을 따로 계산한 뒤, 취침 시점에 남은 양을 합산합니다. 늦게 마신 음료일수록 취침 시 잔존 비율이 높게 나올 수 있습니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "디카페인 커피도 입력해야 하나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "디카페인 커피도 소량의 카페인이 남아 있을 수 있습니다. 카페인에 민감하거나 늦은 시간에 마셨다면 프리셋 또는 직접 입력으로 함께 계산해 볼 수 있습니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "잔존 카페인이 낮으면 수면에 영향이 없나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "잔존량이 낮다고 해서 수면 영향이 전혀 없다고 단정할 수는 없습니다. 수면 영향은 카페인 민감도, 피로도, 스트레스, 음주, 약물, 수면 습관에 따라 달라질 수 있습니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "청소년, 임산부, 질환이 있는 사람도 참고해도 되나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "일반적인 반감기 기반 참고 계산으로만 보세요. 청소년, 임산부, 수유 중인 사람, 심혈관 질환이나 불면 증상이 있는 사람은 카페인 섭취 기준이 다를 수 있으므로 전문가 안내를 우선 확인하는 것이 좋습니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "자정이 넘어도 계산되나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "취침 시간이 마신 시간보다 빠르면 다음 날 취침으로 보고 계산합니다. 예를 들어 오후 10시에 마시고 오전 1시에 자는 경우 3시간 뒤 취침으로 처리됩니다."
+      }
+    }
+  ]
+}</script>
+    <link rel="stylesheet" href="../assets/css/base.css">
+    <link rel="stylesheet" href="../assets/css/layout.css">
+    <link rel="stylesheet" href="../assets/css/components.css?v=20260620-caffeine-ui-fix-1">
+  </head>
+  <body>
+    <header class="site-header"><a class="brand" href="../index.html"><span class="brand-mark">한</span><span><strong>한눈계산</strong><small>생활 계산기</small></span></a><nav class="site-nav" aria-label="주요 메뉴"><a href="../index.html#calculators" data-tool-drawer>다른 계산기</a><a href="../index.html#how-to">사용 방법</a><a href="../index.html#faq">질문</a><a href="../about.html">소개</a><a href="../contact.html">문의</a></nav></header>
+    <main>
+      <section class="hero-band"><div class="container"><div class="section-intro"><p class="eyebrow">수면 습관</p><h1>카페인 수면 영향 계산기</h1><p class="lead">커피·에너지드링크·차 음료를 고르면 대표 카페인 양이 자동 입력되고, 취침 시점에 남아 있을 카페인 양을 대략 볼 수 있습니다.</p></div></div></section>
+      <section class="content-band compact"><div class="container calculator-section"><section class="tool-panel" aria-label="카페인 수면 영향 계산기">
+        <form id="caffeine-sleep-form" class="input-panel caffeine-input-panel">
+          <div class="caffeine-preset-card" aria-label="음료별 카페인 빠른 선택">
+            <div class="mini-card-heading">
+              <span class="eyebrow">음료 프리셋</span>
+              <strong>마신 음료를 선택하면 카페인 양이 자동 입력됩니다.</strong>
+            </div>
+            <div class="caffeine-quick-picks" role="group" aria-label="자주 찾는 음료 빠른 선택">
+              <button type="button" class="chip-button" data-caffeine-quick="coffee:americano">아메리카노</button>
+              <button type="button" class="chip-button" data-caffeine-quick="coffee:latte">라떼</button>
+              <button type="button" class="chip-button" data-caffeine-quick="energy:redbull-250">레드불</button>
+              <button type="button" class="chip-button" data-caffeine-quick="energy:monster-473">몬스터</button>
+              <button type="button" class="chip-button" data-caffeine-quick="tea:green-tea">녹차</button>
+            </div>
+            <div class="field-row caffeine-preset-grid">
+              <div class="field">
+                <label for="caffeine-category">음료 종류</label>
+                <select id="caffeine-category" name="drinkCategory">
+                  <option value="coffee">커피</option>
+                  <option value="energy">에너지드링크</option>
+                  <option value="tea">차·티</option>
+                  <option value="soda">탄산·기타</option>
+                  <option value="my">내 음료</option>
+                  <option value="custom">직접 입력</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="caffeine-preset">음료 선택</label>
+                <select id="caffeine-preset" name="drinkPreset"></select>
+              </div>
+            </div>
+            <p id="caffeine-preset-note" class="helper-text caffeine-preset-note">제품과 용량에 따라 카페인 양은 달라질 수 있습니다. 자동 입력값은 참고값이며 직접 수정할 수 있습니다.</p>
+            <div class="caffeine-custom-actions">
+              <button id="caffeine-custom-toggle" class="ghost-button" type="button" aria-expanded="false" aria-controls="caffeine-custom-panel">내 음료 추가</button>
+              <span class="helper-text">이 브라우저에만 저장되며, 서버로 전송되지 않습니다.</span>
+            </div>
+            <div id="caffeine-custom-panel" class="caffeine-custom-panel" hidden aria-hidden="true">
+              <div class="mini-card-heading">
+                <span class="eyebrow">내 음료</span>
+                <strong>자주 마시는 음료의 카페인 양을 저장해 두세요.</strong>
+              </div>
+              <div class="field-row caffeine-custom-grid">
+                <div class="field">
+                  <label for="caffeine-custom-name">음료 이름</label>
+                  <input id="caffeine-custom-name" type="text" maxlength="32" placeholder="예: 회사 캔커피">
+                </div>
+                <div class="field">
+                  <label for="caffeine-custom-mg">카페인 양</label>
+                  <div class="input-suffix"><input id="caffeine-custom-mg" type="number" min="1" max="1000" step="1" inputmode="numeric" placeholder="95"><span>mg</span></div>
+                </div>
+                <div class="field">
+                  <label for="caffeine-custom-serving">용량·기준</label>
+                  <input id="caffeine-custom-serving" type="text" maxlength="24" placeholder="예: 275ml 1캔">
+                </div>
+              </div>
+              <div class="caffeine-custom-save-row">
+                <button id="caffeine-custom-save" class="primary-button small" type="button">저장하고 선택</button>
+                <button id="caffeine-custom-cancel" class="ghost-button small" type="button">취소</button>
+              </div>
+              <p id="caffeine-custom-message" class="helper-text caffeine-custom-message" aria-live="polite"></p>
+              <div id="caffeine-custom-list" class="caffeine-custom-list" aria-label="저장한 내 음료 목록"></div>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="caffeine-mg">카페인 양</label>
+              <div class="input-suffix"><input id="caffeine-mg" name="caffeineMg" type="number" min="0" max="1000" step="5" value="120" inputmode="numeric"><span>mg</span></div>
+            </div>
+            <div class="field">
+              <label for="half-life-hours">반감기</label>
+              <div class="input-suffix"><input id="half-life-hours" name="halfLifeHours" type="number" min="1" max="12" step="0.5" value="5" inputmode="decimal"><span>시간</span></div>
+            </div>
+          </div>
+          <p class="helper-text caffeine-field-note">대표 카페인 양은 자동 입력되며 직접 수정할 수 있습니다. 반감기는 기본 5시간 기준입니다.</p>
+          <div class="field-row"><div class="field"><label for="consumed-at">마신 시간</label><input id="consumed-at" name="consumedAt" type="time" value="15:00"></div><div class="field"><label for="bedtime">취침 시간</label><input id="bedtime" name="bedtime" type="time" value="23:30"></div></div>
+          <div class="caffeine-intake-panel" aria-label="오늘 마신 카페인 목록">
+            <div class="mini-card-heading">
+              <span class="eyebrow">여러 잔 합산</span>
+              <strong>오늘 마신 카페인을 목록에 추가하면 취침 시 총 잔존량을 합산합니다.</strong>
+            </div>
+            <div class="caffeine-intake-actions">
+              <button id="caffeine-add-intake" class="ghost-button" type="button">현재 음료 목록에 추가</button>
+              <button id="caffeine-clear-intakes" class="ghost-button danger" type="button">목록 비우기</button>
+            </div>
+            <p id="caffeine-intake-message" class="helper-text caffeine-intake-message" aria-live="polite">목록이 비어 있으면 현재 입력한 음료 1잔 기준으로 계산합니다.</p>
+            <div id="caffeine-intake-list" class="caffeine-intake-list" aria-label="추가한 카페인 섭취 기록"></div>
+          </div>
+          <button class="primary-button" type="submit">수면 영향 계산하기</button>
+        </form>
+        <aside class="result-panel caffeine-result-panel" id="caffeine-result-panel" tabindex="-1">
+          <div class="report-summary">
+            <span class="report-kicker">취침 시 남은 카페인</span>
+            <strong id="caffeine-remaining" class="result-number">-</strong>
+            <span id="caffeine-detail">조건을 입력하면 남은 카페인을 계산합니다.</span>
+          </div>
+          <div class="metric-grid savings-metrics">
+            <div><span>남은 비율</span><strong id="caffeine-percent">-</strong></div>
+            <div><span>수면 영향</span><strong id="caffeine-risk">-</strong></div>
+            <div><span>계산 기준</span><strong id="caffeine-time">-</strong></div>
+          </div>
+          <div id="caffeine-visual" class="caffeine-visual" aria-label="카페인 감소 시각화"></div>
+          <div id="caffeine-breakdown" class="caffeine-breakdown" aria-label="음료별 잔존 카페인 분석"></div>
+        </aside>
+      </section></div></section>
+      <section class="content-band muted"><div class="container two-column"><section class="info-block"><p class="eyebrow">사용 방법</p><h2>마신 음료와 취침 시간을 넣으세요.</h2><ol class="step-list"><li><strong>음료 선택</strong><span>아메리카노, 레드불, 몬스터, 녹차 등 프리셋을 고르면 대표 카페인 양이 자동 입력됩니다.</span></li><li><strong>여러 잔 추가</strong><span>하루에 여러 번 마셨다면 각 음료의 마신 시간을 입력하고 목록에 추가하세요. 취침 시 총 잔존량을 합산합니다.</span></li><li><strong>제품 라벨 반영</strong><span>같은 음료라도 용량과 제품에 따라 카페인 양이 다를 수 있으므로 실제 mg 값을 직접 수정할 수 있습니다.</span></li><li><strong>결과 확인</strong><span>취침 시 잔존량, 잔존 비율, 음료별 breakdown, 감소 타임라인을 함께 확인하세요.</span></li></ol></section><section class="info-block"><p class="eyebrow">주의할 점</p><h2>수면 영향은 개인차가 큽니다.</h2><ul class="plain-list"><li>반감기 기본값은 5시간이지만 실제 대사 속도는 사람마다 다릅니다.</li><li>수면 부족, 스트레스, 약물, 음주 여부도 수면에 영향을 줄 수 있습니다.</li><li>청소년, 임산부, 질환자는 일반 성인과 섭취 기준이 다를 수 있습니다.</li><li>심장 두근거림, 불면, 불안이 반복되면 전문가와 상담하세요.</li></ul></section></div></section>
+      
+      <section class="content-band calculation-guide" data-quality-section="calculator">
+        <div class="container">
+          <div class="section-intro narrow">
+            <p class="eyebrow">계산 기준</p>
+            <h2>카페인 잔존량 계산 가이드</h2>
+            <p>마신 음료, 섭취 시간, 취침 예정 시간, 반감기를 기준으로 잠들 때 남아 있을 카페인 양을 추정합니다. 결과는 수면 습관을 점검하기 위한 참고값입니다.</p>
+          </div>
+          <div class="guide-grid">
+            <article>
+              <h3>카페인 반감기란?</h3>
+              <p>반감기는 몸에 남은 카페인 양이 절반으로 줄어드는 데 걸리는 시간입니다. 예를 들어 반감기를 5시간으로 두면 100mg을 마신 뒤 약 5시간 후에는 50mg, 10시간 후에는 25mg 정도가 남는다고 보는 단순 모델입니다.</p>
+            </article>
+            <article>
+              <h3>잔존량 계산 공식</h3>
+              <p>남은 카페인 = 섭취량 × 0.5^(경과시간 ÷ 반감기)로 계산합니다. 여러 잔을 추가한 경우에는 각 음료의 잔존량을 따로 계산한 뒤 취침 시점의 총량을 합산합니다.</p>
+            </article>
+            <article>
+              <h3>음료 프리셋 사용 방법</h3>
+              <p>아메리카노, 라떼, 레드불, 몬스터, 녹차 등 대표 음료를 선택하면 카페인 양이 자동 입력됩니다. 프리셋은 대표 참고값이므로 실제 제품 라벨의 mg 값이 다르면 직접 수정하는 것이 좋습니다.</p>
+            </article>
+            <article>
+              <h3>내 음료 저장</h3>
+              <p>자주 마시는 캔커피, 에너지드링크, 카페 메뉴는 내 음료로 저장할 수 있습니다. 저장값은 브라우저 localStorage에만 보관되며 서버로 전송되지 않습니다.</p>
+            </article>
+            <article>
+              <h3>여러 잔 합산</h3>
+              <p>오전 아메리카노, 오후 레드불, 저녁 녹차처럼 시간대가 다른 섭취 기록을 목록에 추가하면 취침 시 총 잔존 카페인을 합산합니다. 늦게 마신 음료일수록 취침 시점의 잔존 비율이 높게 나올 수 있습니다.</p>
+            </article>
+            <article>
+              <h3>결과 타임라인 읽는 법</h3>
+              <p>타임라인은 첫 섭취, 마지막 섭취, 취침 시점, 50%·25%·10% 이하 예상 시점을 함께 보여줍니다. 취침 마커가 50% 이하 시점보다 앞에 있으면 카페인이 꽤 남아 있을 수 있습니다.</p>
+            </article>
+            <article>
+              <h3>잔존량 해석 기준</h3>
+              <p>잔존량과 잔존 비율이 높을수록 수면에 영향을 느낄 가능성이 커질 수 있습니다. 다만 같은 50mg이라도 카페인 민감도, 체중, 수면 부족, 스트레스, 약물, 음주 여부에 따라 실제 체감은 달라집니다.</p>
+            </article>
+            <article>
+              <h3>카페인 민감도와 개인차</h3>
+              <p>카페인을 빠르게 대사하는 사람도 있고, 저녁 소량의 카페인에도 잠들기 어려운 사람도 있습니다. 계산 결과가 낮게 나오더라도 불면이나 두근거림이 반복된다면 섭취 시간과 총량을 더 보수적으로 조정하세요.</p>
+            </article>
+            <article>
+              <h3>청소년·임산부·질환자 주의</h3>
+              <p>청소년, 임산부, 수유 중인 사람, 심혈관 질환이나 불면 증상이 있는 사람은 카페인 섭취 기준이 일반 성인과 다를 수 있습니다. 이 계산기는 의료적 판단이나 섭취 권고를 대신하지 않습니다.</p>
+            </article>
+            <article>
+              <h3>결과를 활용하는 방법</h3>
+              <p>취침 시 잔존량이 계속 높게 나온다면 오후 늦은 카페인 섭취를 줄이거나, 마지막 카페인 시간을 앞당기는 방식으로 수면 습관을 점검해 볼 수 있습니다.</p>
+            </article>
+            <article class="guide-note-card">
+              <h3>참고용 계산 안내</h3>
+              <p>본 계산기는 반감기 기반의 단순 추정 도구입니다. 실제 카페인 함량, 개인 대사 속도, 건강 상태, 복용 약물, 수면 환경을 모두 반영하지 않으므로 건강 문제나 지속적인 불면이 있다면 전문가와 상담하세요.</p>
+            </article>
+          </div>
+          <div class="adsense-review-note" aria-label="심사 대비 참고 안내"><strong>수면 참고 안내</strong><p>카페인 반감기와 수면 민감도는 개인차가 큽니다. 이 결과는 취침 전 카페인 잔존량을 가늠하기 위한 참고용이며, 불면·두근거림·불안 증상이 반복되면 전문가 안내를 우선 확인해 주세요.</p></div><p class="guide-updated">최종 업데이트 날짜: 2026-06-21</p>
+        </div>
+      </section>
+
+      <section class="content-band"><div class="container faq-wrap"><p class="eyebrow">자주 묻는 질문</p><h2>카페인 수면 영향 계산기 FAQ</h2><div class="faq-grid"><details open><summary>카페인 반감기는 무엇인가요?</summary><p>카페인 반감기는 몸에 남은 카페인 양이 절반으로 줄어드는 데 걸리는 시간을 뜻합니다. 이 계산기는 사용자가 입력한 반감기를 기준으로 취침 시 남은 카페인 양을 추정합니다.</p></details><details><summary>커피를 마신 뒤 몇 시간 뒤에 자는 게 좋나요?</summary><p>사람마다 다르지만 오후나 저녁에 마신 카페인은 잠들기 전까지 일부가 남을 수 있습니다. 이 계산기에서는 마신 시간, 취침 시간, 반감기를 넣어 취침 시점의 잔존량을 참고할 수 있습니다.</p></details><details><summary>음료별 카페인 프리셋은 정확한 값인가요?</summary><p>프리셋은 대표 참고값입니다. 같은 아메리카노, 레드불, 몬스터라도 제품 용량, 샷 수, 브랜드, 국가별 라벨에 따라 카페인 양이 달라질 수 있으므로 실제 제품 표시를 우선 확인하세요.</p></details><details><summary>여러 잔을 마셨을 때는 어떻게 계산하나요?</summary><p>목록에 추가한 각 음료의 섭취 시간과 카페인 양을 따로 계산한 뒤, 취침 시점에 남은 양을 합산합니다. 늦게 마신 음료일수록 취침 시 잔존 비율이 높게 나올 수 있습니다.</p></details><details><summary>디카페인 커피도 입력해야 하나요?</summary><p>디카페인 커피도 소량의 카페인이 남아 있을 수 있습니다. 카페인에 민감하거나 늦은 시간에 마셨다면 프리셋 또는 직접 입력으로 함께 계산해 볼 수 있습니다.</p></details><details><summary>잔존 카페인이 낮으면 수면에 영향이 없나요?</summary><p>잔존량이 낮다고 해서 수면 영향이 전혀 없다고 단정할 수는 없습니다. 수면 영향은 카페인 민감도, 피로도, 스트레스, 음주, 약물, 수면 습관에 따라 달라질 수 있습니다.</p></details><details><summary>청소년, 임산부, 질환이 있는 사람도 참고해도 되나요?</summary><p>일반적인 반감기 기반 참고 계산으로만 보세요. 청소년, 임산부, 수유 중인 사람, 심혈관 질환이나 불면 증상이 있는 사람은 카페인 섭취 기준이 다를 수 있으므로 전문가 안내를 우선 확인하는 것이 좋습니다.</p></details><details><summary>자정이 넘어도 계산되나요?</summary><p>취침 시간이 마신 시간보다 빠르면 다음 날 취침으로 보고 계산합니다. 예를 들어 오후 10시에 마시고 오전 1시에 자는 경우 3시간 뒤 취침으로 처리됩니다.</p></details></div></div></section>
+    </main>
+    <footer class="site-footer">
+      <div class="container footer-grid">
+        <div><strong>한눈계산</strong><p>© 한눈계산. 모든 계산 결과는 참고용이며, 실제 판단은 공식 기관 기준을 확인해야 합니다.</p></div>
+        <nav aria-label="정책 메뉴">
+          <a href="../about.html">사이트 소개</a>
+          <a href="../privacy.html">개인정보 처리방침</a>
+          <a href="../disclaimer.html">면책 고지</a>
+          <a href="../licenses.html">오픈소스 라이선스</a>
+          <a href="../contact.html">문의하기</a>
+        </nav>
+      </div>
+    </footer>
+    <script type="module" src="../assets/js/app.js?v=20260620-caffeine-ui-fix-1"></script>
+  </body>
+</html>

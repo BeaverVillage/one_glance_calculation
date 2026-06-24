@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-D4SBV1Y07N"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-D4SBV1Y07N');
+    </script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
+    <link rel="shortcut icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <meta name="theme-color" content="#146c5f">
+<meta name="google-adsense-account" content="ca-pub-6340743169950430">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6340743169950430"
+     crossorigin="anonymous"></script>
+    <meta name="msvalidate.01" content="71220435128A45EF179793784E9AFC3E">
+    <meta name="naver-site-verification" content="0f429adf1d8d3475017f3824ee96355074bcfd23">
+    <meta name="description" content="가전제품 소비전력, 하루 사용시간, 사용일수, 전기요금 단가를 입력해 월 전기요금을 예상해 보세요.">
+    <title>가전제품 월 전기요금 계산기 - 한눈계산</title>
+    <link rel="canonical" href="https://hannuncalc.com/calculators/appliance-electricity.html">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="ko_KR">
+    <meta property="og:site_name" content="한눈계산">
+    <meta property="og:title" content="가전제품 월 전기요금 계산기 - 한눈계산">
+    <meta property="og:description" content="가전제품 소비전력, 하루 사용시간, 사용일수, 전기요금 단가를 입력해 월 전기요금을 예상해 보세요.">
+    <meta property="og:url" content="https://hannuncalc.com/calculators/appliance-electricity.html">
+    <script type="application/ld+json" data-schema="webapplication">{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "가전제품 월 전기요금 계산기",
+  "url": "https://hannuncalc.com/calculators/appliance-electricity.html",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "Any",
+  "inLanguage": "ko-KR",
+  "description": "가전제품 소비전력, 하루 사용시간, 사용일수, 전기요금 단가를 입력해 월 전기요금을 예상해 보세요.",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "KRW"
+  }
+}</script>
+    <script type="application/ld+json" data-schema="faqpage">{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "전기요금 단가는 얼마로 넣어야 하나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "정확히 모르겠다면 200~300원/kWh 사이로 바꿔가며 보세요. 이미 전기를 많이 쓰는 집은 더 높은 단가로 보는 편이 안전합니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "에어컨은 소비전력 그대로 계산하면 되나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "에어컨은 실내 온도와 설정 온도에 따라 실제 소비전력이 달라집니다. 정격 소비전력으로 계산하면 대략적인 상한선을 보는 데 도움이 됩니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "대기전력은 꼭 넣어야 하나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "대기전력이 작으면 큰 차이는 없지만, 24시간 꽂아 두는 제품은 누적되면 비용이 생길 수 있습니다."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "전기요금 고지서와 왜 다를 수 있나요?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "고지서는 집 전체 사용량, 누진 구간, 부가세, 전력기금 등이 함께 반영됩니다. 이 계산기는 가전 하나의 사용 비용을 빠르게 보기 위한 도구입니다."
+      }
+    }
+  ]
+}</script>
+    <link rel="stylesheet" href="../assets/css/base.css">
+    <link rel="stylesheet" href="../assets/css/layout.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="../index.html" aria-label="한눈계산 홈">
+        <span class="brand-mark">한</span>
+          <span><strong>한눈계산</strong><small>생활 계산기</small></span>
+      </a>
+      <nav class="site-nav" aria-label="주요 메뉴">
+        <a href="../index.html#calculators" data-tool-drawer>다른 계산기</a>
+        <a href="ev-vs-gas.html">전기차</a>
+        <a href="scientific.html">공학용</a>
+        <a href="military-savings.html">군적금</a>
+        <a href="used-device-price.html">중고가</a>
+        <a href="../about.html">소개</a>
+        <a href="../contact.html">문의</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero-band">
+        <div class="container">
+          <div class="section-intro">
+            <p class="eyebrow">가전 전기요금</p>
+            <h1>가전제품 월 전기요금 계산기</h1>
+            <p class="lead">
+              에어컨, 제습기, 전기장판, 컴퓨터처럼 자주 쓰는 가전제품이
+              한 달에 전기요금을 얼마나 더 만들지 빠르게 계산해 보세요.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="content-band compact">
+        <div class="container calculator-section">
+          <section class="tool-panel" aria-label="가전제품 월 전기요금 계산기">
+            <form id="appliance-electricity-form" class="input-panel">
+              <div class="field-row">
+                <div class="field">
+                  <label for="appliance-power">소비전력</label>
+                  <div class="input-suffix">
+                    <input id="appliance-power" name="powerW" type="number" min="0" step="10" value="800" inputmode="numeric">
+                    <span>W</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="appliance-hours">하루 사용시간</label>
+                  <div class="input-suffix">
+                    <input id="appliance-hours" name="hoursPerDay" type="number" min="0" max="24" step="0.5" value="4" inputmode="decimal">
+                    <span>시간</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field">
+                  <label for="appliance-days">월 사용일수</label>
+                  <div class="input-suffix">
+                    <input id="appliance-days" name="daysPerMonth" type="number" min="1" max="31" step="1" value="30" inputmode="numeric">
+                    <span>일</span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label for="appliance-unit-price">전기요금 단가</label>
+                  <div class="input-suffix">
+                    <input id="appliance-unit-price" name="unitPrice" type="number" min="0" step="10" value="220" inputmode="numeric">
+                    <span>원/kWh</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field">
+                <label for="appliance-standby">대기전력</label>
+                <div class="input-suffix">
+                  <input id="appliance-standby" name="standbyW" type="number" min="0" step="0.5" value="1" inputmode="decimal">
+                  <span>W</span>
+                </div>
+              </div>
+
+              <fieldset class="check-field">
+                <legend>추가 요금 반영</legend>
+                <label><input type="checkbox" name="includeSurcharges" checked> 부가세와 전력기금까지 대략 반영</label>
+              </fieldset>
+
+              <button class="primary-button" type="submit">전기요금 계산하기</button>
+            </form>
+
+            <aside class="result-panel">
+              <div class="report-summary">
+                <span class="report-kicker">월 예상 전기요금</span>
+                <strong id="appliance-monthly-cost" class="result-number">-</strong>
+                <span id="appliance-summary">조건을 입력하면 예상 전기요금을 계산합니다.</span>
+              </div>
+              <div class="metric-grid savings-metrics">
+                <div>
+                  <span>월 사용전력</span>
+                  <strong id="appliance-monthly-kwh">-</strong>
+                </div>
+                <div>
+                  <span>하루 평균 비용</span>
+                  <strong id="appliance-daily-cost">-</strong>
+                </div>
+                <div>
+                  <span>연간 환산</span>
+                  <strong id="appliance-annual-cost">-</strong>
+                </div>
+                <div>
+                  <span>사용 중 비용</span>
+                  <strong id="appliance-running-cost">-</strong>
+                </div>
+                <div>
+                  <span>대기전력 비용</span>
+                  <strong id="appliance-standby-cost">-</strong>
+                </div>
+              </div>
+            </aside>
+          </section>
+        </div>
+      </section>
+
+      <section class="content-band muted">
+        <div class="container two-column">
+          <section class="info-block">
+            <p class="eyebrow">사용 방법</p>
+            <h2>제품 라벨의 소비전력을 확인하세요.</h2>
+            <ol class="step-list">
+              <li><strong>소비전력 입력</strong><span>제품 라벨이나 설명서에 적힌 W 값을 입력합니다.</span></li>
+              <li><strong>사용시간 입력</strong><span>하루 평균 몇 시간 쓰는지 입력합니다.</span></li>
+              <li><strong>단가 조정</strong><span>집의 전기요금 구간에 맞춰 원/kWh 값을 바꿔 봅니다.</span></li>
+              <li><strong>월 비용 확인</strong><span>한 달 사용전력과 예상 비용을 확인합니다.</span></li>
+            </ol>
+          </section>
+
+          <section class="info-block">
+            <p class="eyebrow">계산할 때 알아둘 점</p>
+            <h2>실제 청구서와는 다를 수 있습니다.</h2>
+            <ul class="plain-list">
+              <li>이 계산기는 특정 가전제품 하나의 사용량을 보기 위한 간편 계산입니다.</li>
+              <li>주택용 전기요금은 전체 사용량에 따라 누진 구간이 달라집니다.</li>
+              <li>에어컨, 냉장고처럼 압축기가 켜졌다 꺼지는 제품은 평균 소비전력이 달라질 수 있습니다.</li>
+              <li>전기요금 단가를 높게 넣으면 누진 구간에 가까운 상황을 보수적으로 볼 수 있습니다.</li>
+            </ul>
+          </section>
+        </div>
+      </section>
+
+      
+      <section class="content-band calculation-guide" data-quality-section="calculator">
+        <div class="container">
+          <div class="section-intro narrow">
+            <p class="eyebrow">계산 기준</p>
+            <h2>계산 전에 확인할 내용</h2>
+            <p>아래 내용은 계산 결과를 해석할 때 필요한 기준과 주의사항입니다.</p>
+          </div>
+          <div class="guide-grid">
+            <article><h3>이 계산기는 무엇을 계산하나요?</h3><p>가전제품의 소비전력과 사용시간을 바탕으로 월 사용 전력량과 예상 전기요금을 계산합니다.</p></article>
+            <article><h3>이런 상황에서 사용하면 좋습니다</h3><p>에어컨, 제습기, 전기히터, PC처럼 오래 켜두는 제품의 월 전기요금이 궁금할 때, 제품 라벨의 소비전력으로 대략 비용을 확인할 수 있습니다.</p></article>
+            <article><h3>입력값 설명</h3><ul><li>소비전력: 제품 라벨의 W 값을 입력합니다.</li><li>하루 사용시간과 사용일수: 실제 사용할 시간을 입력합니다.</li><li>전기요금 단가: kWh당 원 단가를 입력합니다.</li></ul></article>
+            <article><h3>계산식</h3><p>월 사용량(kWh) = 소비전력(W) × 하루 사용시간 × 사용일수 ÷ 1000, 요금 = 월 사용량 × 단가입니다.</p></article>
+            <article><h3>예시 계산</h3><p>100W 제품을 하루 5시간, 30일 사용하면 100×5×30÷1000 = 15kWh입니다.</p></article>
+            <article><h3>결과 해석</h3><p>같은 제품도 사용시간이 길수록 월 전기요금이 크게 늘어납니다.</p></article>
+            <article><h3>주의사항</h3><p>누진제, 기본요금, 계절별 요금, 할인은 별도로 반영되지 않을 수 있습니다.</p></article>
+            <article><h3>참고한 공식 자료 또는 안내 문구</h3><p><a href="https://cyber.kepco.co.kr/" target="_blank" rel="noopener">한국전력공사</a> 전기요금 안내를 함께 확인하세요.</p></article>
+          </div>
+          <p class="guide-updated">최종 업데이트 날짜: 2026-06-16</p>
+        </div>
+      </section>
+
+      <section class="content-band">
+        <div class="container faq-wrap">
+          <p class="eyebrow">자주 묻는 질문</p>
+          <h2>가전제품 전기요금 자주 묻는 질문</h2>
+          <div class="faq-grid">
+            <details open>
+              <summary>전기요금 단가는 얼마로 넣어야 하나요?</summary>
+              <p>정확히 모르겠다면 200~300원/kWh 사이로 바꿔가며 보세요. 이미 전기를 많이 쓰는 집은 더 높은 단가로 보는 편이 안전합니다.</p>
+            </details>
+            <details>
+              <summary>에어컨은 소비전력 그대로 계산하면 되나요?</summary>
+              <p>에어컨은 실내 온도와 설정 온도에 따라 실제 소비전력이 달라집니다. 정격 소비전력으로 계산하면 대략적인 상한선을 보는 데 도움이 됩니다.</p>
+            </details>
+            <details>
+              <summary>대기전력은 꼭 넣어야 하나요?</summary>
+              <p>대기전력이 작으면 큰 차이는 없지만, 24시간 꽂아 두는 제품은 누적되면 비용이 생길 수 있습니다.</p>
+            </details>
+            <details>
+              <summary>전기요금 고지서와 왜 다를 수 있나요?</summary>
+              <p>고지서는 집 전체 사용량, 누진 구간, 부가세, 전력기금 등이 함께 반영됩니다. 이 계산기는 가전 하나의 사용 비용을 빠르게 보기 위한 도구입니다.</p>
+            </details>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-grid">
+        <div><strong>한눈계산</strong><p>© 한눈계산. 모든 계산 결과는 참고용이며, 실제 판단은 공식 기관 기준을 확인해야 합니다.</p></div>
+        <nav aria-label="정책 메뉴">
+          <a href="../about.html">사이트 소개</a>
+          <a href="../privacy.html">개인정보 처리방침</a>
+          <a href="../disclaimer.html">면책 고지</a>
+          <a href="../licenses.html">오픈소스 라이선스</a>
+          <a href="../contact.html">문의하기</a>
+        </nav>
+      </div>
+    </footer>
+
+    <script type="module" src="../assets/js/app.js?v=20260621-adsense-phase5"></script>
+  </body>
+</html>
