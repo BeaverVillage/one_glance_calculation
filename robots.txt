@@ -1,4 +1,5 @@
 User-agent: *
+Allow: /ads.txt
 Allow: /
 Disallow: /tools/
 Disallow: /docs/
