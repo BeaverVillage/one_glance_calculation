@@ -1940,7 +1940,7 @@ details p {
   font-weight: 800;
 }
 
-.adsense-review-note {
+.important-reference-note {
   margin-top: 22px;
   padding: 16px 18px;
   border: 1px solid rgba(20, 184, 166, 0.24);
@@ -1949,7 +1949,7 @@ details p {
   color: var(--ink);
 }
 
-.adsense-review-note strong {
+.important-reference-note strong {
   display: block;
   margin-bottom: 6px;
   font-size: 0.98rem;
@@ -1957,7 +1957,7 @@ details p {
   color: var(--ink);
 }
 
-.adsense-review-note p {
+.important-reference-note p {
   margin: 0;
   color: var(--muted);
   font-size: 0.92rem;
@@ -1966,12 +1966,12 @@ details p {
 }
 
 @media (max-width: 640px) {
-  .adsense-review-note {
+  .important-reference-note {
     padding: 14px 15px;
     border-radius: 16px;
   }
 
-  .adsense-review-note p {
+  .important-reference-note p {
     font-size: 0.88rem;
   }
 }

@@ -1,7 +1,7 @@
 import { calculateReport } from "./calculator.js?v=20260614-cache-fix";
 import { initBmiCalculator } from "./bmi-calculator.js?v=20260614-cache-fix";
 import { initCaffeineSleepCalculator } from "./caffeine-sleep.js?v=20260620-caffeine-phase5-final";
-import { initCigaretteCostCalculator } from "./cigarette-cost.js?v=20260621-adsense-phase5";
+import { initCigaretteCostCalculator } from "./cigarette-cost.js?v=20260627-content-quality";
 import { initApplianceElectricityCalculator } from "./appliance-electricity.js?v=20260614-cache-fix";
 import { initAustraliaPayCalculator } from "./australia-pay.js?v=20260616-mobile-exchange-whv-final";
 import { initAustraliaWhv88DaysCalculator } from "./australia-whv-88-days.js?v=20260616-mobile-exchange-whv-final";
